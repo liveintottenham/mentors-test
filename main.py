@@ -140,11 +140,10 @@ def locker_masterkey_page():
             )
             st.text_area("📌 마스터키 안내", info_text, height=250)
 
-import pytz
-from datetime import datetime
-
 def restore_checkout_page():
     st.title("🛠️ 퇴실 미처리 복구")
+    
+    # 날짜와 시간 입력 필드
     checkout_date = st.text_input("퇴실 일자 (YYYYMMDD)")
     checkout_time = st.text_input("퇴실 시간 (HHMM)")
 
@@ -152,8 +151,10 @@ def restore_checkout_page():
     now = datetime.now(kst)  # 현재 시간을 한국 시간대로 가져오기
 
     with st.form(key="checkout_form"):
+        # 폼 제출 버튼
         submit_button = st.form_submit_button("미처리 시간 계산")
-
+        
+    # 버튼 클릭 또는 엔터 키 입력 시 계산 실행
     if submit_button:
         try:
             # 사용자가 입력한 퇴실 날짜와 시간 문자열을 datetime 객체로 변환
@@ -177,7 +178,6 @@ def restore_checkout_page():
             st.success(f"💰 초과 요금: {extra_fee:,}원 (30분당 1,000원)")
         except ValueError:
             st.error("❌ 올바른 날짜 및 시간 형식을 입력하세요!")
-
 
 def refund_calculator_page():
     st.title("💰 이용권 환불 계산")
