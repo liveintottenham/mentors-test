@@ -14,8 +14,8 @@ def check_password():
         st.session_state.authenticated = False
     
     st.markdown("## 🔐 접근 제한")
-    password = st.text_input("비밀번호를 입력하세요", type="password", key="login_password")
-    if st.button("로그인"):
+    password = st.text_input("비밀번호를 입력하세요", type="password", key="login_password", on_change=lambda: st.session_state.update({'login_pressed': True}))
+    if st.session_state.get('login_pressed', False) or st.button("로그인(enter)"):
         if password == "1234":  # ✅ 여기에 원하는 비밀번호 설정
             st.session_state.authenticated = True
             st.rerun()
@@ -109,10 +109,10 @@ def home_page():
 
 def locker_masterkey_page():
     st.subheader("🔑 사물함 마스터키 안내")
-    locker_number = st.text_input("사물함 번호를 입력하세요")
-    locker_password = st.text_input("사물함 비밀번호 입력", type="password", key="locker_password")
+    locker_number = st.text_input("사물함 번호를 입력하세요", key="locker_number", on_change=lambda: st.session_state.update({'locker_submit': True}))
+    locker_password = st.text_input("사물함 비밀번호 입력", type="password", key="locker_password", on_change=lambda: st.session_state.update({'locker_submit': True}))
     
-    if st.button("마스터키 안내 보기"):
+    if st.session_state.get('locker_submit', False) or st.button("마스터키 안내 보기"):
         if not locker_number or not locker_password:
             st.error("❌ 사물함 번호와 비밀번호를 입력하세요!")
         else:
@@ -155,8 +155,6 @@ def restore_checkout_page():
         except ValueError:
             st.error("❌ 올바른 날짜 및 시간 형식을 입력하세요!")
 
-import streamlit as st
-from datetime import datetime, timedelta
 
 def refund_calculator_page():
     st.title("💰 이용권 환불 계산")
@@ -167,20 +165,33 @@ def refund_calculator_page():
     ticket_type = st.radio("이용권 종류", ["기간권", "시간권", "노블레스석"])
     policy = st.radio("환불 규정", ["일반", "% 규정"])
     
-    # 결제 및 환불 정보 입력
+    # 결제 및 환불 정보 입력 (날짜는 기본값으로 오늘 날짜 설정)
     ticket_price = st.number_input("결제 금액 (원)", min_value=0)
-    purchase_date = st.date_input("결제일")
-    refund_date = st.date_input("환불 요청일")
+    purchase_date = st.date_input("결제일", value=datetime.today())
+    refund_date = st.date_input("환불 요청일", value=datetime.today())
     
-    # 위약금 선택 (10% 또는 20%)
+    # 위약금 선택 (0%, 10%, 20%)
     penalty_rate = st.selectbox("위약금 선택", ["0%", "10%", "20%"], index=0)
     
     # 이용권 종류에 따른 추가 입력 필드
-    days_given = st.number_input("전체 부여 기간 [일] (기간권/노블레스석)", min_value=1) if ticket_type in ["기간권", "노블레스석"] else None
-    weeks_given = st.number_input("유효 기간 [주] (시간권)", min_value=1) if ticket_type == "시간권" else None
-    hours_used = st.number_input("사용 시간 (시간권)", min_value=0) if ticket_type == "시간권" else None
-    total_hours = st.number_input("전체 부여 시간 (시간권)", min_value=1) if ticket_type == "시간권" else None
-    noble_rate = st.number_input("노블레스석 1일 요금 (원)", min_value=0) if ticket_type == "노블레스석" else None
+    if ticket_type in ["기간권", "노블레스석"]:
+        days_given = st.number_input("전체 부여 기간 [일] (기간권/노블레스석)", min_value=1)
+    else:
+        days_given = None
+    
+    if ticket_type == "시간권":
+        weeks_given = st.number_input("유효 기간 [주] (시간권)", min_value=1)
+        hours_used = st.number_input("사용 시간 (시간권)", min_value=0)
+        total_hours = st.number_input("전체 부여 시간 (시간권)", min_value=1)
+    else:
+        weeks_given = None
+        hours_used = None
+        total_hours = None
+    
+    if ticket_type == "노블레스석":
+        noble_rate = st.number_input("노블레스석 1일 요금 (원)", min_value=0)
+    else:
+        noble_rate = None
     
     # 유효 기간 계산
     if ticket_type == "시간권":
@@ -188,8 +199,11 @@ def refund_calculator_page():
     else:
         valid_period = f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(days=days_given-1)).strftime('%Y-%m-%d')}" if days_given else "정보 없음"
     
-    # 환불 금액 계산 버튼
-    if st.button("환불 금액 계산"):
+    # 이용권 종류 표시 형식 수정
+    formatted_ticket_type = f"{ticket_type} ({days_given}일)" if ticket_type != "시간권" else f"{ticket_type} ({total_hours}시간)"
+    
+    # 환불 금액 계산 (엔터 키로도 실행 가능)
+    if st.button("환불 금액 계산") or True:  # 항상 계산 실행
         used_days = (refund_date - purchase_date).days + 1
         daily_rate = 11000
         hourly_rate = 2000
@@ -229,10 +243,10 @@ def refund_calculator_page():
             usage_info = f"{used_days}일 사용" if ticket_type in ["기간권", "노블레스석"] else f"{hours_used}시간 사용"
             deduction_detail = f"{used_days}일 × {daily_rate:,}원" if ticket_type == "기간권" else f"{used_days}일 × {noble_rate:,}원 (노블레스석 1일 요금)" if ticket_type == "노블레스석" else f"{hours_used}시간 × {hourly_rate:,}원"
         
-        # 위약금 계산
+        # 위약금 계산 (결제금액 기준)
         penalty_rate_value = int(penalty_rate.strip("%")) / 100  # 위약금 비율 (10% → 0.1)
-        penalty_amount = refund_amount * penalty_rate_value  # 위약금 금액
-        final_refund_amount = refund_amount - penalty_amount  # 최종 환불 금액
+        penalty_amount = ticket_price * penalty_rate_value  # 위약금 금액 (결제금액 기준)
+        final_refund_amount = max(refund_amount - penalty_amount, 0)  # 최종 환불 금액 (음수 방지)
         
         # 환불 내역서 구성
         refund_detail = f"""
@@ -243,7 +257,7 @@ def refund_calculator_page():
         ■ 발급일 : {datetime.now().strftime('%Y-%m-%d %H:%M')}
         ---------------------------------------------
         [구 매 정 보]
-        - 이용권 종류 : {ticket_type} ({days_given}일)" if ticket_type != "시간권" else f"{ticket_type} ({total_hours}시간)
+        - 이용권 종류 : {formatted_ticket_type}
         - 결 제 일 자 : {purchase_date.strftime('%Y-%m-%d')}
         - 결제 금액 : {ticket_price:,}원
         - 유효 기간 : {valid_period}
@@ -264,6 +278,10 @@ def refund_calculator_page():
         # 환불 내역서 출력
         st.text_area("📄 환불 내역서 (Ctrl+C로 복사 가능)", refund_detail.strip(), height=400)
         st.download_button("📥 환불 내역서 다운로드", refund_detail.strip(), file_name="refund_details.txt")
+
+# Streamlit 앱 실행
+if __name__ == "__main__":
+    refund_calculator_page()
 
   
 if __name__ == "__main__":
