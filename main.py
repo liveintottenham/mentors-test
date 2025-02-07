@@ -8,6 +8,11 @@ def check_password():
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
     
+    if st.session_state.authenticated:
+        return True  # 이미 인증되었으면 바로 통과
+    if "authenticated" not in st.session_state:
+        st.session_state.authenticated = False
+    
     st.markdown("## 🔐 접근 제한")
     password = st.text_input("비밀번호를 입력하세요", type="password", key="login_password")
     if st.button("로그인"):
@@ -21,6 +26,7 @@ def check_password():
 
 def main():
     if not check_password():
+        st.stop() # 인증되지 않으면 이후 코드 실행 안됨
         return  # 인증되지 않으면 실행 안 됨
     
     st.sidebar.markdown(
