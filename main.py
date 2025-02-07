@@ -117,7 +117,7 @@ def home_page():
 
 def locker_masterkey_page():
     st.title("🛠️ 사물함 마스터키 안내")
-    st.subheader("사물함의 마스터키를 한눈에 볼 수 있어요.")
+    st.write("사물함의 마스터키를 한눈에 볼 수 있어요.")
     locker_number = st.text_input("사물함 번호를 입력하세요", key="locker_number", on_change=lambda: st.session_state.update({'locker_submit': True}))
     locker_password = st.text_input("사물함 비밀번호 입력", type="password", key="locker_password", on_change=lambda: st.session_state.update({'locker_submit': True}))
     
