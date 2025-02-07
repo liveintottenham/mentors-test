@@ -12,11 +12,24 @@ def main():
             font-weight: bold;
             text-align: center;
             color: #ffffff;
+            margin-bottom: 20px;
         }
-        .sidebar-menu {
+        .sidebar-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
             font-size: 18px;
-            color: #ffffff;
             text-align: center;
+            border: none;
+            border-radius: 5px;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .sidebar-button:hover {
+            background-color: #2980b9;
         }
         .stSidebar { background-color: #2c3e50 !important; }
         </style>
@@ -25,15 +38,26 @@ def main():
     )
     
     st.sidebar.markdown('<p class="sidebar-title">📌 메뉴</p>', unsafe_allow_html=True)
-    page = st.sidebar.radio("이동할 페이지 선택", ["🏠 홈", "🔑 사물함 마스터키", "🔄 퇴실 미처리 복구", "💰 이용권 환불 계산"])
     
-    if page == "🏠 홈":
+    if st.sidebar.button("🏠 홈", key="home"):
+        st.session_state.page = "home"
+    if st.sidebar.button("🔑 사물함 마스터키", key="locker"):
+        st.session_state.page = "locker"
+    if st.sidebar.button("🔄 퇴실 미처리 복구", key="restore"):
+        st.session_state.page = "restore"
+    if st.sidebar.button("💰 이용권 환불 계산", key="refund"):
+        st.session_state.page = "refund"
+    
+    if "page" not in st.session_state:
+        st.session_state.page = "home"
+    
+    if st.session_state.page == "home":
         home_page()
-    elif page == "🔑 사물함 마스터키":
+    elif st.session_state.page == "locker":
         locker_masterkey_page()
-    elif page == "🔄 퇴실 미처리 복구":
+    elif st.session_state.page == "restore":
         restore_checkout_page()
-    elif page == "💰 이용권 환불 계산":
+    elif st.session_state.page == "refund":
         refund_calculator_page()
 
 def home_page():
@@ -41,11 +65,9 @@ def home_page():
         """
         <style>
         .stApp { background-color: #f5f7fa; }
-        .title-text { text-align: center; font-size: 40px; font-weight: bold; color: #2c3e50; }
-        .sub-title { text-align: center; font-size: 20px; color: #7f8c8d; }
+        .title-text { text-align: center; font-size: 40px; font-weight: bold; color: white; background-color: #2c3e50; padding: 15px; border-radius: 10px; }
+        .sub-title { text-align: center; font-size: 20px; color: #ffffff; background-color: #34495e; padding: 10px; border-radius: 10px; }
         .section-header { font-size: 24px; font-weight: bold; color: #2980b9; text-align: center; }
-        .button-container { display: flex; justify-content: center; gap: 20px; margin-top: 20px; }
-        .button-container button { width: 300px; height: 70px; font-size: 20px; }
         </style>
         """,
         unsafe_allow_html=True
