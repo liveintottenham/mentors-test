@@ -176,7 +176,6 @@ def restore_checkout_page():
             st.error("❌ 올바른 날짜 및 시간 형식을 입력하세요!")
 
 
-
 def refund_calculator_page():
     st.title("💰 이용권 환불 계산")
     
@@ -188,8 +187,8 @@ def refund_calculator_page():
     
     # 결제 및 환불 정보 입력 (날짜는 기본값으로 오늘 날짜 설정)
     ticket_price = st.number_input("결제 금액 (원)", min_value=0)
-    purchase_date = st.date_input("결제일", value=datetime.today())
-    refund_date = st.date_input("환불 요청일", value=datetime.today())
+    purchase_date = st.date_input("결제일", value=datetime.now(pytz.timezone('Asia/Seoul')).date())
+    refund_date = st.date_input("환불 요청일", value=datetime.now(pytz.timezone('Asia/Seoul')).date())
     
     # 위약금 선택 (0%, 10%, 20%)
     penalty_rate = st.selectbox("위약금 선택", ["0%", "10%", "20%"], index=0)
@@ -224,7 +223,7 @@ def refund_calculator_page():
     formatted_ticket_type = f"{ticket_type} ({days_given}일)" if ticket_type != "시간권" else f"{ticket_type} ({total_hours}시간)"
     
     # 환불 금액 계산 (엔터 키로도 실행 가능)
-    if st.button("환불 금액 계산") :  # 항상 계산 실행
+    if st.button("환불 금액 계산"):  # 항상 계산 실행
         used_days = (refund_date - purchase_date).days + 1
         daily_rate = 11000
         hourly_rate = 2000
@@ -269,13 +268,17 @@ def refund_calculator_page():
         penalty_amount = ticket_price * penalty_rate_value  # 위약금 금액 (결제금액 기준)
         final_refund_amount = max(refund_amount - penalty_amount, 0)  # 최종 환불 금액 (음수 방지)
         
+        # 한국 시간대 (KST)로 현재 시간 설정
+        kst = pytz.timezone('Asia/Seoul')
+        current_time_kst = datetime.now(kst).strftime('%Y-%m-%d %H:%M')
+        
         # 환불 내역서 구성
         refund_detail = f"""
         [멘토즈 스터디카페 환불 내역서]
         =============================================
         ■ 지   점 : {branch}
         ■ 연락처 : {phone}
-        ■ 발급일 : {datetime.now().strftime('%Y-%m-%d %H:%M')}
+        ■ 발급일 : {current_time_kst}
         ---------------------------------------------
         [구 매 정 보]
         - 이용권 종류 : {formatted_ticket_type}
