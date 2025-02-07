@@ -1,8 +1,26 @@
 import streamlit as st
 from datetime import datetime, timedelta
 
+def check_password():
+    if "authenticated" not in st.session_state:
+        st.session_state.authenticated = False
+    
+    st.markdown("## 🔐 접근 제한")
+    password = st.text_input("비밀번호를 입력하세요", type="password")
+    if st.button("로그인"):
+        if password == "1234":  # ✅ 여기에 원하는 비밀번호 설정
+            st.session_state.authenticated = True
+            st.experimental_rerun()
+        else:
+            st.error("❌ 비밀번호가 틀렸습니다!")
+    
+    return st.session_state.authenticated
+
 def main():
-    st.set_page_config(page_title="멘토즈 스터디카페 시스템", page_icon="📚", layout="wide", initial_sidebar_state="expanded")
+    if not check_password():
+        return  # 인증되지 않으면 실행 안 됨
+    
+    st.set_page_config(page_title="멘토즈 가맹관리부 ", page_icon="📚", layout="wide", initial_sidebar_state="expanded")
     
     st.sidebar.markdown(
         """
@@ -60,6 +78,7 @@ def main():
     elif st.session_state.page == "refund":
         refund_calculator_page()
 
+
 def home_page():
     st.markdown(
         """
@@ -73,8 +92,8 @@ def home_page():
         unsafe_allow_html=True
     )
     
-    st.markdown('<p class="title-text">멘토즈 스터디카페 시스템</p>', unsafe_allow_html=True)
-    st.markdown('<p class="sub-title">📌 편리한 스터디카페 이용을 위한 기능 제공</p>', unsafe_allow_html=True)
+    st.markdown('<p class="title-text"> 멘토즈 가맹관리부 by.min </p>', unsafe_allow_html=True)
+    st.markdown('<p class="sub-title">📌 편리한 업무를 위한 기능 제공 </p>', unsafe_allow_html=True)
     
     st.markdown("---")
 
