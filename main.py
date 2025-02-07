@@ -9,7 +9,7 @@ def check_password():
         st.session_state.authenticated = False
     
     st.markdown("## 🔐 접근 제한")
-    password = st.text_input("비밀번호를 입력하세요", type="password")
+    password = st.text_input("비밀번호를 입력하세요", type="password", key="login_password")
     if st.button("로그인"):
         if password == "1234":  # ✅ 여기에 원하는 비밀번호 설정
             st.session_state.authenticated = True
@@ -104,7 +104,7 @@ def home_page():
 def locker_masterkey_page():
     st.subheader("🔑 사물함 마스터키 안내")
     locker_number = st.text_input("사물함 번호를 입력하세요")
-    locker_password = st.text_input("비밀번호를 입력하세요", type="password")
+    locker_password = st.text_input("사물함 비밀번호 입력", type="password", key="locker_password")
     
     if st.button("마스터키 안내 보기"):
         if not locker_number or not locker_password:
