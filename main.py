@@ -112,7 +112,7 @@ def locker_masterkey_page():
     locker_number = st.text_input("사물함 번호를 입력하세요", key="locker_number", on_change=lambda: st.session_state.update({'locker_submit': True}))
     locker_password = st.text_input("사물함 비밀번호 입력", type="password", key="locker_password", on_change=lambda: st.session_state.update({'locker_submit': True}))
     
-    if st.session_state.get('locker_submit', False) or st.button("마스터키 안내 보기"):
+    if (st.session_state.get('locker_submit', False) and locker_number and locker_password) or st.button("마스터키 안내 보기"):
         if not locker_number or not locker_password:
             st.error("❌ 사물함 번호와 비밀번호를 입력하세요!")
         else:
@@ -203,7 +203,7 @@ def refund_calculator_page():
     formatted_ticket_type = f"{ticket_type} ({days_given}일)" if ticket_type != "시간권" else f"{ticket_type} ({total_hours}시간)"
     
     # 환불 금액 계산 (엔터 키로도 실행 가능)
-    if st.button("환불 금액 계산") or True:  # 항상 계산 실행
+    if st.button("환불 금액 계산") :  # 항상 계산 실행
         used_days = (refund_date - purchase_date).days + 1
         daily_rate = 11000
         hourly_rate = 2000
