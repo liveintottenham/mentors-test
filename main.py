@@ -1,5 +1,13 @@
 import streamlit as st
 from datetime import datetime, timedelta
+import pytz
+
+# 한국 시간(KST)으로 변환
+kst = pytz.timezone('Asia/Seoul')
+now = datetime.now(kst)
+
+# 시간 형식으로 출력
+st.write(now.strftime('%Y-%m-%d %H:%M'))
 
 # ✅ 가장 첫 줄에서 페이지 설정 적용
 st.set_page_config(page_title="멘토즈 가맹관리부 시스템", page_icon="📚", layout="wide", initial_sidebar_state="expanded")
