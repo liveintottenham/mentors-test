@@ -143,6 +143,10 @@ def locker_masterkey_page():
 import pytz
 from datetime import datetime
 
+import streamlit as st
+from datetime import datetime
+import pytz
+
 def restore_checkout_page():
     st.title("🛠️ 퇴실 미처리 복구")
     checkout_date = st.text_input("퇴실 일자 (YYYYMMDD)")
@@ -151,7 +155,10 @@ def restore_checkout_page():
     kst = pytz.timezone('Asia/Seoul')
     now = datetime.now(kst)  # 현재 시간을 한국 시간대로 가져오기
 
-    if st.button("미처리 시간 계산"):
+    with st.form(key="checkout_form"):
+        submit_button = st.form_submit_button("미처리 시간 계산")
+
+    if submit_button:
         try:
             # 사용자가 입력한 퇴실 날짜와 시간 문자열을 datetime 객체로 변환
             checkout_datetime = datetime.strptime(f"{checkout_date} {checkout_time}", "%Y%m%d %H%M")
