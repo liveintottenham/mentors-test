@@ -70,22 +70,27 @@ def locker_masterkey_page():
             st.text_area("📌 마스터키 안내", info_text, height=250)
 
 def restore_checkout_page():
-    st.subheader("🔄 퇴실 미처리 복구")
-    user_id = st.text_input("사용자 ID (전화번호)")
-    visit_date = st.date_input("방문 날짜")
+    st.title("🛠️ 퇴실 미처리 복구")
+    checkout_date = st.text_input("퇴실 일자 (YYYYMMDD)")
+    checkout_time = st.text_input("퇴실 시간 (HHMM)")
     
-    if st.button("복구 요청하기"):
-        if not user_id:
-            st.error("❌ 사용자 ID를 입력하세요!")
-        else:
-            restore_info = (
-                f"✅ 퇴실 미처리 복구 요청 완료!\n\n"
-                f"👤 사용자 ID: {user_id}\n"
-                f"📅 방문 날짜: {visit_date.strftime('%Y-%m-%d')}\n\n"
-                "⚠️ 복구 요청이 접수되었습니다.\n"
-                "운영진 확인 후 24시간 이내에 처리됩니다."
-            )
-            st.text_area("📌 복구 요청 내역", restore_info, height=200)
+    if st.button("미처리 시간 계산"):
+        try:
+            checkout_datetime = datetime.strptime(f"{checkout_date} {checkout_time}", "%Y%m%d %H%M")
+            now = datetime.now()
+            if checkout_datetime > now:
+                st.error("❌ 퇴실 시간이 미래일 수 없습니다!")
+                return
+            lost_time = now - checkout_datetime
+            lost_minutes = int(lost_time.total_seconds() // 60)
+            lost_hours = lost_minutes // 60
+            remaining_minutes = lost_minutes % 60
+            extra_fee = (lost_minutes // 30) * 1000
+            st.success(f"📅 미처리 기간: {checkout_datetime.strftime('%Y-%m-%d %H:%M')} ~ {now.strftime('%Y-%m-%d %H:%M')}")
+            st.success(f"⏳ 미처리 시간: {lost_hours}시간 {remaining_minutes}분")
+            st.success(f"💰 초과 요금: {extra_fee:,}원 (30분당 1,000원)")
+        except ValueError:
+            st.error("❌ 올바른 날짜 및 시간 형식을 입력하세요!")
 
 def refund_calculator_page():
     st.title("💰 이용권 환불 계산")
@@ -102,6 +107,7 @@ def refund_calculator_page():
     weeks_given = st.number_input("유효 기간 (주) (시간권)", min_value=1) if ticket_type == "시간권" else None
     hours_used = st.number_input("사용한 시간 (시간권)", min_value=0) if ticket_type == "시간권" else None
     total_hours = st.number_input("총 이용 가능 시간 (시간권)", min_value=1) if ticket_type == "시간권" else None
+    noble_rate = st.number_input("노블레스석 1일 요금 (원)", min_value=0) if ticket_type == "노블레스석" else None
     
     formatted_ticket_type = f"{ticket_type} ({days_given}일)" if ticket_type != "시간권" else f"{ticket_type} ({total_hours}시간)"
     
@@ -117,39 +123,33 @@ def refund_calculator_page():
         used_amount = 0
         
         if policy == "% 규정":
-            percent_used = (used_days / days_given) * 100 if ticket_type == "기간권" else (hours_used / total_hours) * 100
+            percent_used = (used_days / days_given) * 100 if ticket_type in ["기간권", "노블레스석"] else (hours_used / total_hours) * 100
             
             if percent_used <= 25:
                 refund_amount = ticket_price * 0.5
                 deduction_amount = ticket_price * 0.5
-                deduction_detail = f"{deduction_amount:,.0f}원 (결제금액의 50%)"
+                deduction_detail = f"0~25% 환불 구간 : 결제금액의 50% 환불 ({deduction_amount:,.0f}원)"
             elif percent_used <= 50:
                 refund_amount = ticket_price * 0.25
                 deduction_amount = ticket_price * 0.75
-                deduction_detail = f"{deduction_amount:,.0f}원 (결제금액의 75%)"
+                deduction_detail = f"26~50% 환불 구간 : 결제금액의 25% 환불 ({deduction_amount:,.0f}원)"
             else:
                 refund_amount = 0
                 deduction_amount = ticket_price
-                deduction_detail = f"{deduction_amount:,.0f}원 (환불 불가)"
+                deduction_detail = f"50% 초과 사용 구간 : 환불 불가 ({deduction_amount:,.0f}원)"
             
             usage_info = f"{percent_used:.1f}% 사용"
             used_amount = deduction_amount
         else:
             if ticket_type == "기간권":
                 used_amount = used_days * daily_rate
-                refund_amount = max(ticket_price - used_amount, 0)
-                usage_info = f"{used_days}일 사용"
-                deduction_detail = f"{used_days}일 × {daily_rate:,}원"
+            elif ticket_type == "노블레스석":
+                used_amount = used_days * noble_rate
             elif ticket_type == "시간권":
                 used_amount = hours_used * hourly_rate
-                refund_amount = max(ticket_price - used_amount, 0)
-                usage_info = f"{hours_used}시간 사용"
-                deduction_detail = f"{hours_used}시간 × {hourly_rate:,}원"
-            else:
-                used_amount = daily_rate + (used_days * daily_rate)
-                refund_amount = max(ticket_price - used_amount, 0)
-                usage_info = f"{used_days}일 사용"
-                deduction_detail = f"{used_days}일 × {daily_rate:,}원 + 1일 요금"
+            refund_amount = max(ticket_price - used_amount, 0)
+            usage_info = f"{used_days}일 사용" if ticket_type in ["기간권", "노블레스석"] else f"{hours_used}시간 사용"
+            deduction_detail = f"{used_days}일 × {daily_rate:,}원" if ticket_type == "기간권" else f"{used_days}일 × {noble_rate:,}원 (노블레스석 1일 요금)" if ticket_type == "노블레스석" else f"{hours_used}시간 × {hourly_rate:,}원"
         
         refund_detail = f"""
         [멘토즈 스터디카페 환불 내역서]
@@ -174,10 +174,10 @@ def refund_calculator_page():
         - 본 내역서는 발급일 기준으로 유효합니다.
         - 환불 처리에는 최대 3~5영업일이 소요될 수 있습니다.
         """
-
+        
         st.text_area("📄 환불 내역서 (Ctrl+C로 복사 가능)", refund_detail.strip(), height=350)
         st.download_button("📥 환불 내역서 다운로드", refund_detail.strip(), file_name="refund_details.txt")
-        
+
   
     
 if __name__ == "__main__":
