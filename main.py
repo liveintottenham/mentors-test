@@ -10,7 +10,7 @@ kst = pytz.timezone('Asia/Seoul')
 now = datetime.now(kst)
 
 # 시간 형식으로 출력
-st.write(now.strftime('%Y-%m-%d %H:%M'))
+st.write(f'{now.strftime('%Y-%m-%d %H:%M')} [user]로그인 중')
 
 def check_password():
     if "authenticated" not in st.session_state:
