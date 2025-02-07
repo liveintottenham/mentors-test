@@ -1,6 +1,9 @@
 import streamlit as st
 from datetime import datetime, timedelta
 
+# ✅ 가장 첫 줄에서 페이지 설정 적용
+st.set_page_config(page_title="멘토즈 가맹관리부 시스템", page_icon="📚", layout="wide", initial_sidebar_state="expanded")
+
 def check_password():
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
@@ -19,8 +22,6 @@ def check_password():
 def main():
     if not check_password():
         return  # 인증되지 않으면 실행 안 됨
-    
-    st.set_page_config(page_title="멘토즈 가맹관리부 ", page_icon="📚", layout="wide", initial_sidebar_state="expanded")
     
     st.sidebar.markdown(
         """
