@@ -203,7 +203,7 @@ def refund_calculator_page():
     formatted_ticket_type = f"{ticket_type} ({days_given}일)" if ticket_type != "시간권" else f"{ticket_type} ({total_hours}시간)"
     
     # 환불 금액 계산 (엔터 키로도 실행 가능)
-    if st.button("환불 금액 계산")
+    if st.button("환불 금액 계산"):
         used_days = (refund_date - purchase_date).days + 1
         daily_rate = 11000
         hourly_rate = 2000
