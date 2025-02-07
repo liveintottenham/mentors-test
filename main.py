@@ -4,36 +4,57 @@ from datetime import datetime, timedelta
 def main():
     st.set_page_config(page_title="멘토즈 스터디카페 시스템", page_icon="📚", layout="wide", initial_sidebar_state="expanded")
     
-    st.sidebar.title("📌 메뉴")
-    page = st.sidebar.radio("이동할 페이지 선택", ["홈", "사물함 마스터키", "퇴실 미처리 복구", "이용권 환불 계산"])
+    st.sidebar.markdown(
+        """
+        <style>
+        .sidebar-title {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            color: #ffffff;
+        }
+        .sidebar-menu {
+            font-size: 18px;
+            color: #ffffff;
+            text-align: center;
+        }
+        .stSidebar { background-color: #2c3e50 !important; }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
     
-    if page == "홈":
+    st.sidebar.markdown('<p class="sidebar-title">📌 메뉴</p>', unsafe_allow_html=True)
+    page = st.sidebar.radio("이동할 페이지 선택", ["🏠 홈", "🔑 사물함 마스터키", "🔄 퇴실 미처리 복구", "💰 이용권 환불 계산"])
+    
+    if page == "🏠 홈":
         home_page()
-    elif page == "사물함 마스터키":
+    elif page == "🔑 사물함 마스터키":
         locker_masterkey_page()
-    elif page == "퇴실 미처리 복구":
+    elif page == "🔄 퇴실 미처리 복구":
         restore_checkout_page()
-    elif page == "이용권 환불 계산":
+    elif page == "💰 이용권 환불 계산":
         refund_calculator_page()
-    
+
 def home_page():
     st.markdown(
         """
         <style>
         .stApp { background-color: #f5f7fa; }
-        .title-text { text-align: center; font-size: 32px; font-weight: bold; color: #2c3e50; }
-        .sub-title { text-align: center; font-size: 18px; color: #7f8c8d; }
-        .section-header { font-size: 24px; font-weight: bold; color: #2980b9; }
-        .button-container { display: flex; justify-content: center; gap: 20px; }
-        .button-container button { width: 250px; height: 60px; font-size: 18px; }
+        .title-text { text-align: center; font-size: 40px; font-weight: bold; color: #2c3e50; }
+        .sub-title { text-align: center; font-size: 20px; color: #7f8c8d; }
+        .section-header { font-size: 24px; font-weight: bold; color: #2980b9; text-align: center; }
+        .button-container { display: flex; justify-content: center; gap: 20px; margin-top: 20px; }
+        .button-container button { width: 300px; height: 70px; font-size: 20px; }
         </style>
         """,
         unsafe_allow_html=True
     )
     
     st.markdown('<p class="title-text">멘토즈 스터디카페 시스템</p>', unsafe_allow_html=True)
-    st.markdown('<p class="sub-title">사물함 마스터키 안내 · 퇴실 미처리 복구 · 환불 계산</p>', unsafe_allow_html=True)
+    st.markdown('<p class="sub-title">📌 편리한 스터디카페 이용을 위한 기능 제공</p>', unsafe_allow_html=True)
     
+    st.markdown("---")
 
 def locker_masterkey_page():
     st.subheader("🔑 사물함 마스터키 안내")
