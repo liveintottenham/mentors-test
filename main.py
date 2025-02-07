@@ -2,8 +2,21 @@ import streamlit as st
 from datetime import datetime, timedelta
 
 def main():
-    st.set_page_config(page_title="멘토즈 스터디카페 시스템", page_icon="📚", layout="wide", initial_sidebar_state="collapsed")
+    st.set_page_config(page_title="멘토즈 스터디카페 시스템", page_icon="📚", layout="wide", initial_sidebar_state="expanded")
     
+    st.sidebar.title("📌 메뉴")
+    page = st.sidebar.radio("이동할 페이지 선택", ["홈", "사물함 마스터키", "퇴실 미처리 복구", "이용권 환불 계산"])
+    
+    if page == "홈":
+        home_page()
+    elif page == "사물함 마스터키":
+        locker_masterkey_page()
+    elif page == "퇴실 미처리 복구":
+        restore_checkout_page()
+    elif page == "이용권 환불 계산":
+        refund_calculator_page()
+    
+def home_page():
     st.markdown(
         """
         <style>
@@ -21,28 +34,6 @@ def main():
     st.markdown('<p class="title-text">멘토즈 스터디카페 시스템</p>', unsafe_allow_html=True)
     st.markdown('<p class="sub-title">사물함 마스터키 안내 · 퇴실 미처리 복구 · 환불 계산</p>', unsafe_allow_html=True)
     
-    st.markdown("---")
-    
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        if st.button("🔑 사물함 마스터키 안내"):
-            st.session_state.page = "locker"
-    with col2:
-        if st.button("🔄 퇴실 미처리 복구"):
-            st.session_state.page = "restore"
-    with col3:
-        if st.button("💰 이용권 환불 계산"):
-            st.session_state.page = "refund"
-    
-    if "page" not in st.session_state:
-        st.session_state.page = "home"
-    
-    if st.session_state.page == "locker":
-        locker_masterkey_page()
-    elif st.session_state.page == "restore":
-        restore_checkout_page()
-    elif st.session_state.page == "refund":
-        refund_calculator_page()
 
 def locker_masterkey_page():
     st.subheader("🔑 사물함 마스터키 안내")
@@ -103,10 +94,10 @@ def refund_calculator_page():
     purchase_date = st.date_input("결제일")
     refund_date = st.date_input("환불 요청일")
     
-    days_given = st.number_input("부여된 일수 (기간권/노블레스석)", min_value=1) if ticket_type in ["기간권", "노블레스석"] else None
-    weeks_given = st.number_input("유효 기간 (주) (시간권)", min_value=1) if ticket_type == "시간권" else None
-    hours_used = st.number_input("사용한 시간 (시간권)", min_value=0) if ticket_type == "시간권" else None
-    total_hours = st.number_input("총 이용 가능 시간 (시간권)", min_value=1) if ticket_type == "시간권" else None
+    days_given = st.number_input("전체 부여 기간 [일] (기간권/노블레스석)", min_value=1) if ticket_type in ["기간권", "노블레스석"] else None
+    weeks_given = st.number_input("유효 기간 [주] (시간권)", min_value=1) if ticket_type == "시간권" else None
+    hours_used = st.number_input("사용 시간 (시간권)", min_value=0) if ticket_type == "시간권" else None
+    total_hours = st.number_input("전체 부여 시간 (시간권)", min_value=1) if ticket_type == "시간권" else None
     noble_rate = st.number_input("노블레스석 1일 요금 (원)", min_value=0) if ticket_type == "노블레스석" else None
     
     formatted_ticket_type = f"{ticket_type} ({days_given}일)" if ticket_type != "시간권" else f"{ticket_type} ({total_hours}시간)"
