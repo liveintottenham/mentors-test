@@ -237,18 +237,18 @@ def refund_calculator_page():
         if policy == "% 규정":
             percent_used = (used_days / days_given) * 100 if ticket_type in ["기간권", "노블레스석"] else (hours_used / total_hours) * 100
             
-            if percent_used <= 25:
+            if percent_used < 25:
                 refund_amount = ticket_price * 0.5
                 deduction_amount = ticket_price * 0.5
-                deduction_detail = f"0~25% 환불 구간 : 결제금액의 50% 환불 ({deduction_amount:,.0f}원)"
+                deduction_detail = f"0~24% 환불 구간 : 결제금액의 50% 환불 ({deduction_amount:,.0f}원)"
             elif percent_used < 50:
                 refund_amount = ticket_price * 0.25
                 deduction_amount = ticket_price * 0.75
-                deduction_detail = f"26~50% 환불 구간 : 결제금액의 25% 환불 ({deduction_amount:,.0f}원)"
+                deduction_detail = f"25~50% 환불 구간 : 결제금액의 25% 환불 ({deduction_amount:,.0f}원)"
             else:
                 refund_amount = 0
                 deduction_amount = ticket_price
-                deduction_detail = f"50% 초과 사용 구간 : 환불 불가 ({deduction_amount:,.0f}원)"
+                deduction_detail = f"50% 이상 사용 구간 : 환불 불가 ({deduction_amount:,.0f}원)"
             
             usage_info = f"{percent_used:.1f}% 사용"
             used_amount = deduction_amount
