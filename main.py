@@ -10,7 +10,7 @@ def check_password():
     if st.button("로그인"):
         if password == "1234":  # ✅ 여기에 원하는 비밀번호 설정
             st.session_state.authenticated = True
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("❌ 비밀번호가 틀렸습니다!")
     
@@ -26,11 +26,14 @@ def main():
         """
         <style>
         .sidebar-title {
-            font-size: 24px;
+            font-size: 32px;
             font-weight: bold;
             text-align: center;
             color: #ffffff;
             margin-bottom: 20px;
+            padding: 15px;
+            background-color: #34495e;
+            border-radius: 10px;
         }
         .sidebar-button {
             display: block;
