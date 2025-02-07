@@ -241,7 +241,7 @@ def refund_calculator_page():
                 refund_amount = ticket_price * 0.5
                 deduction_amount = ticket_price * 0.5
                 deduction_detail = f"0~25% 환불 구간 : 결제금액의 50% 환불 ({deduction_amount:,.0f}원)"
-            elif percent_used <= 50:
+            elif percent_used < 50:
                 refund_amount = ticket_price * 0.25
                 deduction_amount = ticket_price * 0.75
                 deduction_detail = f"26~50% 환불 구간 : 결제금액의 25% 환불 ({deduction_amount:,.0f}원)"
