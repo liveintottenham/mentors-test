@@ -278,11 +278,6 @@ def refund_calculator_page():
         # 환불 내역서 출력
         st.text_area("📄 환불 내역서 (Ctrl+C로 복사 가능)", refund_detail.strip(), height=400)
         st.download_button("📥 환불 내역서 다운로드", refund_detail.strip(), file_name="refund_details.txt")
-
-# Streamlit 앱 실행
-if __name__ == "__main__":
-    refund_calculator_page()
-
   
 if __name__ == "__main__":
     main()
