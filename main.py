@@ -153,31 +153,35 @@ def restore_checkout_page():
     with st.form(key="checkout_form"):
         # 폼 제출 버튼
         submit_button = st.form_submit_button("미처리 시간 계산")
-        
+
     # 버튼 클릭 또는 엔터 키 입력 시 계산 실행
-    if submit_button:
-        try:
-            # 사용자가 입력한 퇴실 날짜와 시간 문자열을 datetime 객체로 변환
-            checkout_datetime = datetime.strptime(f"{checkout_date} {checkout_time}", "%Y%m%d %H%M")
-            checkout_datetime = kst.localize(checkout_datetime)  # 입력된 날짜와 시간을 한국 시간대에 맞게 변환
+    if submit_button:  # submit_button 클릭 또는 엔터가 눌리면
+        if checkout_date and checkout_time:  # 값이 입력되었을 때만 실행
+            try:
+                # 사용자가 입력한 퇴실 날짜와 시간 문자열을 datetime 객체로 변환
+                checkout_datetime = datetime.strptime(f"{checkout_date} {checkout_time}", "%Y%m%d %H%M")
+                checkout_datetime = kst.localize(checkout_datetime)  # 입력된 날짜와 시간을 한국 시간대에 맞게 변환
 
-            if checkout_datetime > now:
-                st.error("❌ 퇴실 시간이 미래일 수 없습니다!")
-                return
+                if checkout_datetime > now:
+                    st.error("❌ 퇴실 시간이 미래일 수 없습니다!")
+                    return
 
-            # 시간 차 계산
-            lost_time = now - checkout_datetime
-            lost_minutes = int(lost_time.total_seconds() // 60)
-            lost_hours = lost_minutes // 60
-            remaining_minutes = lost_minutes % 60
-            extra_fee = (lost_minutes // 30) * 1000  # 30분당 1000원 초과 요금 계산
+                # 시간 차 계산
+                lost_time = now - checkout_datetime
+                lost_minutes = int(lost_time.total_seconds() // 60)
+                lost_hours = lost_minutes // 60
+                remaining_minutes = lost_minutes % 60
+                extra_fee = (lost_minutes // 30) * 1000  # 30분당 1000원 초과 요금 계산
 
-            # 결과 출력
-            st.success(f"📅 미처리 기간: {checkout_datetime.strftime('%Y-%m-%d %H:%M')} ~ {now.strftime('%Y-%m-%d %H:%M')}")
-            st.success(f"⏳ 미처리 시간: {lost_hours}시간 {remaining_minutes}분")
-            st.success(f"💰 초과 요금: {extra_fee:,}원 (30분당 1,000원)")
-        except ValueError:
-            st.error("❌ 올바른 날짜 및 시간 형식을 입력하세요!")
+                # 결과 출력
+                st.success(f"📅 미처리 기간: {checkout_datetime.strftime('%Y-%m-%d %H:%M')} ~ {now.strftime('%Y-%m-%d %H:%M')}")
+                st.success(f"⏳ 미처리 시간: {lost_hours}시간 {remaining_minutes}분")
+                st.success(f"💰 초과 요금: {extra_fee:,}원 (30분당 1,000원)")
+            except ValueError:
+                st.error("❌ 올바른 날짜 및 시간 형식을 입력하세요!")
+        else:
+            st.error("❌ 퇴실 일자와 시간을 입력하세요!")
+
 
 def refund_calculator_page():
     st.title("💰 이용권 환불 계산")
