@@ -71,7 +71,12 @@ def get_real_time_data():
         client = authenticate_google_sheets()
         spreadsheet = client.open("멘토즈 지점 정보")
         sheet = spreadsheet.worksheet("시트1")
-        return pd.DataFrame(sheet.get_all_records())
+        df = pd.DataFrame(sheet.get_all_records())
+        
+        # ✅ '마스터키 PWD' 열을 문자열로 강제 변환
+        df["마스터키 PWD"] = df["마스터키 PWD"].astype(str)
+        return df
+    
     except Exception as e:
         st.error(f"📊 데이터 조회 실패: {str(e)}")
         return pd.DataFrame()
@@ -147,13 +152,17 @@ def load_and_display_spreadsheet_data():
             with st.expander("📝 새 지점 정보 추가", expanded=True):
                 new_row = {}
                 for col in df.columns:
-                    # ✅ 각 열의 데이터 타입에 맞게 입력 필드 생성
-                    if df[col].dtype == "int64":
-                        new_row[col] = st.number_input(f"{col} 입력", key=f"new_{col}_{st.session_state.random_id}")
-                    elif df[col].dtype == "float64":
-                        new_row[col] = st.number_input(f"{col} 입력", key=f"new_{col}_{st.session_state.random_id}", format="%.2f")
-                    else:
+                    # ✅ '마스터키 PWD'는 문자열로만 입력받기
+                    if col == "마스터키 PWD":
                         new_row[col] = st.text_input(f"{col} 입력", key=f"new_{col}_{st.session_state.random_id}")
+                    else:
+                        # 다른 열의 데이터 타입에 맞게 처리
+                        if df[col].dtype == "int64":
+                            new_row[col] = st.number_input(f"{col} 입력", key=f"new_{col}_{st.session_state.random_id}")
+                        elif df[col].dtype == "float64":
+                            new_row[col] = st.number_input(f"{col} 입력", key=f"new_{col}_{st.session_state.random_id}", format="%.2f")
+                        else:
+                            new_row[col] = st.text_input(f"{col} 입력", key=f"new_{col}_{st.session_state.random_id}")
             
             if st.button("✅ 새 데이터 추가", key=f"add_data_{st.session_state.random_id}"):
                 try:
@@ -161,11 +170,12 @@ def load_and_display_spreadsheet_data():
                     if any(value == "" or value is None for value in new_row.values()):
                         st.error("🚨 모든 필드를 입력해야 합니다!")
                     else:
-                        # ✅ 새로운 행을 DataFrame에 추가
+                        # ✅ '마스터키 PWD'를 문자열로 강제 변환
+                        new_row["마스터키 PWD"] = str(new_row["마스터키 PWD"])
+                        
+                        # ✅ DataFrame에 새로운 행 추가
                         new_df = pd.DataFrame([new_row])
                         updated_df = pd.concat([df, new_df], ignore_index=True)
-
-                        # ✅ Google Sheets 업데이트
                         update_sheet(updated_df)
                         st.success("✅ 데이터가 성공적으로 추가되었습니다!")
                         st.rerun()
