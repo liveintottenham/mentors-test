@@ -82,7 +82,7 @@ def update_sheet(new_data):
         client = authenticate_google_sheets()
         spreadsheet = client.open("멘토즈 지점 정보")
         sheet = spreadsheet.worksheet("시트1")
-        
+
         # ✅ 헤더 포함 전체 데이터 업데이트
         sheet.clear()
         sheet.update(
@@ -124,7 +124,19 @@ def load_and_display_spreadsheet_data():
     filtered_df = df[df["지점명"].str.contains(branch_name, case=False, na=False)] if branch_name else df
 
     # ✅ Streamlit 데이터 표시 (읽기 전용)
-    st.dataframe(filtered_df, use_container_width=True)
+    st.subheader("📊 현재 데이터")
+    if st.session_state.can_edit:
+        # ✅ 수정 가능 상태에서 데이터 편집 활성화
+        edited_df = st.data_editor(
+            filtered_df, 
+            num_rows="dynamic", 
+            use_container_width=True, 
+            key=f"editor_{st.session_state.random_id}"
+        )
+        st.session_state.edited_data = edited_df.values.tolist()  # ✅ 수정된 데이터 저장
+    else:
+        # ✅ 수정 불가능한 상태에서 표가 꽉 차도록 유지
+        st.dataframe(filtered_df, use_container_width=True)
 
     # ✅ 버튼 UI (수평 배치)
     button_col1, button_col2, button_col3 = st.columns(3)
@@ -143,8 +155,10 @@ def load_and_display_spreadsheet_data():
                             st.error("🚨 모든 필드를 입력해야 합니다!")
                         else:
                             # ✅ DataFrame에 새로운 행 추가
-                            df = df.append(new_row, ignore_index=True)
-                            update_sheet(df)
+                            new_df = pd.DataFrame([new_row])
+                            updated_df = pd.concat([df, new_df], ignore_index=True)
+
+                            update_sheet(updated_df)  # ✅ Google Sheets 업데이트
                             st.success("✅ 데이터가 성공적으로 추가되었습니다!")
                             st.rerun()
                     except Exception as e:
@@ -169,16 +183,6 @@ def load_and_display_spreadsheet_data():
                     st.warning("⚠️ 수정된 데이터가 없습니다.")
             except Exception as e:
                 st.error(f"🚨 저장 실패: {e}")
-
-    # ✅ 현재 데이터 표시 (수정 가능 여부에 따라 다르게 표시)
-    st.subheader("📊 현재 데이터")
-    if st.session_state.can_edit:
-        # ✅ 수정 가능 상태에서 데이터 편집 활성화
-        edited_df = st.data_editor(df, num_rows="dynamic", use_container_width=True, key=f"editor_{st.session_state.random_id}")
-        st.session_state.edited_data = edited_df.values.tolist()  # ✅ 수정된 데이터 저장
-    else:
-        # ✅ 수정 불가능한 상태에서 표가 꽉 차도록 유지
-        st.dataframe(df, use_container_width=True)
 
     # ✅ 데이터 삭제 기능
     with st.expander("⚠️ 데이터 삭제"):
