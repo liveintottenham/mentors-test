@@ -317,7 +317,7 @@ def main():
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# ✅ 사이드바 HTML + CSS 적용
+# ✅ 사이드바 UI 구성
 st.sidebar.markdown('<div class="sidebar-container">', unsafe_allow_html=True)
 st.sidebar.markdown('<div class="sidebar-title">📌 MENU</div>', unsafe_allow_html=True)
 
@@ -330,10 +330,9 @@ menu_items = {
     "📊 멘토즈 지점 관리": "spreadsheet"
 }
 
-# ✅ 현재 선택된 메뉴 강조
+# ✅ 버튼을 눌렀을 때 `st.session_state.page`를 변경
 for label, key in menu_items.items():
-    is_active = "active" if st.session_state.page == key else ""
-    if st.sidebar.button(f"{label}", key=f"menu_{key}"):
+    if st.sidebar.button(label, key=f"menu_{key}"):
         st.session_state.page = key
         st.rerun()
 
@@ -341,24 +340,24 @@ for label, key in menu_items.items():
 st.sidebar.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
 
 # ✅ 푸터 추가
-st.sidebar.markdown(
-    '<div class="sidebar-footer">© 2024 멘토즈 가맹관리부</div>', 
-    unsafe_allow_html=True
-)
+st.sidebar.markdown('<div class="sidebar-footer">© 2024 멘토즈 가맹관리부</div>', unsafe_allow_html=True)
 
 st.sidebar.markdown('</div>', unsafe_allow_html=True)  # sidebar-container 닫기
 
-# ✅ 선택한 페이지 렌더링
-if st.session_state.page == "home":
-    st.title("🏠 홈 페이지")
-elif st.session_state.page == "locker":
-    st.title("🔑 사물함 마스터키 페이지")
-elif st.session_state.page == "restore":
-    st.title("🔄 퇴실 미처리 복구 페이지")
-elif st.session_state.page == "refund":
-    st.title("💰 이용권 환불 계산 페이지")
-elif st.session_state.page == "spreadsheet":
-    st.title("📊 멘토즈 지점 관리")
+# ✅ 선택한 페이지를 불러오는 함수
+def load_page():
+    if st.session_state.page == "home":
+        home_page()
+    elif st.session_state.page == "locker":
+        locker_masterkey_page()
+    elif st.session_state.page == "restore":
+        restore_checkout_page()
+    elif st.session_state.page == "refund":
+        refund_calculator_page()
+    elif st.session_state.page == "spreadsheet":
+        load_and_display_spreadsheet_data()
+
+
 # ✅ 홈 페이지
 def home_page():
     st.markdown(
