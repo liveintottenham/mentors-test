@@ -219,11 +219,10 @@ def load_and_display_spreadsheet_data():
 
 # ✅ Google Sheets 인증 함수 (end)
 
-# ✅ 메인 함수
 def main():
     if not check_password():
         st.stop()  # 인증되지 않으면 이후 코드 실행 안됨
-    
+
     # ✅ 세션 상태 초기화
     if "page" not in st.session_state:
         st.session_state.page = "home"
@@ -315,31 +314,11 @@ def main():
         {"icon": "📊", "label": "멘토즈 지점명/특이사항", "key": "spreadsheet"},
     ]
 
-    # ✅ HTML + JavaScript 기반의 사이드 메뉴
-    sidebar_html = '<div class="sidebar-container">'
-    
+    # ✅ 사이드바 메뉴 UI
     for item in menu_items:
-        active_class = "active" if st.session_state.page == item["key"] else ""
-        sidebar_html += f"""
-        <div class="sidebar-item {active_class}" onclick="setPage('{item['key']}')">
-            <span class="sidebar-icon">{item['icon']}</span>
-            <span>{item['label']}</span>
-        </div>
-        """
-
-    sidebar_html += '</div>'
-    
-    # ✅ JavaScript로 페이지 변경 이벤트 설정
-    sidebar_html += """
-    <script>
-        function setPage(page) {
-            window.parent.postMessage({ type: "streamlit:setComponentValue", page: page }, "*");
-        }
-    </script>
-    """
-
-    # ✅ 사이드바에 HTML 삽입
-    st.sidebar.markdown(sidebar_html, unsafe_allow_html=True)
+        if st.sidebar.button(f"{item['icon']} {item['label']}", key=f"menu_{item['key']}", use_container_width=True):
+            st.session_state.page = item['key']
+            st.rerun()  # 페이지 업데이트
 
     # ✅ 선택한 페이지 실행
     if st.session_state.page == "home":
@@ -352,7 +331,7 @@ def main():
         refund_calculator_page()
     elif st.session_state.page == "spreadsheet":
         load_and_display_spreadsheet_data()
-        
+
 # ✅ 홈 페이지
 def home_page():
     st.markdown(
