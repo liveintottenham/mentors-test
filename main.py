@@ -1,37 +1,37 @@
 import streamlit as st
 from datetime import datetime, timedelta
-import pytz, gspread, random, string, os, base64, json
+import pytz, gspread, random, string, os, json
 from google.oauth2.service_account import Credentials
 import pandas as pd
 import plotly.express as px
-from datetime import datetime
 
+# ✅ 페이지 설정
+st.set_page_config(
+    page_title="멘토즈 가맹관리부 시스템",
+    page_icon="📚",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-
-
-# ✅ 가장 첫 줄에서 페이지 설정 적용
-st.set_page_config(page_title="멘토즈 가맹관리부 시스템", page_icon="📚", layout="wide", initial_sidebar_state="expanded")
-
-# 한국 시간(KST)으로 변환
+# 한국 시간(KST) 설정
 kst = pytz.timezone('Asia/Seoul')
 now = datetime.now(kst)
 
 # 시간 형식으로 출력
 st.write(f'{now.strftime("%Y-%m-%d %H:%M")} [user]')
 
+# ✅ 비밀번호 확인 함수
 def check_password():
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
     
     if st.session_state.authenticated:
-        return True  # 이미 인증되었으면 바로 통과
-    if "authenticated" not in st.session_state:
-        st.session_state.authenticated = False
+        return True
     
     st.markdown("## 🔐 접근 제한")
-    password = st.text_input("비밀번호를 입력하세요", type="password", key="login_password", on_change=lambda: st.session_state.update({'login_pressed': True}))
-    if st.session_state.get('login_pressed', False) or st.button("로그인"):
-        if password == "1234":  # ✅ 여기에 원하는 비밀번호 설정
+    password = st.text_input("비밀번호를 입력하세요", type="password", key="login_password")
+    if st.button("로그인"):
+        if password == "1234":  # ✅ 비밀번호 설정
             st.session_state.authenticated = True
             st.rerun()
         else:
@@ -39,64 +39,62 @@ def check_password():
     
     return st.session_state.authenticated
 
-
-# Google 스프레드시트 인증 설정 (start)
-
+# ✅ Google Sheets 인증 함수
 def authenticate_google_sheets():
-    """GitHub Secrets에서 Service Account JSON을 로드하여 Google Sheets API 인증"""
-    gspread_api_key = os.getenv("GSPREAD_API_KEY")  # ✅ GitHub Secrets에서 가져오기
-
-    if not gspread_api_key:
-        raise Exception("🚨 API Key를 찾을 수 없습니다. GitHub Secrets 설정을 확인하세요.")
-
-    # ✅ Base64 디코딩 후 JSON 변환
-    decoded_json = base64.b64decode(gspread_api_key).decode()
-    credentials_info = json.loads(decoded_json)
-    credentials = Credentials.from_service_account_info(credentials_info)
-
-    # ✅ Google Sheets API 인증
-    client = gspread.authorize(credentials)
-    return client
-
-# 스프레드시트 데이터 불러오기
-def load_spreadsheet_data(client, spreadsheet_name, sheet_name):
-    spreadsheet = client.open(spreadsheet_name)
-    sheet = spreadsheet.worksheet(sheet_name)
-    data = sheet.get_all_records()
-    return data
-
-# 고유한 ID를 생성하는 함수
-def generate_random_id():
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=8))
-
-# Streamlit 세션 상태 초기화
-if "random_id" not in st.session_state:
-    st.session_state.random_id = generate_random_id()
-
-if "can_edit" not in st.session_state:
-    st.session_state.can_edit = False
-
-if "edited_data" not in st.session_state:
-    st.session_state.edited_data = None
-
-# ✅ Google Sheets API 인증 함수
-def authenticate_google_sheets():
-    gspread_api_key = os.getenv("GSPREAD_API_KEY")  # GitHub Secrets에서 가져오기
-    if not gspread_api_key:
-        raise Exception("🚨 API Key를 찾을 수 없습니다. GitHub Secrets 설정을 확인하세요.")
-
-    decoded_json = base64.b64decode(gspread_api_key).decode()
-    credentials_info = json.loads(decoded_json)
-    credentials = Credentials.from_service_account_info(credentials_info)
+    """GitHub Secrets에서 Service Account JSON을 로드"""
+    credentials_json = os.getenv("GSPREAD_API_KEY")
     
-    client = gspread.authorize(credentials)
-    return client
+    if not credentials_json:
+        raise Exception("🚨 GitHub Secrets에 GSPREAD_API_KEY가 설정되지 않았습니다.")
+    
+    try:
+        # ✅ 최신 OAuth 범위 설정
+        scope = [
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive"
+        ]
+        
+        # ✅ JSON 키 파싱 및 인증
+        credentials_info = json.loads(credentials_json)
+        credentials = Credentials.from_service_account_info(credentials_info, scopes=scope)
+        return gspread.authorize(credentials)
+    
+    except json.JSONDecodeError:
+        raise Exception("🚨 JSON 형식 오류: Secrets에 저장된 키가 유효하지 않습니다.")
+    except Exception as e:
+        raise Exception(f"🚨 인증 실패: {str(e)}")
 
-# ✅ Google Sheets에서 데이터 불러오기 함수
-def load_spreadsheet_data(client, spreadsheet_name, sheet_name):
-    spreadsheet = client.open(spreadsheet_name)
-    sheet = spreadsheet.worksheet(sheet_name)
-    return sheet.get_all_records()
+# ✅ 실시간 데이터 조회
+@st.cache_data(ttl=5, show_spinner=False)
+def get_real_time_data():
+    try:
+        client = authenticate_google_sheets()
+        spreadsheet = client.open("멘토즈 지점 정보")
+        sheet = spreadsheet.worksheet("시트1")
+        return pd.DataFrame(sheet.get_all_records())
+    except Exception as e:
+        st.error(f"📊 데이터 조회 실패: {str(e)}")
+        return pd.DataFrame()
+
+# ✅ 데이터 업데이트 함수
+def update_sheet(new_data):
+    try:
+        client = authenticate_google_sheets()
+        spreadsheet = client.open("멘토즈 지점 정보")
+        sheet = spreadsheet.worksheet("시트1")
+        
+        # ✅ 헤더 포함 전체 데이터 업데이트
+        sheet.clear()
+        sheet.update(
+            [new_data.columns.tolist()] + 
+            new_data.astype(str).values.tolist()
+        )
+        st.cache_data.clear()
+        
+    except gspread.exceptions.APIError as e:
+        st.error(f"📤 업데이트 실패: Google API 오류 ({str(e)})")
+    except Exception as e:
+        st.error(f"📤 업데이트 실패: {str(e)}")
 
 # ✅ 고유한 ID 생성 함수
 def generate_random_id():
@@ -111,23 +109,6 @@ if "can_edit" not in st.session_state:
 
 if "edited_data" not in st.session_state:
     st.session_state.edited_data = None
-
-# ✅ Google Sheets 실시간 조회 (5초마다 캐싱)
-@st.cache_data(ttl=5, show_spinner=False)
-def get_real_time_data():
-    client = authenticate_google_sheets()
-    spreadsheet = client.open("멘토즈 지점 정보")
-    sheet = spreadsheet.worksheet("시트1")
-    return pd.DataFrame(sheet.get_all_records())  # ✅ Pandas DataFrame으로 변환하여 반환
-
-# ✅ Google Sheets 업데이트 함수
-def update_sheet(new_data):
-    client = authenticate_google_sheets()
-    spreadsheet = client.open("멘토즈 지점 정보")
-    sheet = spreadsheet.worksheet("시트1")
-    sheet.clear()
-    sheet.update([new_data.columns.tolist()] + new_data.values.tolist())  # ✅ 전체 데이터 업데이트
-    st.cache_data.clear()  # ✅ 캐시 강제 초기화
 
 # ✅ Streamlit UI 시작
 def load_and_display_spreadsheet_data():
@@ -214,15 +195,10 @@ def load_and_display_spreadsheet_data():
             except Exception as e:
                 st.error(f"🚨 삭제 실패: {e}")
 
-# Google 스프레드 연동 (end)
-
-
-
-
+# ✅ 메인 함수
 def main():
     if not check_password():
-        st.stop() # 인증되지 않으면 이후 코드 실행 안됨
-        return  # 인증되지 않으면 실행 안 됨
+        st.stop()  # 인증되지 않으면 이후 코드 실행 안됨
     
     st.sidebar.markdown(
         """
@@ -273,7 +249,6 @@ def main():
     if st.sidebar.button("📊 멘토즈 지점명/특이사항", key="spreadsheet"):
         st.session_state.page = "spreadsheet"
 
-    
     # ✅ 선택한 페이지 실행
     if "page" not in st.session_state:
         st.session_state.page = "home"
@@ -289,8 +264,7 @@ def main():
     elif st.session_state.page == "spreadsheet":
         load_and_display_spreadsheet_data()
 
-
-# ✅ 메인 적용
+# ✅ 홈 페이지
 def home_page():
     st.markdown(
         """
@@ -372,16 +346,14 @@ def home_page():
                         labels={"날짜": "오픈 날짜", "오픈 개수": "오픈된 지점 수"})
     st.plotly_chart(fig_trend, use_container_width=True)
 
-
-
-
+# ✅ 사물함 마스터키 페이지
 def locker_masterkey_page():
     st.title("🛠️ 사물함 마스터키 안내")
     st.subheader("사물함의 마스터키를 한눈에 볼 수 있어요.")
-    locker_number = st.text_input("사물함 번호를 입력하세요", key="locker_number", on_change=lambda: st.session_state.update({'locker_submit': True}))
-    locker_password = st.text_input("사물함 비밀번호 입력", type="password", key="locker_password", on_change=lambda: st.session_state.update({'locker_submit': True}))
+    locker_number = st.text_input("사물함 번호를 입력하세요", key="locker_number")
+    locker_password = st.text_input("사물함 비밀번호 입력", type="password", key="locker_password")
     
-    if (st.session_state.get('locker_submit', False) and locker_number and locker_password) or st.button("마스터키 안내 보기"):
+    if st.button("마스터키 안내 보기"):
         if not locker_number or not locker_password:
             st.error("❌ 사물함 번호와 비밀번호를 입력하세요!")
         else:
