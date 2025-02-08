@@ -321,15 +321,15 @@ def main():
         {"icon": "📊", "label": "멘토즈 지점명/특이사항", "key": "spreadsheet"},
     ]
 
-    # ✅ HTML 버튼을 사용하여 메뉴 아이템 생성
+    # ✅ 버튼 클릭 이벤트 처리
     for item in menu_items:
-        button_html = f"""
-        <button class="sidebar-item {'active' if st.session_state.page == item['key'] else ''}" 
-                onclick="window.location.href='?page={item['key']}'">
-            {item['icon']} {item['label']}
-        </button>
-        """
-        st.sidebar.markdown(button_html, unsafe_allow_html=True)
+        # 버튼 클릭 시 세션 상태 업데이트
+        if st.sidebar.button(
+            f"{item['icon']} {item['label']}",
+            key=f"menu_{item['key']}",
+            use_container_width=True,
+        ):
+            st.session_state.page = item["key"]
 
     # ✅ 현재 페이지에 따라 동적으로 렌더링
     if st.session_state.page == "home":
@@ -342,7 +342,6 @@ def main():
         refund_calculator_page()
     elif st.session_state.page == "spreadsheet":
         load_and_display_spreadsheet_data()
-
 
 # ✅ 홈 페이지
 def home_page():
@@ -628,8 +627,4 @@ def refund_calculator_page():
         st.download_button("📥 환불 내역서 다운로드", refund_detail.strip(), file_name="refund_details.txt")
   
 if __name__ == "__main__":
-    # URL 파라미터에서 페이지 상태를 읽어옴
-    query_params = st.experimental_get_query_params()
-    if "page" in query_params:
-        st.session_state.page = query_params["page"][0]
     main()
