@@ -1,9 +1,6 @@
 plotly
 pytz
 gspread
-base64
-json
-gspread
 google-auth
 google-auth-oauthlib
 google-auth-httplib2
