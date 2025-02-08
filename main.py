@@ -293,7 +293,7 @@ def main():
         unsafe_allow_html=True
     )
     
-     # ✅ 사이드바 타이틀
+    # ✅ 사이드바 타이틀
     st.sidebar.markdown('<p class="sidebar-title">📌 MENU</p>', unsafe_allow_html=True)
 
     # ✅ 메뉴 아이템 정의
@@ -305,38 +305,17 @@ def main():
         {"icon": "📊", "label": "멘토즈 지점명/특이사항", "key": "spreadsheet"},
     ]
 
-    # ✅ 메뉴 아이템 렌더링 + JavaScript 이벤트 바인딩
+    # ✅ 메뉴 아이템 렌더링
     for item in menu_items:
-        st.sidebar.markdown(
-            f"""
-            <div class="sidebar-item" data-key="{item['key']}" onclick="handleMenuClick('{item['key']}')">
-                <span class="sidebar-icon">{item['icon']}</span>
-                <span>{item['label']}</span>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        if st.sidebar.button(
+            f"{item['icon']} {item['label']}",
+            key=f"menu_{item['key']}",
+            use_container_width=True,
+        ):
+            st.session_state.page = item['key']
 
-    # ✅ JavaScript 핸들러 추가
-    st.sidebar.markdown(
-        """
-        <script>
-        function handleMenuClick(key) {
-            window.location.href = window.location.href.split('?')[0] + '?page=' + key;
-        }
-        </script>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # ✅ URL에서 페이지 파라미터 읽기
-    query_params = st.query_params
-    page = query_params.get("page", "home")
-
-    # ✅ 페이지 상태 업데이트
-    if page in ["home", "locker", "restore", "refund", "spreadsheet"]:
-        st.session_state.page = page
-    else:
+    # ✅ 페이지 상태 초기화
+    if "page" not in st.session_state:
         st.session_state.page = "home"
 
     # ✅ 선택한 페이지 실행
@@ -350,7 +329,7 @@ def main():
         refund_calculator_page()
     elif st.session_state.page == "spreadsheet":
         load_and_display_spreadsheet_data()
-
+        
 # ✅ 홈 페이지
 def home_page():
     st.markdown(
