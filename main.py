@@ -245,18 +245,12 @@ def main():
     st.sidebar.markdown(
         """
         <style>
-        .sidebar-container {
-            width: 280px;
-            height: 100vh;
-            background-color: #2c3e50;  /* 어두운 회색 배경 */
-            padding: 20px;
-            border-right: 1px solid #E0E0E0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            overflow-y: auto;
+        /* 사이드바 전체 배경색 변경 */
+        .sidebar .sidebar-content {
+            background-color: #2c3e50 !important;  /* 어두운 회색 배경 */
         }
 
+        /* 타이틀 스타일 */
         .sidebar-title {
             font-size: 28px;
             font-weight: bold;
@@ -269,6 +263,7 @@ def main():
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
+        /* 버튼 스타일 */
         .sidebar-item {
             display: flex;
             align-items: center;
@@ -297,6 +292,7 @@ def main():
             color: white !important;
         }
 
+        /* 푸터 스타일 */
         .sidebar-footer {
             text-align: center;
             font-size: 12px;
@@ -309,7 +305,6 @@ def main():
     )
 
     # ✅ 사이드바 타이틀
-    st.sidebar.markdown('<div class="sidebar-container">', unsafe_allow_html=True)
     st.sidebar.markdown('<p class="sidebar-title">⭐ SPACE MONSTER</p>', unsafe_allow_html=True)
 
     # ✅ 메뉴 아이템 리스트
