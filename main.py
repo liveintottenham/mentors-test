@@ -330,8 +330,8 @@ def main():
     )
 
     # ✅ URL에서 페이지 파라미터 읽기
-    params = st.experimental_get_query_params()
-    page = params.get("page", ["home"])[0]
+    query_params = st.query_params
+    page = query_params.get("page", "home")
 
     # ✅ 페이지 상태 업데이트
     if page in ["home", "locker", "restore", "refund", "spreadsheet"]:
