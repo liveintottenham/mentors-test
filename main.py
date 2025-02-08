@@ -293,13 +293,10 @@ def main():
         unsafe_allow_html=True
     )
     
-    # ✅ 사이드바 타이틀
-    st.sidebar.markdown(
-        '<p class="sidebar-title">📌 MENU</p>', 
-        unsafe_allow_html=True
-    )
+     # ✅ 사이드바 타이틀
+    st.sidebar.markdown('<p class="sidebar-title">📌 MENU</p>', unsafe_allow_html=True)
 
-    # ✅ 메뉴 아이템
+    # ✅ 메뉴 아이템 정의
     menu_items = [
         {"icon": "🏠", "label": "홈", "key": "home"},
         {"icon": "🔑", "label": "사물함 마스터키", "key": "locker"},
@@ -308,31 +305,41 @@ def main():
         {"icon": "📊", "label": "멘토즈 지점명/특이사항", "key": "spreadsheet"},
     ]
 
+    # ✅ 메뉴 아이템 렌더링 + JavaScript 이벤트 바인딩
     for item in menu_items:
-        if st.sidebar.markdown(
+        st.sidebar.markdown(
             f"""
-            <div class="sidebar-item" onclick="window.location.href='?page={item['key']}'">
+            <div class="sidebar-item" data-key="{item['key']}" onclick="handleMenuClick('{item['key']}')">
                 <span class="sidebar-icon">{item['icon']}</span>
                 <span>{item['label']}</span>
             </div>
             """,
             unsafe_allow_html=True
-        ):
-            st.session_state.page = item['key']
+        )
 
-    # ✅ 구분선 추가
-    st.sidebar.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
-
-    # ✅ 푸터 추가
+    # ✅ JavaScript 핸들러 추가
     st.sidebar.markdown(
-        '<div class="sidebar-footer">© 2024 멘토즈 가맹관리부</div>', 
+        """
+        <script>
+        function handleMenuClick(key) {
+            window.location.href = window.location.href.split('?')[0] + '?page=' + key;
+        }
+        </script>
+        """,
         unsafe_allow_html=True
     )
 
-    # ✅ 선택한 페이지 실행
-    if "page" not in st.session_state:
+    # ✅ URL에서 페이지 파라미터 읽기
+    params = st.experimental_get_query_params()
+    page = params.get("page", ["home"])[0]
+
+    # ✅ 페이지 상태 업데이트
+    if page in ["home", "locker", "restore", "refund", "spreadsheet"]:
+        st.session_state.page = page
+    else:
         st.session_state.page = "home"
-    
+
+    # ✅ 선택한 페이지 실행
     if st.session_state.page == "home":
         home_page()
     elif st.session_state.page == "locker":
