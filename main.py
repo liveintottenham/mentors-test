@@ -1,8 +1,11 @@
-import os
+import streamlit as st
 
-gspread_api_key = os.getenv("GSPREAD_API_KEY")
+st.title("🔑 GitHub Secrets 테스트")
+
+gspread_api_key = st.secrets["GSPREAD_API_KEY"]
 
 if gspread_api_key:
-    print("✅ 환경 변수 GSPREAD_API_KEY가 정상적으로 로드되었습니다.")
+    st.success("✅ GSPREAD_API_KEY가 정상적으로 로드되었습니다!")
+    st.write(f"🔍 Base64 길이: {len(gspread_api_key)}")
 else:
-    print("🚨 환경 변수 GSPREAD_API_KEY를 찾을 수 없습니다. GitHub Secrets 설정을 확인하세요.")
+    st.error("🚨 GitHub Secrets에 GSPREAD_API_KEY가 설정되지 않았습니다.")
