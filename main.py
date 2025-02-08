@@ -245,7 +245,6 @@ def main():
     st.sidebar.markdown(
         """
         <style>
-        /* 사이드바 전체 스타일 */
         .sidebar-container {
             width: 280px;
             height: 100vh;
@@ -258,7 +257,6 @@ def main():
             overflow-y: auto;
         }
 
-        /* 타이틀 스타일 */
         .sidebar-title {
             font-size: 28px;
             font-weight: bold;
@@ -271,7 +269,6 @@ def main():
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        /* 메뉴 아이템 스타일 */
         .sidebar-item {
             display: flex;
             align-items: center;
@@ -286,32 +283,17 @@ def main():
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        /* 메뉴 아이템 호버 효과 */
         .sidebar-item:hover {
             background-color: #2980b9;
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
-        /* 활성화된 메뉴 */
         .sidebar-item.active {
             background-color: #2ecc71 !important;
             color: white !important;
         }
 
-        /* 아이콘 스타일 */
-        .sidebar-icon {
-            margin-right: 10px;
-            font-size: 20px;
-        }
-
-        /* 구분선 스타일 */
-        .sidebar-divider {
-            border-top: 1px solid #34495e;
-            margin: 20px 0;
-        }
-
-        /* 푸터 스타일 */
         .sidebar-footer {
             text-align: center;
             font-size: 12px;
@@ -336,41 +318,12 @@ def main():
         {"icon": "📊", "label": "멘토즈 지점명/특이사항", "key": "spreadsheet"},
     ]
 
-    # ✅ HTML로 메뉴 생성 (클릭하면 Streamlit 세션 상태 변경)
-    sidebar_html = '<div class="sidebar-container">'
-    
+    # ✅ Streamlit에서 버튼을 사용하여 안정적인 페이지 변경
     for item in menu_items:
-        active_class = "active" if st.session_state.page == item["key"] else ""
-        sidebar_html += f"""
-        <div class="sidebar-item {active_class}" onclick="setPage('{item['key']}')">
-            <span class="sidebar-icon">{item['icon']}</span>
-            <span>{item['label']}</span>
-        </div>
-        """
+        if st.sidebar.button(f"{item['icon']} {item['label']}", key=f"menu_{item['key']}", use_container_width=True):
+            st.session_state.page = item["key"]
 
-    sidebar_html += '</div>'
-    
-    # ✅ JavaScript로 페이지 변경 이벤트 설정
-    sidebar_html += """
-    <script>
-        function setPage(page) {
-            // Streamlit에 세션 상태 업데이트 요청
-            const streamlitDoc = window.parent.document;
-            streamlitDoc.dispatchEvent(new CustomEvent("streamlit:setComponentValue", {
-                detail: {page: page}
-            }));
-        }
-    </script>
-    """
-
-    # ✅ 사이드바 HTML 삽입
-    st.sidebar.markdown(sidebar_html, unsafe_allow_html=True)
-
-    # ✅ Streamlit이 JavaScript에서 설정한 값을 감지하고 업데이트
-    if st.session_state.page:
-        st.rerun()  # 최신 Streamlit에서는 st.experimental_rerun() 대신 사용
-
-    # ✅ 선택한 페이지 실행
+    # ✅ 현재 페이지에 따라 동적으로 렌더링
     if st.session_state.page == "home":
         home_page()
     elif st.session_state.page == "locker":
