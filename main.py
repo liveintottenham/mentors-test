@@ -224,54 +224,110 @@ def main():
     if not check_password():
         st.stop()  # 인증되지 않으면 이후 코드 실행 안됨
     
+    # ✅ 사이드바 스타일링 (머터리얼 디자인)
     st.sidebar.markdown(
         """
         <style>
+        /* 사이드바 전체 배경색 및 폰트 설정 */
+        .stSidebar {
+            background-color: #2c3e50 !important;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        /* 타이틀 스타일 */
         .sidebar-title {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: bold;
             text-align: center;
             color: #ffffff;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             padding: 15px;
             background-color: #34495e;
             border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        .sidebar-button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            font-size: 18px;
-            text-align: center;
-            border: none;
-            border-radius: 5px;
+
+        /* 메뉴 아이템 스타일 */
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            margin: 8px 0;
+            font-size: 16px;
+            color: #ffffff;
             background-color: #3498db;
-            color: white;
+            border-radius: 8px;
+            transition: all 0.3s ease;
             cursor: pointer;
-            transition: 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .sidebar-button:hover {
+
+        /* 메뉴 아이템 호버 효과 */
+        .sidebar-item:hover {
             background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-        .stSidebar { background-color: #2c3e50 !important; }
+
+        /* 아이콘 스타일 */
+        .sidebar-icon {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+
+        /* 구분선 스타일 */
+        .sidebar-divider {
+            border-top: 1px solid #34495e;
+            margin: 20px 0;
+        }
+
+        /* 푸터 스타일 */
+        .sidebar-footer {
+            text-align: center;
+            font-size: 12px;
+            color: #bdc3c7;
+            margin-top: 30px;
+        }
         </style>
         """,
         unsafe_allow_html=True
     )
     
-    st.sidebar.markdown('<p class="sidebar-title">📌 MENU </p>', unsafe_allow_html=True)
-    
-    if st.sidebar.button("🏠 홈", key="home"):
-        st.session_state.page = "home"
-    if st.sidebar.button("🔑 사물함 마스터키", key="locker"):
-        st.session_state.page = "locker"
-    if st.sidebar.button("🔄 퇴실 미처리 복구", key="restore"):
-        st.session_state.page = "restore"
-    if st.sidebar.button("💰 이용권 환불 계산", key="refund"):
-        st.session_state.page = "refund"
-    if st.sidebar.button("📊 멘토즈 지점명/특이사항", key="spreadsheet"):
-        st.session_state.page = "spreadsheet"
+    # ✅ 사이드바 타이틀
+    st.sidebar.markdown(
+        '<p class="sidebar-title">📌 MENU</p>', 
+        unsafe_allow_html=True
+    )
+
+    # ✅ 메뉴 아이템
+    menu_items = [
+        {"icon": "🏠", "label": "홈", "key": "home"},
+        {"icon": "🔑", "label": "사물함 마스터키", "key": "locker"},
+        {"icon": "🔄", "label": "퇴실 미처리 복구", "key": "restore"},
+        {"icon": "💰", "label": "이용권 환불 계산", "key": "refund"},
+        {"icon": "📊", "label": "멘토즈 지점명/특이사항", "key": "spreadsheet"},
+    ]
+
+    for item in menu_items:
+        if st.sidebar.markdown(
+            f"""
+            <div class="sidebar-item" onclick="window.location.href='?page={item['key']}'">
+                <span class="sidebar-icon">{item['icon']}</span>
+                <span>{item['label']}</span>
+            </div>
+            """,
+            unsafe_allow_html=True
+        ):
+            st.session_state.page = item['key']
+
+    # ✅ 구분선 추가
+    st.sidebar.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
+
+    # ✅ 푸터 추가
+    st.sidebar.markdown(
+        '<div class="sidebar-footer">© 2024 멘토즈 가맹관리부</div>', 
+        unsafe_allow_html=True
+    )
 
     # ✅ 선택한 페이지 실행
     if "page" not in st.session_state:
