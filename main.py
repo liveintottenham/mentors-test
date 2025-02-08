@@ -245,48 +245,58 @@ def main():
     st.sidebar.markdown(
         """
         <style>
-        /* 전체 사이드바 스타일 */
+        /* 사이드바 전체 스타일 */
         .sidebar-container {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 12px;
-            width: 100%;
+            width: 280px;
+            height: 100vh;
+            background-color: #2c3e50;
+            padding: 20px;
+            border-right: 1px solid #E0E0E0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            overflow-y: auto;
         }
 
-        /* 메뉴 타이틀 스타일 */
+        /* 타이틀 스타일 */
         .sidebar-title {
-            font-size: 22px;
+            font-size: 28px;
             font-weight: bold;
-            color: #34495e;
             text-align: center;
-            margin-bottom: 15px;
+            color: #ffffff;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #34495e;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        /* 메뉴 버튼 스타일 */
-        .sidebar-button {
+        /* 메뉴 아이템 스타일 */
+        .sidebar-item {
             display: flex;
             align-items: center;
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            background-color: #ffffff;
-            color: #34495e;
+            padding: 12px 20px;
+            margin: 8px 0;
             font-size: 16px;
-            font-weight: 600;
+            color: #ffffff;
+            background-color: #3498db;
             border-radius: 8px;
-            transition: background 0.3s ease, color 0.3s ease;
+            transition: all 0.3s ease;
             cursor: pointer;
-            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .sidebar-button:hover {
-            background-color: #2ecc71;
-            color: white;
+        /* 메뉴 아이템 호버 효과 */
+        .sidebar-item:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
-        .sidebar-button.active {
-            background-color: #27ae60;
-            color: white;
+        /* 활성화된 메뉴 */
+        .sidebar-item.active {
+            background-color: #2ecc71 !important;
+            color: white !important;
         }
 
         /* 아이콘 스타일 */
@@ -297,55 +307,70 @@ def main():
 
         /* 구분선 스타일 */
         .sidebar-divider {
-            border-top: 1px solid #ddd;
-            margin: 15px 0;
+            border-top: 1px solid #34495e;
+            margin: 20px 0;
         }
 
         /* 푸터 스타일 */
         .sidebar-footer {
             text-align: center;
             font-size: 12px;
-            color: #95a5a6;
-            margin-top: 15px;
+            color: #bdc3c7;
+            margin-top: 30px;
         }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
-# ✅ 세션 상태 초기화
-if "page" not in st.session_state:
-    st.session_state.page = "home"
+    # ✅ 사이드바 타이틀
+    st.sidebar.markdown('<div class="sidebar-container">', unsafe_allow_html=True)
+    st.sidebar.markdown('<p class="sidebar-title">⭐ SPACE MONSTER</p>', unsafe_allow_html=True)
 
-# ✅ 사이드바 UI 구성
-st.sidebar.markdown('<div class="sidebar-container">', unsafe_allow_html=True)
-st.sidebar.markdown('<div class="sidebar-title">📌 MENU</div>', unsafe_allow_html=True)
+    # ✅ 메뉴 아이템 리스트
+    menu_items = [
+        {"icon": "🏠", "label": "홈", "key": "home"},
+        {"icon": "🔑", "label": "사물함 마스터키", "key": "locker"},
+        {"icon": "🔄", "label": "퇴실 미처리 복구", "key": "restore"},
+        {"icon": "💰", "label": "이용권 환불 계산", "key": "refund"},
+        {"icon": "📊", "label": "멘토즈 지점명/특이사항", "key": "spreadsheet"},
+    ]
 
-# ✅ 메뉴 목록
-menu_items = {
-    "🏠 홈": "home",
-    "🔑 사물함 마스터키": "locker",
-    "🔄 퇴실 미처리 복구": "restore",
-    "💰 이용권 환불 계산": "refund",
-    "📊 멘토즈 지점 관리": "spreadsheet"
-}
+    # ✅ HTML로 메뉴 생성 (클릭하면 Streamlit 세션 상태 변경)
+    sidebar_html = '<div class="sidebar-container">'
+    
+    for item in menu_items:
+        active_class = "active" if st.session_state.page == item["key"] else ""
+        sidebar_html += f"""
+        <div class="sidebar-item {active_class}" onclick="setPage('{item['key']}')">
+            <span class="sidebar-icon">{item['icon']}</span>
+            <span>{item['label']}</span>
+        </div>
+        """
 
-# ✅ 버튼을 눌렀을 때 `st.session_state.page`를 변경
-for label, key in menu_items.items():
-    if st.sidebar.button(label, key=f"menu_{key}"):
-        st.session_state.page = key
-        st.rerun()
+    sidebar_html += '</div>'
+    
+    # ✅ JavaScript로 페이지 변경 이벤트 설정
+    sidebar_html += """
+    <script>
+        function setPage(page) {
+            // Streamlit에 세션 상태 업데이트 요청
+            const streamlitDoc = window.parent.document;
+            streamlitDoc.dispatchEvent(new CustomEvent("streamlit:setComponentValue", {
+                detail: {page: page}
+            }));
+        }
+    </script>
+    """
 
-# ✅ 구분선 추가
-st.sidebar.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
+    # ✅ 사이드바 HTML 삽입
+    st.sidebar.markdown(sidebar_html, unsafe_allow_html=True)
 
-# ✅ 푸터 추가
-st.sidebar.markdown('<div class="sidebar-footer">© 2024 멘토즈 가맹관리부</div>', unsafe_allow_html=True)
+    # ✅ Streamlit이 JavaScript에서 설정한 값을 감지하고 업데이트
+    if st.session_state.page:
+        st.experimental_rerun()
 
-st.sidebar.markdown('</div>', unsafe_allow_html=True)  # sidebar-container 닫기
-
-# ✅ 선택한 페이지를 불러오는 함수
-def load_page():
+    # ✅ 선택한 페이지 실행
     if st.session_state.page == "home":
         home_page()
     elif st.session_state.page == "locker":
@@ -356,7 +381,6 @@ def load_page():
         refund_calculator_page()
     elif st.session_state.page == "spreadsheet":
         load_and_display_spreadsheet_data()
-
 
 # ✅ 홈 페이지
 def home_page():
