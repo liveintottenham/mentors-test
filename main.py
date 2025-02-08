@@ -40,22 +40,20 @@ def check_password():
 
 # Google 스프레드시트 인증 설정 (start)
 
-# ✅ Google Sheets API 인증 함수
+# Google 스프레드시트 인증 설정 (수정 버전)
 def authenticate_google_sheets():
-    """GitHub Secrets에서 Service Account JSON을 로드하여 Google Sheets API 인증"""
-    gspread_api_key = os.getenv("GSPREAD_API_KEY")  # GitHub Secrets에서 가져오기
-
-    if not gspread_api_key:
-        raise Exception("🚨 API Key를 찾을 수 없습니다. GitHub Secrets 설정을 확인하세요.")
-
-    # ✅ Base64 디코딩 후 JSON 변환
-    decoded_json = base64.b64decode(gspread_api_key).decode()
-    credentials_info = json.loads(decoded_json)
-    credentials = Credentials.from_service_account_info(credentials_info)
-
-    # ✅ Google Sheets API 인증
-    client = gspread.authorize(credentials)
-    return client
+    """GitHub Secrets에서 Service Account JSON을 로드"""
+    credentials_json = os.getenv("GSPREAD_API_KEY")
+    
+    if not credentials_json:
+        raise Exception("🚨 GitHub Secrets에 GSPREAD_API_KEY가 설정되지 않았습니다.")
+    
+    try:
+        credentials_info = json.loads(credentials_json)
+        credentials = Credentials.from_service_account_info(credentials_info)
+        return gspread.authorize(credentials)
+    except json.JSONDecodeError:
+        raise Exception("🚨 JSON 형식이 잘못되었습니다. Secrets 설정을 확인하세요.")
 
 # ✅ Google Sheets에서 데이터 불러오기 함수
 @st.cache_data(ttl=5, show_spinner=False)

@@ -1,6 +1,7 @@
 plotly
 pytz
-gspread
+gspread==5.11.3
+oauth2client==4.1.3
 google-auth
 google-auth-oauthlib
 google-auth-httplib2
