@@ -321,18 +321,15 @@ def main():
         {"icon": "📊", "label": "멘토즈 지점명/특이사항", "key": "spreadsheet"},
     ]
 
-    # ✅ Streamlit에서 버튼을 사용하여 안정적인 페이지 변경
+    # ✅ HTML 버튼을 사용하여 메뉴 아이템 생성
     for item in menu_items:
-        if st.sidebar.button(
-            f"{item['icon']} {item['label']}", 
-            key=f"menu_{item['key']}", 
-            use_container_width=True,
-            # 버튼에 CSS 클래스 적용
-            help=f"Go to {item['label']}",
-            # 버튼 스타일을 동적으로 변경
-            **{"class": "sidebar-item", "style": f"background-color: {'#2ecc71' if st.session_state.page == item['key'] else '#3498db'};"}
-        ):
-            st.session_state.page = item["key"]
+        button_html = f"""
+        <button class="sidebar-item {'active' if st.session_state.page == item['key'] else ''}" 
+                onclick="window.location.href='?page={item['key']}'">
+            {item['icon']} {item['label']}
+        </button>
+        """
+        st.sidebar.markdown(button_html, unsafe_allow_html=True)
 
     # ✅ 현재 페이지에 따라 동적으로 렌더링
     if st.session_state.page == "home":
@@ -631,4 +628,8 @@ def refund_calculator_page():
         st.download_button("📥 환불 내역서 다운로드", refund_detail.strip(), file_name="refund_details.txt")
   
 if __name__ == "__main__":
+    # URL 파라미터에서 페이지 상태를 읽어옴
+    query_params = st.experimental_get_query_params()
+    if "page" in query_params:
+        st.session_state.page = query_params["page"][0]
     main()
