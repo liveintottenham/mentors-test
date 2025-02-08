@@ -1,18 +1,8 @@
-import base64
-import json
+import os
 
-def decode_json_key(encoded_key):
-    decoded_json = base64.b64decode(encoded_key).decode()
-    credentials_info = json.loads(decoded_json)
-    return credentials_info
+gspread_api_key = os.getenv("GSPREAD_API_KEY")
 
-# 테스트용 Base64 인코딩된 JSON 키
-encoded_key = os.getenv("GSPREAD_API_KEY")
-if encoded_key:
-    try:
-        credentials_info = decode_json_key(encoded_key)
-        print("JSON 키 파일 디코딩 성공!")
-    except Exception as e:
-        print(f"JSON 키 파일 디코딩 실패: {e}")
+if gspread_api_key:
+    print("✅ 환경 변수 GSPREAD_API_KEY가 정상적으로 로드되었습니다.")
 else:
-    print("환경 변수 GSPREAD_API_KEY를 찾을 수 없습니다.")
+    print("🚨 환경 변수 GSPREAD_API_KEY를 찾을 수 없습니다. GitHub Secrets 설정을 확인하세요.")
