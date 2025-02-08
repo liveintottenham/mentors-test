@@ -53,7 +53,7 @@ def check_password():
     
     return st.session_state.authenticated
 
-# ✅ Google Sheets 인증 함수 (start)
+# ✅ Google Sheets 인증 함수
 def authenticate_google_sheets():
     """GitHub Secrets에서 Service Account JSON을 로드"""
     credentials_json = os.getenv("GSPREAD_API_KEY")
@@ -83,8 +83,8 @@ def authenticate_google_sheets():
 def get_real_time_data():
     try:
         client = authenticate_google_sheets()
-        spreadsheet = client.open("멘토즈 지점 정보")
-        sheet = spreadsheet.worksheet("시트1")
+        spreadsheet = client.open("멘토즈 지점 정보")  # Google Sheets 문서 이름
+        sheet = spreadsheet.worksheet("시트1")  # 시트 이름
         df = pd.DataFrame(sheet.get_all_records())
         
         # ✅ '마스터키 PWD' 열을 문자열로 강제 변환
@@ -99,8 +99,8 @@ def get_real_time_data():
 def update_sheet(new_data):
     try:
         client = authenticate_google_sheets()
-        spreadsheet = client.open("멘토즈 지점 정보")
-        sheet = spreadsheet.worksheet("시트1")
+        spreadsheet = client.open("멘토즈 지점 정보")  # Google Sheets 문서 이름
+        sheet = spreadsheet.worksheet("시트1")  # 시트 이름
 
         # ✅ 헤더 포함 전체 데이터 업데이트
         sheet.clear()
@@ -108,7 +108,7 @@ def update_sheet(new_data):
             [new_data.columns.tolist()] + 
             new_data.astype(str).values.tolist()
         )
-        st.cache_data.clear()
+        st.cache_data.clear()  # 캐시 초기화
         
     except gspread.exceptions.APIError as e:
         st.error(f"📤 업데이트 실패: Google API 오류 ({str(e)})")
@@ -128,6 +128,12 @@ if "can_edit" not in st.session_state:
 
 if "edited_data" not in st.session_state:
     st.session_state.edited_data = None
+
+if "new_row" not in st.session_state:
+    st.session_state.new_row = {}
+
+if "show_add_form" not in st.session_state:
+    st.session_state.show_add_form = False
 
 # ✅ Streamlit UI 시작
 def load_and_display_spreadsheet_data():
@@ -160,24 +166,48 @@ def load_and_display_spreadsheet_data():
     # ✅ 버튼 UI (수평 배치)
     button_col1, button_col2, button_col3 = st.columns(3)
 
-   # ✅ 지점 정보 추가 버튼
+    # ✅ 지점 정보 추가 버튼
     with button_col1:
         if st.button("📌 지점 정보 추가", key=f"add_branch_{st.session_state.random_id}"):
-            with st.expander("📝 새 지점 정보 추가", expanded=True):
-                new_row = {}
-                for col in df.columns:
-                    # ✅ '마스터키 PWD'는 문자열로만 입력받기
-                    if col == "마스터키 PWD":
-                        new_row[col] = st.text_input(f"{col} 입력", key=f"new_{col}_{st.session_state.random_id}")
+            st.session_state.show_add_form = True  # 입력창 표시 상태
+
+    # ✅ 입력창 표시
+    if st.session_state.show_add_form:
+        with st.expander("📝 새 지점 정보 추가", expanded=True):
+            new_row = {}
+            for col in df.columns:
+                # ✅ '마스터키 PWD'는 문자열로만 입력받기
+                if col == "마스터키 PWD":
+                    new_row[col] = st.text_input(
+                        f"{col} 입력",
+                        value=st.session_state.new_row.get(col, ""),  # 기존 입력값 유지
+                        key=f"new_{col}_{st.session_state.random_id}"
+                    )
+                else:
+                    # 다른 열의 데이터 타입에 맞게 처리
+                    if df[col].dtype == "int64":
+                        new_row[col] = st.number_input(
+                            f"{col} 입력",
+                            value=st.session_state.new_row.get(col, 0),  # 기존 입력값 유지
+                            key=f"new_{col}_{st.session_state.random_id}"
+                        )
+                    elif df[col].dtype == "float64":
+                        new_row[col] = st.number_input(
+                            f"{col} 입력",
+                            value=st.session_state.new_row.get(col, 0.0),  # 기존 입력값 유지
+                            key=f"new_{col}_{st.session_state.random_id}",
+                            format="%.2f"
+                        )
                     else:
-                        # 다른 열의 데이터 타입에 맞게 처리
-                        if df[col].dtype == "int64":
-                            new_row[col] = st.number_input(f"{col} 입력", key=f"new_{col}_{st.session_state.random_id}")
-                        elif df[col].dtype == "float64":
-                            new_row[col] = st.number_input(f"{col} 입력", key=f"new_{col}_{st.session_state.random_id}", format="%.2f")
-                        else:
-                            new_row[col] = st.text_input(f"{col} 입력", key=f"new_{col}_{st.session_state.random_id}")
+                        new_row[col] = st.text_input(
+                            f"{col} 입력",
+                            value=st.session_state.new_row.get(col, ""),  # 기존 입력값 유지
+                            key=f"new_{col}_{st.session_state.random_id}"
+                        )
             
+            # ✅ 입력값을 세션 상태에 저장
+            st.session_state.new_row = new_row
+
             if st.button("✅ 새 데이터 추가", key=f"add_data_{st.session_state.random_id}"):
                 try:
                     # ✅ 필수 필드 검증
@@ -190,8 +220,12 @@ def load_and_display_spreadsheet_data():
                         # ✅ DataFrame에 새로운 행 추가
                         new_df = pd.DataFrame([new_row])
                         updated_df = pd.concat([df, new_df], ignore_index=True)
-                        update_sheet(updated_df)
+                        update_sheet(updated_df)  # 데이터 업데이트 함수 호출
                         st.success("✅ 데이터가 성공적으로 추가되었습니다!")
+                        
+                        # ✅ 입력창 초기화
+                        st.session_state.show_add_form = False
+                        st.session_state.new_row = {}
                         st.rerun()
                 except Exception as e:
                     st.error(f"🚨 에러 발생: {str(e)}")
