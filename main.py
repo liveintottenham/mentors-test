@@ -463,7 +463,7 @@ def locker_masterkey_page():
     df = get_real_time_data()
 
     # ✅ 모든 지점명 목록 추출 (중복 제거)
-    branch_list = df["지점명"].unique().tolist()
+    branch_list = df["지점명"].dropna().unique().tolist()  # NaN 제거
 
     # ✅ 지점명 입력 필드 (검색어 자동완성)
     search_term = st.text_input("지점명을 입력하세요 (예: '연산' 입력 → '부산연산점' 추천)", key="branch_search")
@@ -485,17 +485,18 @@ def locker_masterkey_page():
         if not selected_branch:
             st.error("❌ 지점명을 선택하세요!")
         else:
-            # ✅ 지점명으로 데이터 필터링
+            # ✅ 지점명으로 데이터 필터링 (정확한 일치)
             filtered_data = df[df["지점명"] == selected_branch]
 
             if filtered_data.empty:
                 st.error("❌ 해당 지점명이 없습니다. 지점채널로 문의해주세요.")
             else:
                 # ✅ 사물함 정보 추출
-                locker_number = filtered_data.iloc[0]["마스터키 L"]  # 사물함 번호
-                locker_password = filtered_data.iloc[0]["마스터키 PWD"]  # 사물함 비밀번호
+                locker_number = str(filtered_data.iloc[0]["마스터키 L"]).strip()  # 문자열 변환 및 공백 제거
+                locker_password = str(filtered_data.iloc[0]["마스터키 PWD"]).strip()
 
-                if pd.isna(locker_number) or pd.isna(locker_password):
+                # ✅ 빈 값 또는 NaN 체크 (숫자형인 경우 0 체크 추가)
+                if (locker_number in ["", "nan", "NaN", "0"]) or (locker_password in ["", "nan", "NaN", "0"]):
                     st.error("❌ 사물함 정보가 없습니다. 지점채널로 문의해주세요.")
                 else:
                     info_text = (
