@@ -565,8 +565,38 @@ def restore_checkout_page():
 def refund_calculator_page():
     st.title("💰 이용권 환불 계산")
     
-    # 기본 정보 입력
-    branch = st.text_input("지점명")
+    # ✅ Google Sheets에서 데이터 가져오기
+    df = get_real_time_data()
+    branch_list = df["지점명"].dropna().unique().tolist()  # 지점명 목록
+
+    # ✅ 지점명 검색 기능 (자동완성)
+    search_term = st.text_input("지점명 검색 (예: '연산' 입력 → '부산연산점' 추천)", key="branch_search_refund")
+    
+    # ✅ 검색어 기반 지점명 필터링
+    filtered_branches = []
+    if search_term:
+        filtered_branches = [branch for branch in branch_list if search_term.lower() in branch.lower()]
+    
+    # ✅ 지점명 선택 (드롭다운)
+    selected_branch = None
+    if filtered_branches:
+        selected_branch = st.selectbox("검색된 지점 선택", filtered_branches, key="branch_select_refund")
+    else:
+        st.warning("⚠️ 일치하는 지점이 없습니다.")
+
+    # ✅ 선택된 지점의 추가 정보 조회
+    if selected_branch:
+        branch_data = df[df["지점명"] == selected_branch].iloc[0]
+        
+        # ✅ 환불 정책 팝업
+        with st.expander("📌 해당 지점 환불 정책", expanded=True):
+            cols = st.columns(3)
+            cols[0].metric("환불규정", branch_data.get("환불규정", "미입력"))
+            cols[1].metric("환불기간", branch_data.get("환불기간", "미입력"))
+            cols[2].metric("환불응대금지", branch_data.get("환불응대금지", "미입력"))
+
+    # ✅ 기본 정보 입력 (지점명은 선택된 값으로 고정)
+    branch = selected_branch if selected_branch else st.text_input("지점명 (수동입력)")
     phone = st.text_input("전화번호")
     ticket_type = st.radio("이용권 종류", ["기간권", "시간권", "노블레스석"])
     policy = st.radio("환불 규정", ["일반", "% 규정"])
