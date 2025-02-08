@@ -248,7 +248,7 @@ def main():
         .sidebar-container {
             width: 280px;
             height: 100vh;
-            background-color: #2c3e50;
+            background-color: #2c3e50;  /* 어두운 회색 배경 */
             padding: 20px;
             border-right: 1px solid #E0E0E0;
             position: fixed;
@@ -264,7 +264,7 @@ def main():
             color: #ffffff;
             margin-bottom: 20px;
             padding: 15px;
-            background-color: #34495e;
+            background-color: #34495e;  /* 밝은 회색 배경 */
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
@@ -276,7 +276,7 @@ def main():
             margin: 8px 0;
             font-size: 16px;
             color: #ffffff;
-            background-color: #3498db;
+            background-color: #34495e;  /* 밝은 회색 배경 */
             border-radius: 8px;
             transition: all 0.3s ease;
             cursor: pointer;
@@ -287,13 +287,13 @@ def main():
         }
 
         .sidebar-item:hover {
-            background-color: #2980b9;
+            background-color: #3d566e;  /* 호버 시 약간 더 밝은 회색 */
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         .sidebar-item.active {
-            background-color: #2ecc71 !important;
+            background-color: #2ecc71 !important;  /* 활성화된 버튼은 초록색 */
             color: white !important;
         }
 
