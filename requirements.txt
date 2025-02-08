@@ -1,1 +1,8 @@
 plotly
+pytz
+gspread
+random
+string
+os
+base64
+json
