@@ -13,8 +13,14 @@ def authenticate_google_sheets():
         raise Exception("🚨 GitHub Secrets에 GSPREAD_API_KEY가 설정되지 않았습니다.")
     
     try:
+        # 올바른 OAuth 범위 설정
+        scope = [
+            "https://www.googleapis.com/auth/spreadsheets",  # Google Sheets 접근
+            "https://www.googleapis.com/auth/drive"          # Google Drive 접근
+        ]
+        
         credentials_info = json.loads(credentials_json)  # JSON 문자열 파싱
-        credentials = Credentials.from_service_account_info(credentials_info)
+        credentials = Credentials.from_service_account_info(credentials_info, scopes=scope)
         return gspread.authorize(credentials)
     except json.JSONDecodeError:
         raise Exception("🚨 JSON 형식이 잘못되었습니다. Secrets 설정을 확인하세요.")
