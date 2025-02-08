@@ -39,21 +39,24 @@ def check_password():
 
 
 # Google 스프레드시트 인증 설정 (start)
-
-# Google 스프레드시트 인증 설정 (수정 버전)
+# ✅ Google 스프레드시트 인증 설정 (수정 버전)
 def authenticate_google_sheets():
-    """GitHub Secrets에서 Service Account JSON을 로드"""
+    """GitHub Secrets에서 Service Account JSON을 로드하여 Google Sheets API 인증"""
     credentials_json = os.getenv("GSPREAD_API_KEY")
-    
+
     if not credentials_json:
         raise Exception("🚨 GitHub Secrets에 GSPREAD_API_KEY가 설정되지 않았습니다.")
-    
+
     try:
-        credentials_info = json.loads(credentials_json)
+        # ✅ Base64 디코딩 후 JSON 변환
+        decoded_json = base64.b64decode(credentials_json).decode()
+        credentials_info = json.loads(decoded_json)
         credentials = Credentials.from_service_account_info(credentials_info)
         return gspread.authorize(credentials)
     except json.JSONDecodeError:
         raise Exception("🚨 JSON 형식이 잘못되었습니다. Secrets 설정을 확인하세요.")
+    except Exception as e:
+        raise Exception(f"🚨 Google API 인증 실패: {str(e)}")
 
 # ✅ Google Sheets에서 데이터 불러오기 함수
 @st.cache_data(ttl=5, show_spinner=False)
@@ -73,6 +76,13 @@ def update_sheet(new_data):
     sheet.clear()
     sheet.update([new_data.columns.tolist()] + new_data.values.tolist())
     st.cache_data.clear()  # ✅ 캐시 강제 초기화
+
+# ✅ Streamlit 세션 상태 초기화
+if "can_edit" not in st.session_state:
+    st.session_state.can_edit = False
+
+if "edited_data" not in st.session_state:
+    st.session_state.edited_data = None
 
 # ✅ Streamlit UI 시작
 def load_and_display_spreadsheet_data():
@@ -111,7 +121,7 @@ def load_and_display_spreadsheet_data():
                             updated_df = pd.concat([df, new_df], ignore_index=True)
 
                             update_sheet(updated_df)  # ✅ Google Sheets 업데이트
-                            st.success("✅ 데이터가 성공적으로 추가되었습니다!")
+                            st.success("✅ 데이터가 성공적으로 추가되었습니다! 새로고침 없이 반영됩니다.")
                             st.rerun()
                     except Exception as e:
                         st.error(f"🚨 에러 발생: {str(e)}")
@@ -156,10 +166,11 @@ def load_and_display_spreadsheet_data():
                 sheet = spreadsheet.worksheet("시트1")
                 sheet.delete_rows(row_num)
                 st.cache_data.clear()  # ✅ 캐시 초기화
-                st.success(f"✅ {row_num}번 행이 삭제되었습니다!")
+                st.success(f"✅ {row_num}번 행이 삭제되었습니다! 새로고침 없이 반영됩니다.")
                 st.rerun()
             except Exception as e:
                 st.error(f"🚨 삭제 실패: {e}")
+
 
 # Google 스프레드 연동 (end)
 
