@@ -462,15 +462,31 @@ def locker_masterkey_page():
     # ✅ Google Sheets에서 데이터 가져오기
     df = get_real_time_data()
 
-    # ✅ 지점명 입력 필드
-    branch_name = st.text_input("지점명을 입력하세요", key="branch_name")
+    # ✅ 모든 지점명 목록 추출 (중복 제거)
+    branch_list = df["지점명"].unique().tolist()
+
+    # ✅ 지점명 입력 필드 (검색어 자동완성)
+    search_term = st.text_input("지점명을 입력하세요 (예: '연산' 입력 → '부산연산점' 추천)", key="branch_search")
+
+    # ✅ 검색어와 부분 일치하는 지점명 필터링
+    if search_term:
+        # 검색어와 부분 일치하는 지점명 필터링 (대소문자 구분 없음)
+        filtered_branches = [branch for branch in branch_list if search_term.lower() in branch.lower()]
+        if filtered_branches:
+            # 드롭다운으로 지점명 선택
+            selected_branch = st.selectbox("검색된 지점명 선택", filtered_branches, key="branch_select")
+        else:
+            st.warning("⚠️ 일치하는 지점이 없습니다.")
+            selected_branch = None
+    else:
+        selected_branch = None
 
     if st.button("마스터키 안내 보기"):
-        if not branch_name:
-            st.error("❌ 지점명을 입력하세요!")
+        if not selected_branch:
+            st.error("❌ 지점명을 선택하세요!")
         else:
             # ✅ 지점명으로 데이터 필터링
-            filtered_data = df[df["지점명"].str.contains(branch_name, case=False, na=False)]
+            filtered_data = df[df["지점명"] == selected_branch]
 
             if filtered_data.empty:
                 st.error("❌ 해당 지점명이 없습니다. 지점채널로 문의해주세요.")
