@@ -245,51 +245,48 @@ def main():
     st.sidebar.markdown(
         """
         <style>
-        /* 사이드바 전체 스타일 */
-        .stSidebar {
-            background-color: #2c3e50 !important;
-            font-family: 'Roboto', sans-serif;
-        }
-
-        /* 타이틀 스타일 */
-        .sidebar-title {
-            font-size: 28px;
-            font-weight: bold;
-            text-align: center;
-            color: #ffffff;
-            margin-bottom: 30px;
+        /* 전체 사이드바 스타일 */
+        .sidebar-container {
+            background-color: #f8f9fa;
             padding: 15px;
-            background-color: #34495e;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            width: 100%;
         }
 
-        /* 메뉴 아이템 스타일 */
-        .sidebar-item {
+        /* 메뉴 타이틀 스타일 */
+        .sidebar-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #34495e;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        /* 메뉴 버튼 스타일 */
+        .sidebar-button {
             display: flex;
             align-items: center;
-            padding: 12px 20px;
-            margin: 8px 0;
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #ffffff;
+            color: #34495e;
             font-size: 16px;
-            color: #ffffff;
-            background-color: #3498db;
+            font-weight: 600;
             border-radius: 8px;
-            transition: all 0.3s ease;
+            transition: background 0.3s ease, color 0.3s ease;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
         }
 
-        /* 메뉴 아이템 호버 효과 */
-        .sidebar-item:hover {
-            background-color: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        .sidebar-button:hover {
+            background-color: #2ecc71;
+            color: white;
         }
 
-        /* 활성화된 메뉴 */
-        .sidebar-item.active {
-            background-color: #2ecc71 !important;
-            color: white !important;
+        .sidebar-button.active {
+            background-color: #27ae60;
+            color: white;
         }
 
         /* 아이콘 스타일 */
@@ -300,52 +297,68 @@ def main():
 
         /* 구분선 스타일 */
         .sidebar-divider {
-            border-top: 1px solid #34495e;
-            margin: 20px 0;
+            border-top: 1px solid #ddd;
+            margin: 15px 0;
         }
 
         /* 푸터 스타일 */
         .sidebar-footer {
             text-align: center;
             font-size: 12px;
-            color: #bdc3c7;
-            margin-top: 30px;
+            color: #95a5a6;
+            margin-top: 15px;
         }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-    
-    # ✅ 사이드바 타이틀
-    st.sidebar.markdown('<p class="sidebar-title">⭐❤️</p>', unsafe_allow_html=True)
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-    # ✅ 메뉴 아이템 리스트
-    menu_items = [
-        {"icon": "🏠", "label": "홈", "key": "home"},
-        {"icon": "🔑", "label": "사물함 마스터키", "key": "locker"},
-        {"icon": "🔄", "label": "퇴실 미처리 복구", "key": "restore"},
-        {"icon": "💰", "label": "이용권 환불 계산", "key": "refund"},
-        {"icon": "📊", "label": "멘토즈 지점명/특이사항", "key": "spreadsheet"},
-    ]
+# ✅ 세션 상태 초기화
+if "page" not in st.session_state:
+    st.session_state.page = "home"
 
-    # ✅ 사이드바 메뉴 UI
-    for item in menu_items:
-        if st.sidebar.button(f"{item['icon']} {item['label']}", key=f"menu_{item['key']}", use_container_width=True):
-            st.session_state.page = item['key']
-            st.rerun()  # 페이지 업데이트
+# ✅ 사이드바 HTML + CSS 적용
+st.sidebar.markdown('<div class="sidebar-container">', unsafe_allow_html=True)
+st.sidebar.markdown('<div class="sidebar-title">📌 MENU</div>', unsafe_allow_html=True)
 
-    # ✅ 선택한 페이지 실행
-    if st.session_state.page == "home":
-        home_page()
-    elif st.session_state.page == "locker":
-        locker_masterkey_page()
-    elif st.session_state.page == "restore":
-        restore_checkout_page()
-    elif st.session_state.page == "refund":
-        refund_calculator_page()
-    elif st.session_state.page == "spreadsheet":
-        load_and_display_spreadsheet_data()
+# ✅ 메뉴 목록
+menu_items = {
+    "🏠 홈": "home",
+    "🔑 사물함 마스터키": "locker",
+    "🔄 퇴실 미처리 복구": "restore",
+    "💰 이용권 환불 계산": "refund",
+    "📊 멘토즈 지점 관리": "spreadsheet"
+}
 
+# ✅ 현재 선택된 메뉴 강조
+for label, key in menu_items.items():
+    is_active = "active" if st.session_state.page == key else ""
+    if st.sidebar.button(f"{label}", key=f"menu_{key}"):
+        st.session_state.page = key
+        st.rerun()
+
+# ✅ 구분선 추가
+st.sidebar.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
+
+# ✅ 푸터 추가
+st.sidebar.markdown(
+    '<div class="sidebar-footer">© 2024 멘토즈 가맹관리부</div>', 
+    unsafe_allow_html=True
+)
+
+st.sidebar.markdown('</div>', unsafe_allow_html=True)  # sidebar-container 닫기
+
+# ✅ 선택한 페이지 렌더링
+if st.session_state.page == "home":
+    st.title("🏠 홈 페이지")
+elif st.session_state.page == "locker":
+    st.title("🔑 사물함 마스터키 페이지")
+elif st.session_state.page == "restore":
+    st.title("🔄 퇴실 미처리 복구 페이지")
+elif st.session_state.page == "refund":
+    st.title("💰 이용권 환불 계산 페이지")
+elif st.session_state.page == "spreadsheet":
+    st.title("📊 멘토즈 지점 관리")
 # ✅ 홈 페이지
 def home_page():
     st.markdown(
