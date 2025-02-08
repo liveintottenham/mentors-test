@@ -368,7 +368,7 @@ def main():
 
     # ✅ Streamlit이 JavaScript에서 설정한 값을 감지하고 업데이트
     if st.session_state.page:
-        st.experimental_rerun()
+        st.rerun()  # 최신 Streamlit에서는 st.experimental_rerun() 대신 사용
 
     # ✅ 선택한 페이지 실행
     if st.session_state.page == "home":
