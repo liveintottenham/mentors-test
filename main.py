@@ -224,11 +224,15 @@ def main():
     if not check_password():
         st.stop()  # 인증되지 않으면 이후 코드 실행 안됨
     
-    # ✅ 사이드바 스타일링 (머터리얼 디자인)
+    # ✅ 세션 상태 초기화
+    if "page" not in st.session_state:
+        st.session_state.page = "home"
+
+    # ✅ 사이드바 스타일 적용
     st.sidebar.markdown(
         """
         <style>
-        /* 사이드바 전체 배경색 및 폰트 설정 */
+        /* 사이드바 전체 스타일 */
         .stSidebar {
             background-color: #2c3e50 !important;
             font-family: 'Roboto', sans-serif;
@@ -269,6 +273,12 @@ def main():
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
+        /* 활성화된 메뉴 */
+        .sidebar-item.active {
+            background-color: #2ecc71 !important;
+            color: white !important;
+        }
+
         /* 아이콘 스타일 */
         .sidebar-icon {
             margin-right: 10px;
@@ -294,9 +304,9 @@ def main():
     )
     
     # ✅ 사이드바 타이틀
-    st.sidebar.markdown('<p class="sidebar-title">📌 MENU</p>', unsafe_allow_html=True)
+    st.sidebar.markdown('<p class="sidebar-title">⭐❤️</p>', unsafe_allow_html=True)
 
-    # ✅ 메뉴 아이템 정의
+    # ✅ 메뉴 아이템 리스트
     menu_items = [
         {"icon": "🏠", "label": "홈", "key": "home"},
         {"icon": "🔑", "label": "사물함 마스터키", "key": "locker"},
@@ -305,18 +315,31 @@ def main():
         {"icon": "📊", "label": "멘토즈 지점명/특이사항", "key": "spreadsheet"},
     ]
 
-    # ✅ 메뉴 아이템 렌더링
+    # ✅ HTML + JavaScript 기반의 사이드 메뉴
+    sidebar_html = '<div class="sidebar-container">'
+    
     for item in menu_items:
-        if st.sidebar.button(
-            f"{item['icon']} {item['label']}",
-            key=f"menu_{item['key']}",
-            use_container_width=True,
-        ):
-            st.session_state.page = item['key']
+        active_class = "active" if st.session_state.page == item["key"] else ""
+        sidebar_html += f"""
+        <div class="sidebar-item {active_class}" onclick="setPage('{item['key']}')">
+            <span class="sidebar-icon">{item['icon']}</span>
+            <span>{item['label']}</span>
+        </div>
+        """
 
-    # ✅ 페이지 상태 초기화
-    if "page" not in st.session_state:
-        st.session_state.page = "home"
+    sidebar_html += '</div>'
+    
+    # ✅ JavaScript로 페이지 변경 이벤트 설정
+    sidebar_html += """
+    <script>
+        function setPage(page) {
+            window.parent.postMessage({ type: "streamlit:setComponentValue", page: page }, "*");
+        }
+    </script>
+    """
+
+    # ✅ 사이드바에 HTML 삽입
+    st.sidebar.markdown(sidebar_html, unsafe_allow_html=True)
 
     # ✅ 선택한 페이지 실행
     if st.session_state.page == "home":
