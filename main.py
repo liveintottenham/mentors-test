@@ -39,7 +39,7 @@ def check_password():
     
     return st.session_state.authenticated
 
-# ✅ Google Sheets 인증 함수
+# ✅ Google Sheets 인증 함수 (start)
 def authenticate_google_sheets():
     """GitHub Secrets에서 Service Account JSON을 로드"""
     credentials_json = os.getenv("GSPREAD_API_KEY")
@@ -141,28 +141,36 @@ def load_and_display_spreadsheet_data():
     # ✅ 버튼 UI (수평 배치)
     button_col1, button_col2, button_col3 = st.columns(3)
 
-    # ✅ 지점 정보 추가 버튼
+   # ✅ 지점 정보 추가 버튼
     with button_col1:
         if st.button("📌 지점 정보 추가", key=f"add_branch_{st.session_state.random_id}"):
             with st.expander("📝 새 지점 정보 추가", expanded=True):
                 new_row = {}
                 for col in df.columns:
-                    new_row[col] = st.text_input(f"{col} 입력", key=f"new_{col}_{st.session_state.random_id}")
-                
-                if st.button("✅ 새 데이터 추가", key=f"add_data_{st.session_state.random_id}"):
-                    try:
-                        if any(value.strip() == "" for value in new_row.values()):
-                            st.error("🚨 모든 필드를 입력해야 합니다!")
-                        else:
-                            # ✅ DataFrame에 새로운 행 추가
-                            new_df = pd.DataFrame([new_row])
-                            updated_df = pd.concat([df, new_df], ignore_index=True)
+                    # ✅ 각 열의 데이터 타입에 맞게 입력 필드 생성
+                    if df[col].dtype == "int64":
+                        new_row[col] = st.number_input(f"{col} 입력", key=f"new_{col}_{st.session_state.random_id}")
+                    elif df[col].dtype == "float64":
+                        new_row[col] = st.number_input(f"{col} 입력", key=f"new_{col}_{st.session_state.random_id}", format="%.2f")
+                    else:
+                        new_row[col] = st.text_input(f"{col} 입력", key=f"new_{col}_{st.session_state.random_id}")
+            
+            if st.button("✅ 새 데이터 추가", key=f"add_data_{st.session_state.random_id}"):
+                try:
+                    # ✅ 필수 필드 검증
+                    if any(value == "" or value is None for value in new_row.values()):
+                        st.error("🚨 모든 필드를 입력해야 합니다!")
+                    else:
+                        # ✅ 새로운 행을 DataFrame에 추가
+                        new_df = pd.DataFrame([new_row])
+                        updated_df = pd.concat([df, new_df], ignore_index=True)
 
-                            update_sheet(updated_df)  # ✅ Google Sheets 업데이트
-                            st.success("✅ 데이터가 성공적으로 추가되었습니다!")
-                            st.rerun()
-                    except Exception as e:
-                        st.error(f"🚨 에러 발생: {str(e)}")
+                        # ✅ Google Sheets 업데이트
+                        update_sheet(updated_df)
+                        st.success("✅ 데이터가 성공적으로 추가되었습니다!")
+                        st.rerun()
+                except Exception as e:
+                    st.error(f"🚨 에러 발생: {str(e)}")
 
     # ✅ 수정하기 버튼
     with button_col2:
@@ -198,6 +206,8 @@ def load_and_display_spreadsheet_data():
                 st.rerun()
             except Exception as e:
                 st.error(f"🚨 삭제 실패: {e}")
+
+# ✅ Google Sheets 인증 함수 (end)
 
 # ✅ 메인 함수
 def main():
