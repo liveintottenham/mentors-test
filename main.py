@@ -281,6 +281,9 @@ def main():
             transition: all 0.3s ease;
             cursor: pointer;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            text-align: left;
+            border: none;
         }
 
         .sidebar-item:hover {
@@ -320,7 +323,15 @@ def main():
 
     # ✅ Streamlit에서 버튼을 사용하여 안정적인 페이지 변경
     for item in menu_items:
-        if st.sidebar.button(f"{item['icon']} {item['label']}", key=f"menu_{item['key']}", use_container_width=True):
+        if st.sidebar.button(
+            f"{item['icon']} {item['label']}", 
+            key=f"menu_{item['key']}", 
+            use_container_width=True,
+            # 버튼에 CSS 클래스 적용
+            help=f"Go to {item['label']}",
+            # 버튼 스타일을 동적으로 변경
+            **{"class": "sidebar-item", "style": f"background-color: {'#2ecc71' if st.session_state.page == item['key'] else '#3498db'};"}
+        ):
             st.session_state.page = item["key"]
 
     # ✅ 현재 페이지에 따라 동적으로 렌더링
@@ -334,6 +345,7 @@ def main():
         refund_calculator_page()
     elif st.session_state.page == "spreadsheet":
         load_and_display_spreadsheet_data()
+
 
 # ✅ 홈 페이지
 def home_page():
