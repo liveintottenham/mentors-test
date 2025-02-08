@@ -466,7 +466,7 @@ def locker_masterkey_page():
     branch_list = df["지점명"].dropna().unique().tolist()  # NaN 제거
 
     # ✅ 지점명 입력 필드 (검색어 자동완성)
-    search_term = st.text_input("지점명을 입력하세요 (예: '연산' 입력 → '부산연산점' 추천)", key="branch_search")
+    search_term = st.text_input("지점명 입력 후 엔터 (예: '연산' 입력 → '부산연산점' 추천)", key="branch_search")
 
     # ✅ 검색어와 부분 일치하는 지점명 필터링
     if search_term:
@@ -570,7 +570,7 @@ def refund_calculator_page():
     branch_list = df["지점명"].dropna().unique().tolist()  # 지점명 목록
 
     # ✅ 지점명 검색 기능 (자동완성)
-    search_term = st.text_input("지점명 검색 (예: '연산' 입력 → '부산연산점' 추천)", key="branch_search_refund")
+    search_term = st.text_input("지점명 입력 후 엔터 (예: '연산' 입력 → '부산연산점' 추천)", key="branch_search_refund")
     
     # ✅ 검색어 기반 지점명 필터링
     filtered_branches = []
