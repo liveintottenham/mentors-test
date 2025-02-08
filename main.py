@@ -13,6 +13,20 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ✅ Pretendard 폰트 적용 (Google Fonts)
+st.markdown(
+    """
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/Pretendard/dist/web/static/pretendard.css');
+
+        * {
+            font-family: 'Pretendard', sans-serif;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # 한국 시간(KST) 설정
 kst = pytz.timezone('Asia/Seoul')
 now = datetime.now(kst)
