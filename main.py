@@ -770,12 +770,12 @@ def refund_calculator_page():
             'final_refund_amount': final_refund_amount
         }
 
-# ✅ 세션 상태에 계산 데이터가 있는 경우 계좌 폼 및 다운로드 버튼 표시
-if 'refund_data' in st.session_state:
-    # ✅ 계좌 정보 입력 폼 (항상 표시)
-    with st.form(key="account_form"):
-        st.subheader("환불 계좌 정보 입력")
-        col1, col2 = st.columns(2)
+    # ✅ 세션 상태에 계산 데이터가 있는 경우 계좌 폼 및 다운로드 버튼 표시
+    if 'refund_data' in st.session_state:
+        # ✅ 계좌 정보 입력 폼 (항상 표시)
+        with st.form(key="account_form"):
+            st.subheader("환불 계좌 정보 입력")
+            col1, col2 = st.columns(2)
         with col1:
             account_holder = st.text_input("예금주")
             bank_name = st.text_input("은행명")
@@ -790,6 +790,7 @@ if 'refund_data' in st.session_state:
                 'account_number': account_number
             }
             st.success("계좌 정보가 저장되었습니다.")
+            st.rerun()  # 즉시 페이지 리로드
 
     # ✅ 계좌 정보가 입력된 경우 다운로드 버튼 표시
     if "account_info" in st.session_state:
