@@ -607,9 +607,22 @@ def refund_calculator_page():
     branch = selected_branch if selected_branch else st.text_input("지점명 (수동입력)")
     phone = st.text_input("전화번호")
     ticket_type = st.radio("이용권 종류", ["기간권", "시간권", "노블레스석"])
-    policy = st.radio("환불 규정", ["일반", "% 규정"])
-    
-    # 결제 및 환불 정보 입력 (날짜는 기본값으로 오늘 날짜 설정)
+
+    # ✅ 환불 규정 자동 선택
+    if selected_branch:
+        branch_data = df[df["지점명"] == selected_branch].iloc[0]
+        has_time_period_pricing = not pd.isna(branch_data.get("시간권 금액")) or not pd.isna(branch_data.get("기간권 금액"))
+        
+        if has_time_period_pricing:
+            policy = "일반"
+            st.info("📌 해당 지점은 시간권/기간권 금액이 설정되어 있어 일반 환불 규정이 적용됩니다.")
+        else:
+            policy = "% 규정"
+            st.info("📌 해당 지점은 시간권/기간권 금액이 설정되어 있지 않아 % 환불 규정이 적용됩니다.")
+    else:
+        policy = st.radio("환불 규정", ["일반", "% 규정"])
+
+    # ✅ 결제 및 환불 정보 입력 (날짜는 기본값으로 오늘 날짜 설정)
     ticket_price = st.number_input("결제 금액 (원)", min_value=0)
     purchase_date = st.date_input("결제일", value=datetime.now(pytz.timezone('Asia/Seoul')).date())
     refund_date = st.date_input("환불 요청일", value=datetime.now(pytz.timezone('Asia/Seoul')).date())
@@ -617,7 +630,7 @@ def refund_calculator_page():
     # 위약금 선택 (0%, 10%, 20%)
     penalty_rate = st.selectbox("위약금 선택", ["0%", "10%", "20%"], index=0)
     
-    # 이용권 종류에 따른 추가 입력 필드
+    # ✅ 이용권 종류에 따른 추가 입력 필드
     if ticket_type in ["기간권", "노블레스석"]:
         days_given = st.number_input("전체 부여 기간 [일] (기간권/노블레스석)", min_value=1)
     else:
@@ -637,27 +650,27 @@ def refund_calculator_page():
     else:
         noble_rate = None
     
-    # 유효 기간 계산
+    # ✅ 유효 기간 계산
     if ticket_type == "시간권":
         valid_period = f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(weeks=weeks_given)).strftime('%Y-%m-%d')}"
     else:
         valid_period = f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(days=days_given-1)).strftime('%Y-%m-%d')}" if days_given else "정보 없음"
     
-    # 이용권 종류 표시 형식 수정
+    # ✅ 이용권 종류 표시 형식 수정
     formatted_ticket_type = f"{ticket_type} ({days_given}일)" if ticket_type != "시간권" else f"{ticket_type} ({total_hours}시간)"
     
-    # 환불 금액 계산 (엔터 키로도 실행 가능)
+    # ✅ 환불 금액 계산 (엔터 키로도 실행 가능)
     if st.button("환불 금액 계산"):  # 항상 계산 실행
         used_days = (refund_date - purchase_date).days + 1
-        daily_rate = 11000
-        hourly_rate = 2000
+        daily_rate = 11000  # 기본 1일 요금 (기간권)
+        hourly_rate = 2000  # 기본 시간당 요금 (시간권)
         used_amount = 0
         
-        # 결제일자 30일 초과 시 팝업 알림
+        # ✅ 결제일자 30일 초과 시 팝업 알림
         if (refund_date - purchase_date).days > 30:
             st.warning("결제한지 30일이 지났으므로 위약금이 발생하거나, 환불이 불가할 수 있습니다.")
         
-        # 환불 규정에 따른 계산
+        # ✅ 환불 규정에 따른 계산
         if policy == "% 규정":
             percent_used = (used_days / days_given) * 100 if ticket_type in ["기간권", "노블레스석"] else (hours_used / total_hours) * 100
             
@@ -687,16 +700,16 @@ def refund_calculator_page():
             usage_info = f"{used_days}일 사용" if ticket_type in ["기간권", "노블레스석"] else f"{hours_used}시간 사용"
             deduction_detail = f"{used_days}일 × {daily_rate:,}원" if ticket_type == "기간권" else f"{used_days}일 × {noble_rate:,}원 (노블레스석 1일 요금)" if ticket_type == "노블레스석" else f"{hours_used}시간 × {hourly_rate:,}원"
         
-        # 위약금 계산 (결제금액 기준)
+        # ✅ 위약금 계산 (결제금액 기준)
         penalty_rate_value = int(penalty_rate.strip("%")) / 100  # 위약금 비율 (10% → 0.1)
         penalty_amount = ticket_price * penalty_rate_value  # 위약금 금액 (결제금액 기준)
         final_refund_amount = max(refund_amount - penalty_amount, 0)  # 최종 환불 금액 (음수 방지)
         
-        # 한국 시간대 (KST)로 현재 시간 설정
+        # ✅ 한국 시간대 (KST)로 현재 시간 설정
         kst = pytz.timezone('Asia/Seoul')
         current_time_kst = datetime.now(kst).strftime('%Y-%m-%d %H:%M')
         
-        # 환불 내역서 구성
+        # ✅ 환불 내역서 구성
         refund_detail = f"""
         [멘토즈 스터디카페 환불 내역서]
         =============================================
@@ -723,50 +736,15 @@ def refund_calculator_page():
         - 환불 처리에는 최대 3~5영업일이 소요될 수 있습니다.
         """
         
-        # 환불 내역서 출력
+        # ✅ 환불 내역서 출력
         st.text_area("📄 환불 내역서 (Ctrl+C로 복사 가능)", refund_detail.strip(), height=400)
 
-        
-        # 환불 내역서 생성
-        valid_period = f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(days=days_given - 1)).strftime('%Y-%m-%d')}" if days_given else "정보 없음"
-        deduction_detail = f"{used_days}일 × {daily_rate:,}원" if ticket_type != "시간권" else f"{hours_used}시간 × {hourly_rate:,}원"
-        html_content = generate_refund_html(
-            branch, phone, f"{ticket_type} ({days_given}일)" if days_given else ticket_type, purchase_date, valid_period,
-            ticket_price, f"{used_days}일 사용" if ticket_type != "시간권" else f"{hours_used}시간 사용", used_amount,
-            deduction_detail, penalty_rate, 0, refund_amount
-        )
-
-        # ✅ 계좌 정보 입력 폼
-        with st.form(key="account_form"):
-            st.subheader("환불 계좌 정보 입력")
-            col1, col2 = st.columns(2)
-            with col1:
-                account_holder = st.text_input("예금주")
-                bank_name = st.text_input("은행명")
-            with col2:
-                account_number = st.text_input("계좌번호")
-            
-            # ✅ 계좌 정보 확인 버튼
-            if st.form_submit_button("확인"):
-                # ✅ 계좌 정보를 세션 상태에 저장
-                st.session_state["account_holder"] = account_holder
-                st.session_state["bank_name"] = bank_name
-                st.session_state["account_number"] = account_number
-                st.success("계좌 정보가 저장되었습니다.")
-                
-                # ✅ 페이지 리로드
-                st.rerun()
-
-    # ✅ 계좌 정보가 입력된 경우 HTML 다운로드 버튼 표시
-    if "account_holder" in st.session_state:
+        # ✅ 환불 내역서 생성 (HTML 다운로드)
         html_content = generate_refund_html(
             branch, phone, formatted_ticket_type, purchase_date, valid_period,
             ticket_price, usage_info, used_amount, deduction_detail, penalty_rate,
-            penalty_amount, final_refund_amount,
-            st.session_state["account_holder"], st.session_state["bank_name"], st.session_state["account_number"]
+            penalty_amount, final_refund_amount
         )
-        
-        # ✅ HTML 다운로드 버튼
         st.download_button(
             label="📥 환불 영수증 다운로드 (HTML)",
             data=html_content,
