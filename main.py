@@ -518,47 +518,47 @@ def locker_masterkey_page():
 def restore_checkout_page():
     st.title("🛠️ 퇴실 미처리 복구")
     
-    # 날짜와 시간 입력 필드
-    checkout_date = st.text_input("퇴실 일자 (YYYYMMDD)")  # 예: 20250130
-    checkout_time = st.text_input("퇴실 시간 (HHMM)")  # 예: 1530
+    # ✅ 날짜 선택 (캘린더)
+    checkout_date = st.date_input("퇴실 일자 선택", value=datetime.now(pytz.timezone('Asia/Seoul')).date())
 
-    kst = pytz.timezone('Asia/Seoul')
-    now = datetime.now(kst)  # 현재 시간을 한국 시간대로 가져오기
+    # ✅ 시간 선택 (드롭다운)
+    checkout_time = st.time_input("퇴실 시간 선택", value=datetime.now(pytz.timezone('Asia/Seoul')).time())
 
-    with st.form(key="checkout_form"):
-        # 폼 제출 버튼
-        submit_button = st.form_submit_button("미처리 시간 계산")
+    # ✅ 현재 시간 (기본값: 현재 시간)
+    current_time = st.checkbox("현재 시간으로 설정", value=True)
+    if current_time:
+        now = datetime.now(pytz.timezone('Asia/Seoul'))
+    else:
+        now_date = st.date_input("현재 날짜 입력", value=datetime.now(pytz.timezone('Asia/Seoul')).date())
+        now_time = st.time_input("현재 시간 입력", value=datetime.now(pytz.timezone('Asia/Seoul')).time())
+        now = datetime.combine(now_date, now_time)
+        now = pytz.timezone('Asia/Seoul').localize(now)
 
-    if submit_button:  # 엔터를 누르면 제출 버튼이 활성화됨
-        if checkout_date and checkout_time:  # 값이 입력되었을 때만 실행
-            try:
-                # 2자리 연도를 4자리로 보정 (예: '250130' -> '20250130')
-                if len(checkout_date) == 6:
-                    checkout_date = "20" + checkout_date  # 2자리 연도를 4자리로 보정
+    # ✅ 폼 제출 버튼
+    if st.button("미처리 시간 계산"):
+        try:
+            # ✅ 퇴실 시간 조합
+            checkout_datetime = datetime.combine(checkout_date, checkout_time)
+            checkout_datetime = pytz.timezone('Asia/Seoul').localize(checkout_datetime)
 
-                # 사용자가 입력한 퇴실 날짜와 시간 문자열을 datetime 객체로 변환
-                checkout_datetime = datetime.strptime(f"{checkout_date} {checkout_time}", "%Y%m%d %H%M")
-                checkout_datetime = kst.localize(checkout_datetime)  # 입력된 날짜와 시간을 한국 시간대에 맞게 변환
+            # ✅ 퇴실 시간이 미래인지 확인
+            if checkout_datetime > now:
+                st.error("❌ 퇴실 시간이 미래일 수 없습니다!")
+                return
 
-                if checkout_datetime > now:
-                    st.error("❌ 퇴실 시간이 미래일 수 없습니다!")
-                    return
+            # ✅ 시간 차 계산
+            lost_time = now - checkout_datetime
+            lost_minutes = int(lost_time.total_seconds() // 60)
+            lost_hours = lost_minutes // 60
+            remaining_minutes = lost_minutes % 60
+            extra_fee = (lost_minutes // 30) * 1000  # 30분당 1000원 초과 요금 계산
 
-                # 시간 차 계산
-                lost_time = now - checkout_datetime
-                lost_minutes = int(lost_time.total_seconds() // 60)
-                lost_hours = lost_minutes // 60
-                remaining_minutes = lost_minutes % 60
-                extra_fee = (lost_minutes // 30) * 1000  # 30분당 1000원 초과 요금 계산
-
-                # 결과 출력
-                st.success(f"📅 미처리 기간: {checkout_datetime.strftime('%Y-%m-%d %H:%M')} ~ {now.strftime('%Y-%m-%d %H:%M')}")
-                st.success(f"⏳ 미처리 시간: {lost_hours}시간 {remaining_minutes}분")
-                st.success(f"💰 초과 요금: {extra_fee:,}원 (30분당 1,000원)")
-            except ValueError:
-                st.error("❌ 올바른 날짜 및 시간 형식을 입력하세요!")
-        else:
-            st.error("❌ 퇴실 일자와 시간을 입력하세요!")
+            # ✅ 결과 출력
+            st.success(f"📅 미처리 기간: {checkout_datetime.strftime('%Y-%m-%d %H:%M')} ~ {now.strftime('%Y-%m-%d %H:%M')}")
+            st.success(f"⏳ 미처리 시간: {lost_hours}시간 {remaining_minutes}분")
+            st.success(f"💰 초과 요금: {extra_fee:,}원 (30분당 1,000원)")
+        except Exception as e:
+            st.error(f"❌ 오류 발생: {str(e)}")
 
 
 
