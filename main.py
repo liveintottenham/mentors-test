@@ -90,6 +90,12 @@ def get_real_time_data():
         
         # ✅ '마스터키 PWD' 열을 문자열로 강제 변환
         df["마스터키 PWD"] = df["마스터키 PWD"].astype(str)
+
+        # 숫자 컬럼 변환 (시트에서 숫자가 문자열로 올 경우)
+        numeric_cols = ['시간권 금액', '기간권 금액']
+        for col in numeric_cols:
+        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+
         return df
     
     except Exception as e:
@@ -572,63 +578,81 @@ def restore_checkout_page():
 
 def refund_calculator_page():
     st.title("💰 이용권 환불 계산")
-
+    
     # ✅ Google Sheets에서 데이터 가져오기
     df = get_real_time_data()
+    
+    # ✅ 시트 데이터 확인 (디버깅용)
+    st.write("시트 데이터 미리보기:", df.head())
+    
+    # ✅ 지점명 목록
     branch_list = df["지점명"].dropna().unique().tolist()
 
-    # ✅ 지점명 검색 기능
+    # ✅ 지점명 검색 기능 (자동완성)
     search_term = st.text_input("지점명 입력 후 엔터 (예: '연산' 입력 → '부산연산점' 추천)", key="branch_search_refund")
     
     # ✅ 검색어 기반 지점명 필터링
-    filtered_branches = [branch for branch in branch_list if search_term.lower() in branch.lower()] if search_term else []
-
-    # ✅ 지점명 선택 (드롭다운)
-    selected_branch = st.selectbox("검색된 지점 선택", filtered_branches, key="branch_select_refund") if filtered_branches else None
+    filtered_branches = []
+    if search_term:
+        filtered_branches = [branch for branch in branch_list if search_term.lower() in branch.lower()]
     
-    if not selected_branch:
+    # ✅ 지점명 선택 (드롭다운)
+    selected_branch = None
+    if filtered_branches:
+        selected_branch = st.selectbox("검색된 지점 선택", filtered_branches, key="branch_select_refund")
+    else:
         st.warning("⚠️ 일치하는 지점이 없습니다.")
+
+    # ✅ 선택된 지점의 추가 정보 조회
+    if selected_branch:
+        branch_data = df[df["지점명"] == selected_branch].iloc[0]
+        
+        # ✅ 환불 정책 팝업
+        with st.expander("📌 해당 지점 환불 정책", expanded=True):
+            cols = st.columns(3)
+            cols[0].metric("환불규정", branch_data.get("환불규정", "미입력"))
+            cols[1].metric("환불기간", branch_data.get("환불기간", "미입력"))
+            cols[2].metric("환불응대금지", branch_data.get("환불응대금지", "미입력"))
 
     # ✅ 기본 정보 입력 (지점명은 선택된 값으로 고정)
     branch = selected_branch if selected_branch else st.text_input("지점명 (수동입력)")
     phone = st.text_input("전화번호")
-
-    # ✅ 🚨 `ticket_type`을 항상 초기화
     ticket_type = st.radio("이용권 종류", ["기간권", "시간권", "노블레스석"])
 
-    # ✅ 환불 규정 자동 선택
-    policy = "일반"  # 기본값 설정
+    # ✅ 환불 규정 자동 선택 (업데이트 버전)
     if selected_branch:
         branch_data = df[df["지점명"] == selected_branch].iloc[0]
-
-        time_ticket_price = branch_data.get("시간권 금액")
-        period_ticket_price = branch_data.get("기간권 금액")
-
-        try:
-            time_ticket_price = float(time_ticket_price) if time_ticket_price not in [None, ""] else 0
-        except ValueError:
-            time_ticket_price = 0
-
-        try:
-            period_ticket_price = float(period_ticket_price) if period_ticket_price not in [None, ""] else 0
-        except ValueError:
-            period_ticket_price = 0
-
-        if time_ticket_price > 0 or period_ticket_price > 0:
+        
+        # ✅ 시트에서 시간권/기간권 금액 추출 (숫자로 변환)
+        time_price = float(branch_data.get("시간권 금액", 0))
+        period_price = float(branch_data.get("기간권 금액", 0))
+        
+        # ✅ 시간권/기간권 금액이 있는지 확인
+        has_time_period_pricing = (time_price > 0) or (period_price > 0)
+        
+        if has_time_period_pricing:
             policy = "일반"
-            st.info("📌 해당 지점은 시간권/기간권 금액이 설정되어 있어 일반 환불 규정이 적용됩니다.")
+            st.info(f"📌 일반 환불 규정 적용 (시간권: {time_price:,}원, 기간권: {period_price:,}원)")
         else:
             policy = "% 규정"
-            st.info("📌 해당 지점은 시간권/기간권 금액이 설정되어 있지 않아 % 환불 규정이 적용됩니다.")
+            st.info("📌 % 환불 규정 적용")
     else:
         policy = st.radio("환불 규정", ["일반", "% 규정"])
 
-    # ✅ 이제 ticket_type이 항상 선언되었으므로, 아래 코드에서 안전하게 사용 가능
+    # ✅ 결제 및 환불 정보 입력 (날짜는 기본값으로 오늘 날짜 설정)
+    ticket_price = st.number_input("결제 금액 (원)", min_value=0)
+    purchase_date = st.date_input("결제일", value=datetime.now(pytz.timezone('Asia/Seoul')).date())
+    refund_date = st.date_input("환불 요청일", value=datetime.now(pytz.timezone('Asia/Seoul')).date())
+    
+    # 위약금 선택 (0%, 10%, 20%)
+    penalty_rate = st.selectbox("위약금 선택", ["0%", "10%", "20%"], index=0)
+    
+    # ✅ 이용권 종류에 따른 추가 입력 필드
     if ticket_type in ["기간권", "노블레스석"]:
         days_given = st.number_input("전체 부여 기간 [일] (기간권/노블레스석)", min_value=1)
     else:
         days_given = None
-
+    
     if ticket_type == "시간권":
         weeks_given = st.number_input("유효 기간 [주] (시간권)", min_value=1)
         hours_used = st.number_input("사용 시간 (시간권)", min_value=0)
@@ -637,7 +661,7 @@ def refund_calculator_page():
         weeks_given = None
         hours_used = None
         total_hours = None
-
+    
     if ticket_type == "노블레스석":
         noble_rate = st.number_input("노블레스석 1일 요금 (원)", min_value=0)
     else:
@@ -655,8 +679,8 @@ def refund_calculator_page():
     # ✅ 환불 금액 계산 (엔터 키로도 실행 가능)
     if st.button("환불 금액 계산"):  # 항상 계산 실행
         used_days = (refund_date - purchase_date).days + 1
-        daily_rate = 11000  # 기본 1일 요금 (기간권)
-        hourly_rate = 2000  # 기본 시간당 요금 (시간권)
+        daily_rate = period_price if ticket_type == "기간권" else 11000  # 시트의 기간권 금액 사용
+        hourly_rate = time_price if ticket_type == "시간권" else 2000  # 시트의 시간권 금액 사용
         used_amount = 0
         
         # ✅ 결제일자 30일 초과 시 팝업 알림
