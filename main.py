@@ -521,8 +521,8 @@ def restore_checkout_page():
     # ✅ 날짜 선택 (캘린더)
     checkout_date = st.date_input("퇴실 일자 선택", value=datetime.now(pytz.timezone('Asia/Seoul')).date())
 
-    # ✅ 시간 선택 (드롭다운)
-    checkout_time = st.time_input("퇴실 시간 선택", value=datetime.now(pytz.timezone('Asia/Seoul')).time())
+    # ✅ 시간 입력 (텍스트 입력, HH:MM 형식)
+    checkout_time_str = st.text_input("퇴실 시간 입력 (HH:MM 형식, 예: 15:30)", value="00:00")
 
     # ✅ 현재 시간 (기본값: 현재 시간)
     current_time = st.checkbox("현재 시간으로 설정", value=True)
@@ -530,14 +530,20 @@ def restore_checkout_page():
         now = datetime.now(pytz.timezone('Asia/Seoul'))
     else:
         now_date = st.date_input("현재 날짜 입력", value=datetime.now(pytz.timezone('Asia/Seoul')).date())
-        now_time = st.time_input("현재 시간 입력", value=datetime.now(pytz.timezone('Asia/Seoul')).time())
-        now = datetime.combine(now_date, now_time)
-        now = pytz.timezone('Asia/Seoul').localize(now)
+        now_time_str = st.text_input("현재 시간 입력 (HH:MM 형식, 예: 10:45)", value="00:00")
+        try:
+            now_time = datetime.strptime(now_time_str, "%H:%M").time()
+            now = datetime.combine(now_date, now_time)
+            now = pytz.timezone('Asia/Seoul').localize(now)
+        except ValueError:
+            st.error("❌ 올바른 시간 형식(HH:MM)을 입력하세요!")
+            return
 
     # ✅ 폼 제출 버튼
     if st.button("미처리 시간 계산"):
         try:
-            # ✅ 퇴실 시간 조합
+            # ✅ 퇴실 시간 조합 (HH:MM 형식 파싱)
+            checkout_time = datetime.strptime(checkout_time_str, "%H:%M").time()
             checkout_datetime = datetime.combine(checkout_date, checkout_time)
             checkout_datetime = pytz.timezone('Asia/Seoul').localize(checkout_datetime)
 
@@ -557,9 +563,10 @@ def restore_checkout_page():
             st.success(f"📅 미처리 기간: {checkout_datetime.strftime('%Y-%m-%d %H:%M')} ~ {now.strftime('%Y-%m-%d %H:%M')}")
             st.success(f"⏳ 미처리 시간: {lost_hours}시간 {remaining_minutes}분")
             st.success(f"💰 초과 요금: {extra_fee:,}원 (30분당 1,000원)")
+        except ValueError:
+            st.error("❌ 올바른 시간 형식(HH:MM)을 입력하세요!")
         except Exception as e:
             st.error(f"❌ 오류 발생: {str(e)}")
-
 
 
 def refund_calculator_page():
