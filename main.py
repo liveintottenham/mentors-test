@@ -737,37 +737,42 @@ def refund_calculator_page():
             deduction_detail, penalty_rate, 0, refund_amount
         )
 
-        # ✅ HTML 생성
+                # ✅ HTML 생성
         html_content = generate_refund_html(
             branch, phone, formatted_ticket_type, purchase_date, valid_period,
             ticket_price, usage_info, used_amount, deduction_detail, penalty_rate, penalty_amount, refund_amount
         )
 
-        # ✅ Base64 인코딩
-        html_base64 = base64.b64encode(html_content.encode()).decode()
+        # ✅ 임시 HTML 파일 생성
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".html", mode="w", encoding="utf-8") as temp_file:
+            temp_file.write(html_content)
+            temp_file_path = temp_file.name
 
-        # ✅ JavaScript로 새 창 열기
+        # ✅ 다운로드 링크 생성
+        st.markdown(
+            f'<a href="file://{temp_file_path}" target="_blank" download="refund_details.html">'
+            '<button style="'
+            'background-color: #3498db;'
+            'color: white;'
+            'padding: 10px 20px;'
+            'border: none;'
+            'border-radius: 5px;'
+            'cursor: pointer;'
+            '">📄 새 창에서 보기</button>'
+            '</a>',
+            unsafe_allow_html=True
+        )
+
+        # ✅ JavaScript 강제 실행 (팝업 차단 우회)
         st.markdown(
             f"""
             <script>
-                function openHtmlInNewWindow() {{
-                    const htmlContent = atob("{html_base64}");
-                    const newWindow = window.open();
-                    newWindow.document.write(htmlContent);
-                    newWindow.document.close();
-                }}
+                window.open('file://{temp_file_path}', '_blank');
             </script>
-            <button onclick="openHtmlInNewWindow()" style="
-                background-color: #3498db;
-                color: white;
-                padding: 10px 20px;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-            ">📄 새 창에서 보기</button>
             """,
             unsafe_allow_html=True
         )
+
 
 #환불 내역서
 def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, valid_period,
