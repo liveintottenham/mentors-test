@@ -582,9 +582,6 @@ def refund_calculator_page():
     # ✅ Google Sheets에서 데이터 가져오기
     df = get_real_time_data()
     
-    # ✅ 시트 데이터 확인 (디버깅용)
-    st.write("시트 데이터 미리보기:", df.head())
-    
     # ✅ 지점명 목록
     branch_list = df["지점명"].dropna().unique().tolist()
 
@@ -610,9 +607,9 @@ def refund_calculator_page():
         # ✅ 환불 정책 팝업
         with st.expander("📌 해당 지점 환불 정책", expanded=True):
             cols = st.columns(3)
-            cols[0].metric("환불규정", branch_data.get("환불규정", "미입력"))
-            cols[1].metric("환불기간", branch_data.get("환불기간", "미입력"))
-            cols[2].metric("환불응대금지", branch_data.get("환불응대금지", "미입력"))
+            cols[0].metric("환불기간",branch_data.get("환불기간", "미입력"))
+            cols[1].metric("환불응대금지", branch_data.get("환불응대금지", "미입력"))
+            cols[2].metric("스터디룸 여부", branch_data.get("스터디룸 여부", "미입력"))
 
     # ✅ 기본 정보 입력 (지점명은 선택된 값으로 고정)
     branch = selected_branch if selected_branch else st.text_input("지점명 (수동입력)")
