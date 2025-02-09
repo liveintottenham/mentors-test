@@ -780,7 +780,6 @@ def refund_calculator_page():
                 branch, phone, formatted_ticket_type, purchase_date, valid_period,
                 ticket_price, usage_info, used_amount, deduction_detail, penalty_rate,
                 penalty_amount, final_refund_amount,
-                st.session_state["account_holder"], st.session_state["bank_name"], st.session_state["account_number"]
                 account_holder=st.session_state["account_info"]["account_holder"],
                 bank_name=st.session_state["account_info"]["bank_name"],
                 account_number=st.session_state["account_info"]["account_number"]
