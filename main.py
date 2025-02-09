@@ -737,21 +737,17 @@ def refund_calculator_page():
             deduction_detail, penalty_rate, 0, refund_amount
         )
 
-        # ✅ HTML 생성
+            # 환불 내역서 HTML 생성
         html_content = generate_refund_html(
             branch, phone, formatted_ticket_type, purchase_date, valid_period,
-            ticket_price, usage_info, deduction_detail, penalty_rate, penalty_amount, final_refund_amount
+            ticket_price, usage_info, used_amount, deduction_detail, penalty_rate, penalty_amount, refund_amount
         )
 
-        # ✅ 임시 HTML 파일 생성
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".html", mode="w", encoding="utf-8") as temp_file:
-            temp_file.write(html_content)
-            temp_file_path = temp_file.name
-
-        # ✅ 새 창에서 HTML 열기
+        # Base64 인코딩 후 새 창에서 열기
+        html_base64 = base64.b64encode(html_content.encode()).decode()
         st.markdown(
             f"""
-            <a href="file://{temp_file_path}" target="_blank">
+            <a href="data:text/html;base64,{html_base64}" target="_blank">
                 <button style="
                     background-color: #3498db;
                     color: white;
@@ -765,12 +761,7 @@ def refund_calculator_page():
             unsafe_allow_html=True
         )
 
-        # ✅ 임시 파일 삭제 (선택적)
-        st.session_state["temp_file_path"] = temp_file_path
-        st.button("임시 파일 삭제", on_click=lambda: os.remove(st.session_state["temp_file_path"]))
-
 #환불 내역서
-# 환불 내역서 HTML 생성 함수
 def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, valid_period,
                         ticket_price, usage_info, used_amount, deduction_detail, penalty_rate, penalty_amount, final_refund_amount):
     html_content = f"""
@@ -825,6 +816,7 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
     </html>
     """
     return html_content
+
 
   
 if __name__ == "__main__":
