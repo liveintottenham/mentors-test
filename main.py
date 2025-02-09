@@ -603,17 +603,27 @@ def refund_calculator_page():
             cols[1].metric("환불기간", branch_data.get("환불기간", "미입력"))
             cols[2].metric("환불응대금지", branch_data.get("환불응대금지", "미입력"))
 
-    # ✅ 기본 정보 입력 (지점명은 선택된 값으로 고정)
-    branch = selected_branch if selected_branch else st.text_input("지점명 (수동입력)")
-    phone = st.text_input("전화번호")
-    ticket_type = st.radio("이용권 종류", ["기간권", "시간권", "노블레스석"])
-
     # ✅ 환불 규정 자동 선택
     if selected_branch:
         branch_data = df[df["지점명"] == selected_branch].iloc[0]
-        has_time_period_pricing = not pd.isna(branch_data.get("시간권 금액")) or not pd.isna(branch_data.get("기간권 금액"))
-        
-        if has_time_period_pricing:
+
+        # ✅ 데이터가 숫자인지 확인 후, 금액이 존재하면 일반 환불 규정 적용
+        time_ticket_price = branch_data.get("시간권 금액")
+        period_ticket_price = branch_data.get("기간권 금액")
+
+        # 숫자로 변환 (비어 있거나 문자열이면 0으로 처리)
+        try:
+            time_ticket_price = float(time_ticket_price) if time_ticket_price not in [None, ""] else 0
+        except ValueError:
+            time_ticket_price = 0
+
+        try:
+            period_ticket_price = float(period_ticket_price) if period_ticket_price not in [None, ""] else 0
+        except ValueError:
+            period_ticket_price = 0
+
+        # ✅ 금액이 하나라도 존재하면 일반 규정 적용
+        if time_ticket_price > 0 or period_ticket_price > 0:
             policy = "일반"
             st.info("📌 해당 지점은 시간권/기간권 금액이 설정되어 있어 일반 환불 규정이 적용됩니다.")
         else:
