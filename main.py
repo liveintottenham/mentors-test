@@ -722,22 +722,6 @@ def refund_calculator_page():
         # ✅ 한국 시간대 (KST)로 현재 시간 설정
         kst = pytz.timezone('Asia/Seoul')
         current_time_kst = datetime.now(kst).strftime('%Y-%m-%d %H:%M')
-
-        # ✅ 계산 결과를 세션 상태에 저장
-        st.session_state['refund_data'] = {
-            'branch': branch,
-            'phone': phone,
-            'formatted_ticket_type': formatted_ticket_type,
-            'purchase_date': purchase_date,
-            'valid_period': valid_period,
-            'ticket_price': ticket_price,
-            'usage_info': usage_info,
-            'used_amount': used_amount,
-            'deduction_detail': deduction_detail,
-            'penalty_rate': penalty_rate,
-            'penalty_amount': penalty_amount,
-            'final_refund_amount': final_refund_amount
-        }
         
         # ✅ 환불 내역서 구성
         refund_detail = f"""
@@ -768,6 +752,23 @@ def refund_calculator_page():
         
         # ✅ 환불 내역서 출력
         st.text_area("📄 환불 내역서 (Ctrl+C로 복사 가능)", refund_detail.strip(), height=400)
+
+
+        # ✅ 계산 결과를 세션 상태에 저장
+        st.session_state['refund_data'] = {
+            'branch': branch,
+            'phone': phone,
+            'formatted_ticket_type': formatted_ticket_type,
+            'purchase_date': purchase_date,
+            'valid_period': valid_period,
+            'ticket_price': ticket_price,
+            'usage_info': usage_info,
+            'used_amount': used_amount,
+            'deduction_detail': deduction_detail,
+            'penalty_rate': penalty_rate,
+            'penalty_amount': penalty_amount,
+            'final_refund_amount': final_refund_amount
+        }
 
 # ✅ 세션 상태에 계산 데이터가 있는 경우 계좌 폼 및 다운로드 버튼 표시
 if 'refund_data' in st.session_state:
