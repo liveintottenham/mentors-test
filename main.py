@@ -736,7 +736,7 @@ def refund_calculator_page():
             deduction_detail, penalty_rate, 0, refund_amount
         )
 
-         # ✅ 계좌 정보 입력 폼
+        # ✅ 계좌 정보 입력 폼
         with st.form(key="account_form"):
             st.subheader("환불 계좌 정보 입력")
             col1, col2 = st.columns(2)
@@ -752,6 +752,10 @@ def refund_calculator_page():
                 st.session_state["account_holder"] = account_holder
                 st.session_state["bank_name"] = bank_name
                 st.session_state["account_number"] = account_number
+                st.success("계좌 정보가 저장되었습니다.")
+                
+                # ✅ 페이지 리로드
+                st.rerun()
 
     # ✅ 계좌 정보가 입력된 경우 HTML 다운로드 버튼 표시
     if "account_holder" in st.session_state:
@@ -771,7 +775,7 @@ def refund_calculator_page():
             help="다운로드 후 파일을 열어 확인하세요."
         )
 
-# ✅ HTML 템플릿 수정 (영수증 스타일 + 계좌 정보)
+# ✅ HTML 템플릿 (기존과 동일)
 def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, valid_period,
                         ticket_price, usage_info, used_amount, deduction_detail, penalty_rate,
                         penalty_amount, final_refund_amount, account_holder="", bank_name="", account_number=""):
@@ -885,6 +889,9 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
     </html>
     """
     return html_content
+
+# 실행
+refund_calculator_page()
 
 
   
