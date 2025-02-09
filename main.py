@@ -445,14 +445,25 @@ def home_page():
     st.markdown(
         """
         <style>
+        /* 기본 스타일 */
         .stApp { background-color: #f5f7fa; }
         .title-text { text-align: center; font-size: 40px; font-weight: bold; color: white; background-color: #2c3e50; padding: 15px; border-radius: 10px; }
         .sub-title { text-align: center; font-size: 20px; color: #ffffff; background-color: #34495e; padding: 10px; border-radius: 10px; }
         .card { background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); margin: 10px 0; }
+
+        /* 야간 모드 대응 */
+        @media (prefers-color-scheme: dark) {
+            .stApp { background-color: #1e1e1e; }
+            .title-text { color: #ffffff !important; background-color: #2c3e50; }
+            .sub-title { color: #ffffff !important; background-color: #34495e; }
+            .card { background-color: #2e2e2e; color: #ffffff !important; }
+            .card a { color: #4dabf7 !important; } /* 링크 색상 변경 */
+        }
         </style>
         """,
         unsafe_allow_html=True
     )
+
 
     # ✅ 공지사항 데이터
     notices = [
