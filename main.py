@@ -737,41 +737,27 @@ def refund_calculator_page():
             deduction_detail, penalty_rate, 0, refund_amount
         )
 
-                # ✅ HTML 생성
+        # ✅ HTML 생성
         html_content = generate_refund_html(
             branch, phone, formatted_ticket_type, purchase_date, valid_period,
             ticket_price, usage_info, used_amount, deduction_detail, penalty_rate, penalty_amount, refund_amount
         )
 
-        # ✅ 임시 HTML 파일 생성
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".html", mode="w", encoding="utf-8") as temp_file:
-            temp_file.write(html_content)
-            temp_file_path = temp_file.name
-
-        # ✅ 다운로드 링크 생성
-        st.markdown(
-            f'<a href="file://{temp_file_path}" target="_blank" download="refund_details.html">'
-            '<button style="'
-            'background-color: #3498db;'
-            'color: white;'
-            'padding: 10px 20px;'
-            'border: none;'
-            'border-radius: 5px;'
-            'cursor: pointer;'
-            '">📄 새 창에서 보기</button>'
-            '</a>',
-            unsafe_allow_html=True
+        # ✅ HTML 파일 다운로드 버튼
+        st.download_button(
+            label="📥 환불 내역서 다운로드 (HTML)",
+            data=html_content,
+            file_name="refund_details.html",
+            mime="text/html",
+            help="다운로드 후 파일을 열어서 확인하세요."
         )
 
-        # ✅ JavaScript 강제 실행 (팝업 차단 우회)
-        st.markdown(
-            f"""
-            <script>
-                window.open('file://{temp_file_path}', '_blank');
-            </script>
-            """,
-            unsafe_allow_html=True
-        )
+        # ✅ 사용자에게 안내 메시지
+        st.info("""
+        **안내:**  
+        - 위 버튼을 클릭하여 환불 내역서를 다운로드하세요.  
+        - 다운로드한 파일(`refund_details.html`)을 더블클릭하여 브라우저에서 열 수 있습니다.
+        """)
 
 
 #환불 내역서
