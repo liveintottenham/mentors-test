@@ -4,6 +4,7 @@ import pytz, gspread, random, string, os, json
 from google.oauth2.service_account import Credentials
 import pandas as pd
 import plotly.express as px
+import base64
 
 # ✅ 페이지 설정
 st.set_page_config(
