@@ -747,7 +747,8 @@ def refund_calculator_page():
         html_base64 = base64.b64encode(html_content.encode()).decode()
         st.markdown(
             f"""
-            <a href="data:text/html;base64,{html_base64}" target="_blank">
+            <iframe src="data:text/html;base64,{html_base64}" 
+            width="100%" height="600px" style="border:none;"></iframe>
                 <button style="
                     background-color: #3498db;
                     color: white;
