@@ -343,8 +343,8 @@ def main():
 
     # ✅ 메뉴 아이템 리스트
     menu_items = [
-        {"icon": "🏠", "label": "홈", "key": "home"},
-        {"icon": "🔑", "label": "사물함 마스터키", "key": "locker"},
+        {"icon": "🏠", "label": "대시보드", "key": "home"},
+        {"icon": "🔑", "label": "마스터키 안내", "key": "locker"},
         {"icon": "🔄", "label": "퇴실 미처리 복구", "key": "restore"},
         {"icon": "💰", "label": "이용권 환불 계산", "key": "refund"},
         {"icon": "📊", "label": "전체 지점 리스트", "key": "spreadsheet"},
