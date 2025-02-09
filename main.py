@@ -858,8 +858,8 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
                 <table class="info-table">
                     <tr><td>결제 금액</td><td>{ticket_price:,}원</td></tr>
                     <tr><td>사용량</td><td>{usage_info}</td></tr>
-                    <tr><td>공제 금액</td><td class="highlight">-{used_amount:,}원</td></tr>
-                    <tr><td>공제 내역</td><td class="highlight">-{deduction_detail}원</td></tr>
+                    <tr><td>공제 금액</td><td class="highlight">-{used_amount:,}</td></tr>
+                    <tr><td>공제 내역</td><td>{deduction_detail}원</td></tr>
                     <tr><td>위약금 ({penalty_rate})</td><td class="highlight">-{penalty_amount:,.0f}원</td></tr>
                     <tr><td>최종 환불액</td><td class="highlight">{int(final_refund_amount):,}원</td></tr>
                 </table>
