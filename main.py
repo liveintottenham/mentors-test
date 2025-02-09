@@ -837,7 +837,7 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
         <div class="receipt">
             <div class="header">
                 <div class="title">멘토즈 스터디카페</div>
-                <div style="font-size: 14px; color: #7f8c8d;">환불 영수증</div>
+                <div style="font-size: 14px; color: #7f8c8d;">환불 요금 안내문</div>
             </div>
 
             <!-- 기본 정보 -->
@@ -847,7 +847,8 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
                     <tr><td>지점명</td><td>{branch}</td></tr>
                     <tr><td>연락처</td><td>{phone}</td></tr>
                     <tr><td>이용권</td><td>{formatted_ticket_type}</td></tr>
-                    <tr><td>결제일자</td><td>{purchase_date.strftime('%Y-%m-%d')}</td></tr>
+                    <tr><td>유효기간</td><td>{valid_period}</td></tr>
+                    <tr><td>환불요청일</td><td>{purchase_date.strftime('%Y-%m-%d')}</td></tr>
                 </table>
             </div>
 
@@ -857,7 +858,7 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
                 <table class="info-table">
                     <tr><td>결제 금액</td><td>{ticket_price:,}원</td></tr>
                     <tr><td>사용량</td><td>{usage_info}</td></tr>
-                    <tr><td>공제 금액</td><td class="highlight">-{used_amount:,}원</td></tr>
+                    <tr><td>공제 금액</td><td class="highlight">-{used_amount:,}원({deduction_detail})</td></tr>
                     <tr><td>위약금 ({penalty_rate})</td><td class="highlight">-{penalty_amount:,.0f}원</td></tr>
                     <tr><td>최종 환불액</td><td class="highlight">{int(final_refund_amount):,}원</td></tr>
                 </table>
