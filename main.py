@@ -79,7 +79,6 @@ def authenticate_google_sheets():
     except Exception as e:
         raise Exception(f"🚨 인증 실패: {str(e)}")
 
-# ✅ 실시간 데이터 조회
 @st.cache_data(ttl=5, show_spinner=False)
 def get_real_time_data():
     try:
@@ -91,8 +90,8 @@ def get_real_time_data():
         # ✅ '마스터키 PWD' 열을 문자열로 변환
         df["마스터키 PWD"] = df["마스터키 PWD"].astype(str)
 
-        # ✅ '마스터키 PWD'가 4자리 이하일 경우 앞에 0을 채우기 (예: "12345" → "012345")
-        df["마스터키 PWD"] = df["마스터키 PWD"].str.zfill(4)  # 6자리를 기준으로 앞에 0 추가
+        # ✅ 비어 있는 값(`""` 또는 NaN)은 그대로 두고, 나머지만 `zfill(6)` 적용
+        df["마스터키 PWD"] = df["마스터키 PWD"].apply(lambda x: str(x).zfill(6) if pd.notna(x) and x != "" else x)
 
         # ✅ 숫자 컬럼 변환 (시트에서 숫자가 문자열로 올 경우)
         numeric_cols = ['시간권 금액', '기간권 금액']
