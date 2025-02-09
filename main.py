@@ -149,7 +149,7 @@ def load_and_display_spreadsheet_data():
     filtered_df = df[df["지점명"].str.contains(branch_name, case=False, na=False)] if branch_name else df
 
     # ✅ Streamlit 데이터 표시 (읽기 전용)
-    st.subheader("📊 현재 데이터")
+    st.subheader("📊 지점 데이터 확인")
     if st.session_state.can_edit:
         # ✅ 수정 가능 상태에서 데이터 편집 활성화
         edited_df = st.data_editor(
@@ -339,7 +339,7 @@ def main():
     )
 
     # ✅ 사이드바 타이틀
-    st.sidebar.markdown('<p class="sidebar-title">⭐ SPACE MONSTER</p>', unsafe_allow_html=True)
+    st.sidebar.markdown('<p class="sidebar-title">🎖️⭐</p>', unsafe_allow_html=True)
 
     # ✅ 메뉴 아이템 리스트
     menu_items = [
@@ -347,7 +347,7 @@ def main():
         {"icon": "🔑", "label": "사물함 마스터키", "key": "locker"},
         {"icon": "🔄", "label": "퇴실 미처리 복구", "key": "restore"},
         {"icon": "💰", "label": "이용권 환불 계산", "key": "refund"},
-        {"icon": "📊", "label": "멘토즈 지점명/특이사항", "key": "spreadsheet"},
+        {"icon": "📊", "label": "전체 지점 리스트", "key": "spreadsheet"},
     ]
 
     # ✅ 버튼 클릭 이벤트 처리
