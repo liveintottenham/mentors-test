@@ -725,7 +725,6 @@ def refund_calculator_page():
         
         # 환불 내역서 출력
         st.text_area("📄 환불 내역서 (Ctrl+C로 복사 가능)", refund_detail.strip(), height=400)
-        st.download_button("📥 환불 내역서 다운로드", refund_detail.strip(), file_name="refund_details.txt")
 
         
         # 환불 내역서 생성
@@ -737,79 +736,143 @@ def refund_calculator_page():
             deduction_detail, penalty_rate, 0, refund_amount
         )
 
-        # ✅ HTML 생성
-        html_content = generate_refund_html(
-            branch, phone, formatted_ticket_type, purchase_date, valid_period,
-            ticket_price, usage_info, used_amount, deduction_detail, penalty_rate, penalty_amount, refund_amount
-        )
+        # ✅ 계좌 정보 입력 필드 (계산 후 표시)
+        with st.form(key="account_form"):
+            st.subheader("환불 계좌 정보 입력")
+            col1, col2 = st.columns(2)
+            with col1:
+                account_holder = st.text_input("예금주")
+                bank_name = st.text_input("은행명")
+            with col2:
+                account_number = st.text_input("계좌번호")
+            
+            # ✅ 계좌 정보 확인 버튼
+            if st.form_submit_button("확인"):
+                # ✅ HTML 생성 (계좌 정보 포함)
+                html_content = generate_refund_html(
+                    branch, phone, formatted_ticket_type, purchase_date, valid_period,
+                    ticket_price, usage_info, used_amount, deduction_detail, penalty_rate,
+                    penalty_amount, final_refund_amount, account_holder, bank_name, account_number
+                )
+                
+                # ✅ HTML 다운로드 버튼
+                st.download_button(
+                    label="📥 환불 영수증 다운로드 (HTML)",
+                    data=html_content,
+                    file_name="refund_receipt.html",
+                    mime="text/html",
+                    help="다운로드 후 파일을 열어 확인하세요."
+                )
 
-        # ✅ HTML 파일 다운로드 버튼
-        st.download_button(
-            label="📥 환불 내역서 다운로드 (HTML)",
-            data=html_content,
-            file_name="refund_details.html",
-            mime="text/html",
-            help="다운로드 후 파일을 열어서 확인하세요."
-        )
-
-        # ✅ 사용자에게 안내 메시지
-        st.info("""
-        **안내:**  
-        - 위 버튼을 클릭하여 환불 내역서를 다운로드하세요.  
-        - 다운로드한 파일(`refund_details.html`)을 더블클릭하여 브라우저에서 열 수 있습니다.
-        """)
-
-
-#환불 내역서
+# ✅ HTML 템플릿 수정 (영수증 스타일 + 계좌 정보)
 def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, valid_period,
-                        ticket_price, usage_info, used_amount, deduction_detail, penalty_rate, penalty_amount, final_refund_amount):
+                        ticket_price, usage_info, used_amount, deduction_detail, penalty_rate,
+                        penalty_amount, final_refund_amount, account_holder="", bank_name="", account_number=""):
     html_content = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <meta charset="UTF-8">
         <style>
-            body {{ font-family: 'Pretendard', sans-serif; padding: 20px; }}
-            .header {{ text-align: center; border-bottom: 2px solid #2c3e50; padding-bottom: 10px; margin-bottom: 20px; }}
-            .title {{ font-size: 24px; font-weight: bold; color: #2c3e50; }}
-            .section {{ margin: 15px 0; }}
-            .section-title {{ font-size: 18px; font-weight: bold; color: #34495e; border-left: 4px solid #3498db; padding-left: 10px; }}
-            .info-table {{ width: 100%; border-collapse: collapse; margin: 10px 0; }}
-            .info-table td {{ padding: 8px; border: 1px solid #ddd; }}
-            .highlight {{ color: #e74c3c; font-weight: bold; }}
-            .footer {{ margin-top: 30px; text-align: center; font-size: 12px; color: #7f8c8d; }}
+            @import url('https://cdn.jsdelivr.net/gh/orioncactus/Pretendard/dist/web/static/pretendard.css');
+            body {{
+                font-family: 'Pretendard', sans-serif;
+                max-width: 400px; /* 좁은 너비 */
+                margin: 20px auto;
+                padding: 20px;
+                background-color: #f8f9fa;
+            }}
+            .receipt {{
+                background-color: white;
+                padding: 25px;
+                border-radius: 10px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }}
+            .header {{
+                text-align: center;
+                border-bottom: 2px dashed #ddd;
+                padding-bottom: 15px;
+                margin-bottom: 20px;
+            }}
+            .title {{
+                font-size: 22px;
+                font-weight: 700;
+                color: #2c3e50;
+                margin-bottom: 5px;
+            }}
+            .section {{
+                margin: 15px 0;
+            }}
+            .section-title {{
+                font-size: 16px;
+                font-weight: 600;
+                color: #34495e;
+                margin-bottom: 10px;
+            }}
+            .info-table {{
+                width: 100%;
+                border-collapse: collapse;
+                margin: 10px 0;
+            }}
+            .info-table td {{
+                padding: 8px;
+                border-bottom: 1px solid #eee;
+            }}
+            .highlight {{
+                color: #e74c3c;
+                font-weight: 700;
+            }}
+            .account-info {{
+                background-color: #f8f9fa;
+                padding: 15px;
+                border-radius: 8px;
+                margin-top: 20px;
+            }}
         </style>
     </head>
     <body>
-        <div class="header">
-            <div class="title">멘토즈 스터디카페 환불 내역서</div>
-            <div style="margin-top: 5px;">발급일: {datetime.now(pytz.timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M')}</div>
-        </div>
+        <div class="receipt">
+            <div class="header">
+                <div class="title">멘토즈 스터디카페</div>
+                <div style="font-size: 14px; color: #7f8c8d;">환불 영수증</div>
+            </div>
 
-        <div class="section">
-            <div class="section-title">기본 정보</div>
-            <table class="info-table">
-                <tr><td width="30%">지점명</td><td>{branch}</td></tr>
-                <tr><td>연락처</td><td>{phone}</td></tr>
-                <tr><td>이용권 종류</td><td>{formatted_ticket_type}</td></tr>
-                <tr><td>결제일자</td><td>{purchase_date.strftime('%Y-%m-%d')}</td></tr>
-                <tr><td>유효기간</td><td>{valid_period}</td></tr>
-            </table>
-        </div>
+            <!-- 기본 정보 -->
+            <div class="section">
+                <div class="section-title">기본 정보</div>
+                <table class="info-table">
+                    <tr><td>지점명</td><td>{branch}</td></tr>
+                    <tr><td>연락처</td><td>{phone}</td></tr>
+                    <tr><td>이용권</td><td>{formatted_ticket_type}</td></tr>
+                    <tr><td>결제일자</td><td>{purchase_date.strftime('%Y-%m-%d')}</td></tr>
+                </table>
+            </div>
 
-        <div class="section">
-            <div class="section-title">결제 정보</div>
-            <table class="info-table">
-                <tr><td width="30%">결제 금액</td><td>{ticket_price:,}원</td></tr>
-                <tr><td>사용량</td><td>{usage_info}</td></tr>
-                <tr><td>공제 금액</td><td class="highlight">-{used_amount:,}원 ({deduction_detail})</td></tr>
-                <tr><td>위약금 ({penalty_rate})</td><td class="highlight">-{penalty_amount:,.0f}원</td></tr>
-                <tr><td>최종 환불 금액</td><td class="highlight">{int(final_refund_amount):,}원</td></tr>
-            </table>
-        </div>
+            <!-- 결제 정보 -->
+            <div class="section">
+                <div class="section-title">결제 정보</div>
+                <table class="info-table">
+                    <tr><td>결제 금액</td><td>{ticket_price:,}원</td></tr>
+                    <tr><td>사용량</td><td>{usage_info}</td></tr>
+                    <tr><td>공제 금액</td><td class="highlight">-{used_amount:,}원</td></tr>
+                    <tr><td>위약금 ({penalty_rate})</td><td class="highlight">-{penalty_amount:,.0f}원</td></tr>
+                    <tr><td>최종 환불액</td><td class="highlight">{int(final_refund_amount):,}원</td></tr>
+                </table>
+            </div>
 
-        <div class="footer">
-            ※ 본 내역서는 발급일 기준으로 유효하며, 실제 환불 금액과 차이가 있을 수 있습니다.
+            <!-- 환불 계좌 정보 -->
+            <div class="account-info">
+                <div class="section-title">환불 계좌 정보</div>
+                <table class="info-table">
+                    <tr><td>예금주</td><td>{account_holder}</td></tr>
+                    <tr><td>은행명</td><td>{bank_name}</td></tr>
+                    <tr><td>계좌번호</td><td>{account_number}</td></tr>
+                </table>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #7f8c8d;">
+                발급일: {datetime.now(pytz.timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M')}
+            </div>
         </div>
     </body>
     </html>
