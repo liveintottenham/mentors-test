@@ -90,8 +90,8 @@ def get_real_time_data():
         # ✅ '마스터키 PWD' 열을 문자열로 변환
         df["마스터키 PWD"] = df["마스터키 PWD"].astype(str)
 
-        # ✅ 비어 있는 값(`""` 또는 NaN)은 그대로 두고, 나머지만 `zfill(6)` 적용
-        df["마스터키 PWD"] = df["마스터키 PWD"].apply(lambda x: str(x).zfill(6) if pd.notna(x) and x != "" else x)
+        # ✅ 비어 있는 값(`""` 또는 NaN)은 그대로 두고, 나머지만 `zfill(4)` 적용
+        df["마스터키 PWD"] = df["마스터키 PWD"].apply(lambda x: str(x).zfill(4) if pd.notna(x) and x != "" else x)
 
         # ✅ 숫자 컬럼 변환 (시트에서 숫자가 문자열로 올 경우)
         numeric_cols = ['시간권 금액', '기간권 금액']
