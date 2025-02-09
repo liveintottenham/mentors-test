@@ -461,13 +461,15 @@ def home_page():
                         labels={"날짜": "오픈 날짜", "오픈 개수": "오픈된 지점 수"})
     st.plotly_chart(fig_trend, use_container_width=True)
 
-# ✅ 사물함 마스터키 페이지
 def locker_masterkey_page():
     st.title("🛠️ 사물함 마스터키 안내")
     st.subheader("사물함의 마스터키를 한눈에 볼 수 있어요.")
 
     # ✅ Google Sheets에서 데이터 가져오기
     df = get_real_time_data()
+
+    # ✅ 마스터키 PWD 컬럼을 문자열로 강제 변환
+    df["마스터키 PWD"] = df["마스터키 PWD"].astype(str).str.strip()
 
     # ✅ 모든 지점명 목록 추출 (중복 제거)
     branch_list = df["지점명"].dropna().unique().tolist()  # NaN 제거
@@ -500,9 +502,9 @@ def locker_masterkey_page():
             else:
                 # ✅ 사물함 정보 추출
                 locker_number = str(filtered_data.iloc[0]["마스터키 L"]).strip()  # 문자열 변환 및 공백 제거
-                locker_password = str(filtered_data.iloc[0]["마스터키 PWD"]).strip()
+                locker_password = filtered_data.iloc[0]["마스터키 PWD"]  # 이미 문자열로 처리됨
 
-                # ✅ 빈 값 또는 NaN 체크 (숫자형인 경우 0 체크 추가)
+                # ✅ 빈 값 또는 NaN 체크 (문자열로 비교)
                 if (locker_number in ["", "nan", "NaN", "0"]) or (locker_password in ["", "nan", "NaN", "0"]):
                     st.error("❌ 사물함 정보가 없습니다. 지점채널로 문의해주세요.")
                 else:
