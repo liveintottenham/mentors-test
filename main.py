@@ -890,9 +890,6 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
     """
     return html_content
 
-# 실행
-refund_calculator_page()
-
 
   
 if __name__ == "__main__":
