@@ -726,13 +726,17 @@ def refund_calculator_page():
         st.text_area("📄 환불 내역서 (Ctrl+C로 복사 가능)", refund_detail.strip(), height=400)
         st.download_button("📥 환불 내역서 다운로드", refund_detail.strip(), file_name="refund_details.txt")
 
-           # HTML 내역서 생성
+        
+        # 환불 내역서 생성
+        valid_period = f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(days=days_given - 1)).strftime('%Y-%m-%d')}" if days_given else "정보 없음"
+        deduction_detail = f"{used_days}일 × {daily_rate:,}원" if ticket_type != "시간권" else f"{hours_used}시간 × {hourly_rate:,}원"
         html_content = generate_refund_html(
-            branch, phone, formatted_ticket_type, purchase_date, valid_period,
-            ticket_price, f"{used_days}일 사용", f"{used_days}일 × {daily_rate:,}원", penalty_rate, 0, refund_amount
+            branch, phone, f"{ticket_type} ({days_given}일)" if days_given else ticket_type, purchase_date, valid_period,
+            ticket_price, f"{used_days}일 사용" if ticket_type != "시간권" else f"{hours_used}시간 사용", used_amount,
+            deduction_detail, penalty_rate, 0, refund_amount
         )
 
-            # HTML 새 창에서 보기
+        # HTML 새 창에서 보기
         html_base64 = base64.b64encode(html_content.encode()).decode()
         html_page = f"""
         <a href="data:text/html;base64,{html_base64}" target="_blank">
@@ -751,7 +755,7 @@ def refund_calculator_page():
 #환불 내역서
 # 환불 내역서 HTML 생성 함수
 def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, valid_period,
-                        ticket_price, usage_info, deduction_detail, penalty_rate, penalty_amount, final_refund_amount):
+                        ticket_price, usage_info, used_amount, deduction_detail, penalty_rate, penalty_amount, final_refund_amount):
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -791,7 +795,7 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
             <table class="info-table">
                 <tr><td width="30%">결제 금액</td><td>{ticket_price:,}원</td></tr>
                 <tr><td>사용량</td><td>{usage_info}</td></tr>
-                <tr><td>공제 금액</td><td class="highlight">{deduction_detail}</td></tr>
+                <tr><td>공제 금액</td><td class="highlight">-{used_amount:,}원 ({deduction_detail})</td></tr>
                 <tr><td>위약금 ({penalty_rate})</td><td class="highlight">-{penalty_amount:,.0f}원</td></tr>
                 <tr><td>최종 환불 금액</td><td class="highlight">{int(final_refund_amount):,}원</td></tr>
             </table>
@@ -804,6 +808,7 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
     </html>
     """
     return html_content
+
   
 if __name__ == "__main__":
     main()
