@@ -4,6 +4,8 @@ import pytz, gspread, random, string, os, json
 from google.oauth2.service_account import Credentials
 import pandas as pd
 import plotly.express as px
+from weasyprint import HTML
+import base64
 
 # ✅ 페이지 설정
 st.set_page_config(
@@ -725,6 +727,98 @@ def refund_calculator_page():
         # 환불 내역서 출력
         st.text_area("📄 환불 내역서 (Ctrl+C로 복사 가능)", refund_detail.strip(), height=400)
         st.download_button("📥 환불 내역서 다운로드", refund_detail.strip(), file_name="refund_details.txt")
+
+        # ✅ HTML 생성
+        html_content = generate_refund_html(
+        branch, phone, formatted_ticket_type, purchase_date, valid_period,
+        ticket_price, usage_info, deduction_detail, penalty_rate, penalty_amount, final_refund_amount
+        )
+
+        # ✅ PDF 다운로드 버튼
+        pdf_bytes = create_pdf(html_content)
+        st.download_button(
+            label="📥 환불 내역서 PDF 다운로드",
+            data=pdf_bytes,
+            file_name="refund_details.pdf",
+            mime="application/pdf"
+        )
+
+        # ✅ HTML 새 창에서 보기
+        html_base64 = base64.b64encode(html_content.encode()).decode()
+        html_page = f"""
+        <a href="data:text/html;base64,{html_base64}" target="_blank">
+            <button style="
+                background-color: #3498db;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+            ">📄 새 창에서 보기</button>
+        </a>
+        """
+        st.markdown(html_page, unsafe_allow_html=True)
+
+#환불 내역서
+def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, valid_period,
+                        ticket_price, usage_info, deduction_detail, penalty_rate, penalty_amount, final_refund_amount):
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body {{ font-family: 'Pretendard', sans-serif; padding: 20px; }}
+            .header {{ text-align: center; border-bottom: 2px solid #2c3e50; padding-bottom: 10px; margin-bottom: 20px; }}
+            .title {{ font-size: 24px; font-weight: bold; color: #2c3e50; }}
+            .section {{ margin: 15px 0; }}
+            .section-title {{ font-size: 18px; font-weight: bold; color: #34495e; border-left: 4px solid #3498db; padding-left: 10px; }}
+            .info-table {{ width: 100%; border-collapse: collapse; margin: 10px 0; }}
+            .info-table td {{ padding: 8px; border: 1px solid #ddd; }}
+            .highlight {{ color: #e74c3c; font-weight: bold; }}
+            .footer {{ margin-top: 30px; text-align: center; font-size: 12px; color: #7f8c8d; }}
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="title">멘토즈 스터디카페 환불 내역서</div>
+            <div style="margin-top: 5px;">발급일: {datetime.now(pytz.timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M')}</div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">기본 정보</div>
+            <table class="info-table">
+                <tr><td width="30%">지점명</td><td>{branch}</td></tr>
+                <tr><td>연락처</td><td>{phone}</td></tr>
+                <tr><td>이용권 종류</td><td>{formatted_ticket_type}</td></tr>
+                <tr><td>결제일자</td><td>{purchase_date.strftime('%Y-%m-%d')}</td></tr>
+                <tr><td>유효기간</td><td>{valid_period}</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <div class="section-title">결제 정보</div>
+            <table class="info-table">
+                <tr><td width="30%">결제 금액</td><td>{ticket_price:,}원</td></tr>
+                <tr><td>사용량</td><td>{usage_info}</td></tr>
+                <tr><td>공제 금액</td><td class="highlight">-{used_amount:,}원</td></tr>
+                <tr><td>위약금 ({penalty_rate})</td><td class="highlight">-{penalty_amount:,.0f}원</td></tr>
+                <tr><td>최종 환불 금액</td><td class="highlight">{int(final_refund_amount):,}원</td></tr>
+            </table>
+        </div>
+
+        <div class="footer">
+            ※ 본 내역서는 발급일 기준으로 유효하며, 실제 환불 금액과 차이가 있을 수 있습니다.
+        </div>
+    </body>
+    </html>
+    """
+    return html_content
+
+# ✅ PDF 생성 함수
+def create_pdf(html_content):
+    pdf_bytes = HTML(string=html_content).write_pdf()
+    return pdf_bytes
   
 if __name__ == "__main__":
     main()
