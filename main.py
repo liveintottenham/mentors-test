@@ -737,27 +737,34 @@ def refund_calculator_page():
             deduction_detail, penalty_rate, 0, refund_amount
         )
 
-            # 환불 내역서 HTML 생성
+        # ✅ HTML 생성
         html_content = generate_refund_html(
             branch, phone, formatted_ticket_type, purchase_date, valid_period,
             ticket_price, usage_info, used_amount, deduction_detail, penalty_rate, penalty_amount, refund_amount
         )
 
-        # Base64 인코딩 후 새 창에서 열기
+        # ✅ Base64 인코딩
         html_base64 = base64.b64encode(html_content.encode()).decode()
+
+        # ✅ JavaScript로 새 창 열기
         st.markdown(
             f"""
-            <iframe src="data:text/html;base64,{html_base64}" 
-            width="100%" height="600px" style="border:none;"></iframe>
-                <button style="
-                    background-color: #3498db;
-                    color: white;
-                    padding: 10px 20px;
-                    border: none;
-                    border-radius: 5px;
-                    cursor: pointer;
-                ">📄 새 창에서 보기</button>
-            </a>
+            <script>
+                function openHtmlInNewWindow() {{
+                    const htmlContent = atob("{html_base64}");
+                    const newWindow = window.open();
+                    newWindow.document.write(htmlContent);
+                    newWindow.document.close();
+                }}
+            </script>
+            <button onclick="openHtmlInNewWindow()" style="
+                background-color: #3498db;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+            ">📄 새 창에서 보기</button>
             """,
             unsafe_allow_html=True
         )
