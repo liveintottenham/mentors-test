@@ -4,7 +4,7 @@ import pytz, gspread, random, string, os, json
 from google.oauth2.service_account import Credentials
 import pandas as pd
 import plotly.express as px
-import base64
+import base64, tempfile
 
 # ✅ 페이지 설정
 st.set_page_config(
@@ -737,21 +737,37 @@ def refund_calculator_page():
             deduction_detail, penalty_rate, 0, refund_amount
         )
 
-        # HTML 새 창에서 보기
-        html_base64 = base64.b64encode(html_content.encode()).decode()
-        html_page = f"""
-        <a href="data:text/html;base64,{html_base64}" target="_blank">
-            <button style="
-                background-color: #3498db;
-                color: white;
-                padding: 10px 20px;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-            ">📄 새 창에서 보기</button>
-        </a>
-        """
-        st.markdown(html_page, unsafe_allow_html=True)
+        # ✅ HTML 생성
+        html_content = generate_refund_html(
+            branch, phone, formatted_ticket_type, purchase_date, valid_period,
+            ticket_price, usage_info, deduction_detail, penalty_rate, penalty_amount, final_refund_amount
+        )
+
+        # ✅ 임시 HTML 파일 생성
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".html", mode="w", encoding="utf-8") as temp_file:
+            temp_file.write(html_content)
+            temp_file_path = temp_file.name
+
+        # ✅ 새 창에서 HTML 열기
+        st.markdown(
+            f"""
+            <a href="file://{temp_file_path}" target="_blank">
+                <button style="
+                    background-color: #3498db;
+                    color: white;
+                    padding: 10px 20px;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                ">📄 새 창에서 보기</button>
+            </a>
+            """,
+            unsafe_allow_html=True
+        )
+
+        # ✅ 임시 파일 삭제 (선택적)
+        st.session_state["temp_file_path"] = temp_file_path
+        st.button("임시 파일 삭제", on_click=lambda: os.remove(st.session_state["temp_file_path"]))
 
 #환불 내역서
 # 환불 내역서 HTML 생성 함수
