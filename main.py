@@ -753,7 +753,7 @@ def refund_calculator_page():
         # ✅ 환불 내역서 출력
         st.text_area("📄 환불 내역서 (Ctrl+C로 복사 가능)", refund_detail.strip(), height=400)
 
-        # ✅ 계좌 정보 입력 폼 (계산 후에만 표시)
+        # ✅ 계좌 정보 입력 폼
         with st.form(key="account_form"):
             st.subheader("환불 계좌 정보 입력")
             col1, col2 = st.columns(2)
@@ -762,34 +762,29 @@ def refund_calculator_page():
                 bank_name = st.text_input("은행명")
             with col2:
                 account_number = st.text_input("계좌번호")
-        
             
             # ✅ 계좌 정보 확인 버튼
             if st.form_submit_button("확인"):
-                st.session_state["account_info"] = {
-                    "account_holder": account_holder,
-                    "bank_name": bank_name,
-                    "account_number": account_number
-                }
-            st.success("계좌 정보가 저장되었습니다.")
-            st.rerun()  # 페이지 리로드
+                st.session_state["account_holder"] = account_holder
+                st.session_state["bank_name"] = bank_name
+                st.session_state["account_number"] = account_number
+                st.success("계좌 정보가 저장되었습니다.")
 
         # ✅ 계좌 정보가 입력된 경우 HTML 다운로드 버튼 표시
-        if "account_info" in st.session_state:
+        if "account_holder" in st.session_state:
             html_content = generate_refund_html(
                 branch, phone, formatted_ticket_type, purchase_date, valid_period,
                 ticket_price, usage_info, used_amount, deduction_detail, penalty_rate,
                 penalty_amount, final_refund_amount,
-                account_holder=st.session_state["account_info"]["account_holder"],
-                bank_name=st.session_state["account_info"]["bank_name"],
-                account_number=st.session_state["account_info"]["account_number"]
+                st.session_state["account_holder"], st.session_state["bank_name"], st.session_state["account_number"]
             )
-        st.download_button(
-            label="📥 환불 영수증 다운로드 (HTML)",
-            data=html_content,
-            file_name="refund_receipt.html",
-            mime="text/html"
-        )
+            st.download_button(
+                label="📥 환불 영수증 다운로드 (HTML)",
+                data=html_content,
+                file_name="refund_receipt.html",
+                mime="text/html",
+                help="다운로드 후 파일을 열어 확인하세요."
+            )
 
 # ✅ HTML 템플릿 (기존과 동일)
 def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, valid_period,
