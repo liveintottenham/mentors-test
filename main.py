@@ -607,7 +607,7 @@ def refund_calculator_page():
         # ✅ 환불 정책 팝업
         with st.expander("📌 해당 지점 환불 정책", expanded=True):
             cols = st.columns(3)
-            cols[0].metric("환불기간",branch_data.get("환불기간", "미입력"))
+            cols[0].metric("환불기간", branch_data.get("환불기간", "미입력"))
             cols[1].metric("환불응대금지", branch_data.get("환불응대금지", "미입력"))
             cols[2].metric("스터디룸 여부", branch_data.get("스터디룸 여부", "미입력"))
 
@@ -629,7 +629,7 @@ def refund_calculator_page():
         
         if has_time_period_pricing:
             policy = "일반"
-            st.info(f"📌 일반 환불 규정 적용 (시간권: {time_price:,}원, 기간권: {period_price:,}원)")
+            st.info(f"📌 일반 환불 규정 적용 (시간권: {int(time_price):,}원, 기간권: {int(period_price):,}원)")
         else:
             policy = "% 규정"
             st.info("📌 % 환불 규정 적용")
@@ -691,15 +691,15 @@ def refund_calculator_page():
             if percent_used < 25:
                 refund_amount = ticket_price * 0.5
                 deduction_amount = ticket_price * 0.5
-                deduction_detail = f"0~24% 환불 구간 : 결제금액의 50% 환불 ({deduction_amount:,.0f}원)"
+                deduction_detail = f"0~24% 환불 구간 : 결제금액의 50% 환불 ({int(deduction_amount):,}원)"
             elif percent_used < 50:
                 refund_amount = ticket_price * 0.25
                 deduction_amount = ticket_price * 0.75
-                deduction_detail = f"25~50% 환불 구간 : 결제금액의 25% 환불 ({deduction_amount:,.0f}원)"
+                deduction_detail = f"25~50% 환불 구간 : 결제금액의 25% 환불 ({int(deduction_amount):,}원)"
             else:
                 refund_amount = 0
                 deduction_amount = ticket_price
-                deduction_detail = f"50% 이상 사용 구간 : 환불 불가 ({deduction_amount:,.0f}원)"
+                deduction_detail = f"50% 이상 사용 구간 : 환불 불가 ({int(deduction_amount):,}원)"
             
             usage_info = f"{percent_used:.1f}% 사용"
             used_amount = deduction_amount
@@ -712,7 +712,7 @@ def refund_calculator_page():
                 used_amount = hours_used * hourly_rate
             refund_amount = max(ticket_price - used_amount, 0)
             usage_info = f"{used_days}일 사용" if ticket_type in ["기간권", "노블레스석"] else f"{hours_used}시간 사용"
-            deduction_detail = f"{used_days}일 × {daily_rate:,}원" if ticket_type == "기간권" else f"{used_days}일 × {noble_rate:,}원 (노블레스석 1일 요금)" if ticket_type == "노블레스석" else f"{hours_used}시간 × {hourly_rate:,}원"
+            deduction_detail = f"{used_days}일 × {int(daily_rate):,}원" if ticket_type == "기간권" else f"{used_days}일 × {int(noble_rate):,}원 (노블레스석 1일 요금)" if ticket_type == "노블레스석" else f"{hours_used}시간 × {int(hourly_rate):,}원"
         
         # ✅ 위약금 계산 (결제금액 기준)
         penalty_rate_value = int(penalty_rate.strip("%")) / 100  # 위약금 비율 (10% → 0.1)
@@ -739,9 +739,9 @@ def refund_calculator_page():
         ---------------------------------------------
         [환 불 내역]
         ▣ 사용량 : {usage_info}
-        ▣ 공제 금액 : -{used_amount:,}원 ({deduction_detail})
-        ▣ 위약금 : -{penalty_amount:,.0f}원 ({penalty_rate} 위약금)
-        ▣ 환불 금액 : {int(final_refund_amount):,}원
+        ▣ 공제 금액 : -{int(used_amount):,}원 ({deduction_detail})
+        ▣ 위약금 : -{int(penalty_amount):,}원 ({penalty_rate} 위약금)
+        ▣ 환불 가능액 : {int(final_refund_amount):,}원
         ▶ 회원 정보 : {phone} (고객 전화번호 기준)
         =============================================
         ※ 유의사항
@@ -753,19 +753,38 @@ def refund_calculator_page():
         # ✅ 환불 내역서 출력
         st.text_area("📄 환불 내역서 (Ctrl+C로 복사 가능)", refund_detail.strip(), height=400)
 
-        # ✅ 환불 내역서 생성 (HTML 다운로드)
-        html_content = generate_refund_html(
-            branch, phone, formatted_ticket_type, purchase_date, valid_period,
-            ticket_price, usage_info, used_amount, deduction_detail, penalty_rate,
-            penalty_amount, final_refund_amount
-        )
-        st.download_button(
-            label="📥 환불 영수증 다운로드 (HTML)",
-            data=html_content,
-            file_name="refund_receipt.html",
-            mime="text/html",
-            help="다운로드 후 파일을 열어 확인하세요."
-        )
+        # ✅ 계좌 정보 입력 폼
+        with st.form(key="account_form"):
+            st.subheader("환불 계좌 정보 입력")
+            col1, col2 = st.columns(2)
+            with col1:
+                account_holder = st.text_input("예금주")
+                bank_name = st.text_input("은행명")
+            with col2:
+                account_number = st.text_input("계좌번호")
+            
+            # ✅ 계좌 정보 확인 버튼
+            if st.form_submit_button("확인"):
+                st.session_state["account_holder"] = account_holder
+                st.session_state["bank_name"] = bank_name
+                st.session_state["account_number"] = account_number
+                st.success("계좌 정보가 저장되었습니다.")
+
+        # ✅ 계좌 정보가 입력된 경우 HTML 다운로드 버튼 표시
+        if "account_holder" in st.session_state:
+            html_content = generate_refund_html(
+                branch, phone, formatted_ticket_type, purchase_date, valid_period,
+                ticket_price, usage_info, used_amount, deduction_detail, penalty_rate,
+                penalty_amount, final_refund_amount,
+                st.session_state["account_holder"], st.session_state["bank_name"], st.session_state["account_number"]
+            )
+            st.download_button(
+                label="📥 환불 영수증 다운로드 (HTML)",
+                data=html_content,
+                file_name="refund_receipt.html",
+                mime="text/html",
+                help="다운로드 후 파일을 열어 확인하세요."
+            )
 
 # ✅ HTML 템플릿 (기존과 동일)
 def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, valid_period,
@@ -858,10 +877,10 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
                 <table class="info-table">
                     <tr><td>결제 금액</td><td>{ticket_price:,}원</td></tr>
                     <tr><td>사용량</td><td>{usage_info}</td></tr>
-                    <tr><td>공제 금액</td><td class="highlight">-{used_amount:,}</td></tr>
-                    <tr><td>공제 내역</td><td>{deduction_detail}원</td></tr>
-                    <tr><td>위약금 ({penalty_rate})</td><td class="highlight">-{penalty_amount:,.0f}원</td></tr>
-                    <tr><td>환불가능액</td><td class="highlight">{int(final_refund_amount):,}원</td></tr>
+                    <tr><td>공제 금액</td><td class="highlight">-{int(used_amount):,}원</td></tr>
+                    <tr><td>공제 내역</td><td>{deduction_detail}</td></tr>
+                    <tr><td>위약금 ({penalty_rate})</td><td class="highlight">-{int(penalty_amount):,}원</td></tr>
+                    <tr><td>환불 가능액</td><td class="highlight">{int(final_refund_amount):,}원</td></tr>
                 </table>
             </div>
 
