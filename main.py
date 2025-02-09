@@ -4,8 +4,6 @@ import pytz, gspread, random, string, os, json
 from google.oauth2.service_account import Credentials
 import pandas as pd
 import plotly.express as px
-from weasyprint import HTML
-import base64
 
 # ✅ 페이지 설정
 st.set_page_config(
@@ -728,22 +726,13 @@ def refund_calculator_page():
         st.text_area("📄 환불 내역서 (Ctrl+C로 복사 가능)", refund_detail.strip(), height=400)
         st.download_button("📥 환불 내역서 다운로드", refund_detail.strip(), file_name="refund_details.txt")
 
-        # ✅ HTML 생성
+           # HTML 내역서 생성
         html_content = generate_refund_html(
-        branch, phone, formatted_ticket_type, purchase_date, valid_period,
-        ticket_price, usage_info, deduction_detail, penalty_rate, penalty_amount, final_refund_amount
+            branch, phone, formatted_ticket_type, purchase_date, valid_period,
+            ticket_price, f"{used_days}일 사용", f"{used_days}일 × {daily_rate:,}원", penalty_rate, 0, refund_amount
         )
 
-        # ✅ PDF 다운로드 버튼
-        pdf_bytes = create_pdf(html_content)
-        st.download_button(
-            label="📥 환불 내역서 PDF 다운로드",
-            data=pdf_bytes,
-            file_name="refund_details.pdf",
-            mime="application/pdf"
-        )
-
-        # ✅ HTML 새 창에서 보기
+            # HTML 새 창에서 보기
         html_base64 = base64.b64encode(html_content.encode()).decode()
         html_page = f"""
         <a href="data:text/html;base64,{html_base64}" target="_blank">
@@ -814,11 +803,6 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
     </html>
     """
     return html_content
-
-# ✅ PDF 생성 함수
-def create_pdf(html_content):
-    pdf_bytes = HTML(string=html_content).write_pdf()
-    return pdf_bytes
   
 if __name__ == "__main__":
     main()
