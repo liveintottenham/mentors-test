@@ -88,15 +88,19 @@ def get_real_time_data():
         sheet = spreadsheet.worksheet("시트1")  # 시트 이름
         df = pd.DataFrame(sheet.get_all_records())
 
-        # ✅ '마스터키 PWD' 열을 문자열로 강제 변환
+        # ✅ '마스터키 PWD' 열을 문자열로 변환
         df["마스터키 PWD"] = df["마스터키 PWD"].astype(str)
+
+        # ✅ '마스터키 PWD'가 2자리 이하일 경우 앞에 0을 채우기 (예: "12345" → "012345")
+        df["마스터키 PWD"] = df["마스터키 PWD"].str.zfill(2)  # 6자리를 기준으로 앞에 0 추가
 
         # ✅ 숫자 컬럼 변환 (시트에서 숫자가 문자열로 올 경우)
         numeric_cols = ['시간권 금액', '기간권 금액']
         for col in numeric_cols:
-            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)  # ✅ 들여쓰기 수정
+            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
 
         return df
+
     
     except Exception as e:
         st.error(f"📊 데이터 조회 실패: {str(e)}")
