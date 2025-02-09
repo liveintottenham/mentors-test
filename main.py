@@ -749,6 +749,7 @@ def refund_calculator_page():
         st.markdown(html_page, unsafe_allow_html=True)
 
 #환불 내역서
+# 환불 내역서 HTML 생성 함수
 def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, valid_period,
                         ticket_price, usage_info, deduction_detail, penalty_rate, penalty_amount, final_refund_amount):
     html_content = f"""
@@ -790,7 +791,7 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
             <table class="info-table">
                 <tr><td width="30%">결제 금액</td><td>{ticket_price:,}원</td></tr>
                 <tr><td>사용량</td><td>{usage_info}</td></tr>
-                <tr><td>공제 금액</td><td class="highlight">-{used_amount:,}원</td></tr>
+                <tr><td>공제 금액</td><td class="highlight">{deduction_detail}</td></tr>
                 <tr><td>위약금 ({penalty_rate})</td><td class="highlight">-{penalty_amount:,.0f}원</td></tr>
                 <tr><td>최종 환불 금액</td><td class="highlight">{int(final_refund_amount):,}원</td></tr>
             </table>
