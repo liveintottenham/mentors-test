@@ -350,16 +350,17 @@ def branch_info_page():
                     )
                     st.markdown("👉 아이디를 선택하고 `Ctrl+C`로 복사하세요.")
                     
-                    # 비밀번호 표시 및 복사
+                    # 비밀번호 표시 및 복사 (수정된 부분: 비밀번호를 텍스트로 표시)
                     st.markdown("**비밀번호**")
-                    pw_text = st.text_input(
+                    pw_value = str(branch_data[COLUMN_MAPPING['pw']])
+                    pw_text = st.text_area(
                         "비밀번호", 
-                        value="*" * len(str(branch_data[COLUMN_MAPPING['pw']])), 
+                        value=pw_value, 
                         key=f"pw_{selected_branch}",
+                        height=50,  # 크기 조정
                         disabled=True
                     )
                     st.markdown("👉 비밀번호를 선택하고 `Ctrl+C`로 복사하세요.")
-                    
                 else:
                     st.warning("컴앤패스 관리자앱을 이용해주세요")
                     if st.button("🖥️ 관리자앱 열기", key="open_admin_app"):
