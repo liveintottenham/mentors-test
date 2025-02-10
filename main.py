@@ -348,11 +348,11 @@ def branch_info_page():
                 if has_id and has_pw:
                     # 아이디 표시 (앞의 0 유지)
                     st.markdown("**아이디**")
-                    st.text_input(
-                        "아이디", 
-                        value=id_val,  # 문자열로 처리하여 앞의 0 유지
-                        key=f"id_{selected_branch}", 
-                        disabled=True
+                    st.markdown(
+                        f'<div style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; background-color: #f9f9f9;">'
+                        f'{id_val}'
+                        f'</div>',
+                        unsafe_allow_html=True
                     )
                     st.markdown("👉 아이디를 선택하고 `Ctrl+C`로 복사하세요.")
                     
