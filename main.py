@@ -513,14 +513,27 @@ def locker_masterkey_page():
     
     # ✅ 지점 검색 로직
     search_term = st.text_input("지점명 입력 (예: '연산' → '부산연산점')", key="branch_search")
-    filtered_branches = df[df["지점명"].str.contains(search_term, case=False)] if search_term else []
     
-    if filtered_branches.empty and search_term:
+    # ✅ 검색 결과 필터링
+    if search_term:
+        # 검색어가 있는 경우, 필터링된 결과를 DataFrame으로 유지
+        filtered_branches = df[df["지점명"].str.contains(search_term, case=False, na=False)]
+    else:
+        # 검색어가 없는 경우, 빈 DataFrame 반환
+        filtered_branches = pd.DataFrame(columns=df.columns)
+    
+    # ✅ 검색 결과가 없는 경우 처리
+    if search_term and filtered_branches.empty:
         st.warning("⚠️ 일치하는 지점이 없습니다.")
         return
     
-    selected_branch = st.selectbox("지점 선택", filtered_branches["지점명"].unique()) if not filtered_branches.empty else None
+    # ✅ 지점 선택 드롭다운
+    if not filtered_branches.empty:
+        selected_branch = st.selectbox("지점 선택", filtered_branches["지점명"].unique())
+    else:
+        selected_branch = None
     
+    # ✅ 선택된 지점 정보 표시
     if selected_branch:
         branch_data = df[df["지점명"] == selected_branch].iloc[0]
         locker_number = str(branch_data["사물함ID"]).strip()
