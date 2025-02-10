@@ -5,6 +5,7 @@ from google.oauth2.service_account import Credentials
 import pandas as pd
 import plotly.express as px
 import base64, tempfile
+import pyperclip,webbrowser
 
 # ✅ 페이지 설정
 st.set_page_config(
@@ -287,6 +288,84 @@ def load_and_display_spreadsheet_data():
                 st.error(f"🚨 삭제 실패: {e}")
 
 # ✅ Google Sheets 인증 함수 (end)
+
+# 지점 정보 출력
+def branch_info_page():
+    st.title("🏢 지점 정보 확인")
+    
+    # Google Sheets 데이터 로드
+    df = get_real_time_data()
+    
+    # 컬럼명 매핑 (시트 구조에 맞게 수정 필요)
+    COLUMN_MAPPING = {
+        'id': 'ID',
+        'pw': 'PWD',
+        'channel': '지점 카카오톡 채널',
+        'study_room': '스터디룸 여부'
+    }
+    
+    # 지점명 검색 입력
+    search_term = st.text_input("🔍 지점명 검색 (일부 입력 가능)", key="branch_info_search")
+    
+    # 검색 결과 필터링
+    filtered = df[df["지점명"].str.contains(search_term, case=False, na=False)] if search_term else pd.DataFrame()
+
+    if not filtered.empty:
+        branch_data = filtered.iloc[0]
+        
+        with st.container():
+            col1, col2 = st.columns(2)
+            
+            # 왼쪽 컬럼: 계정 정보
+            with col1:
+                st.subheader("계정 정보")
+                has_credentials = all(pd.notna(branch_data[COLUMN_MAPPING[key]]) for key in ['id', 'pw'])
+                
+                if has_credentials:
+                    # 아이디 복사 섹션
+                    st.code(f"아이디: {branch_data[COLUMN_MAPPING['id']]}")
+                    if st.button("📋 아이디 복사", key="copy_id"):
+                        pyperclip.copy(str(branch_data[COLUMN_MAPPING['id']]))
+                        st.success("아이디가 복사되었습니다!")
+                    
+                    # 비밀번호 복사 섹션
+                    st.code(f"비밀번호: {'*' * len(str(branch_data[COLUMN_MAPPING['pw']]))}")
+                    if st.button("📋 비밀번호 복사", key="copy_pw"):
+                        pyperclip.copy(str(branch_data[COLUMN_MAPPING['pw']]))
+                        st.success("비밀번호가 복사되었습니다!")
+                else:
+                    st.warning("컴앤패스 관리자앱을 이용해주세요")
+                    if st.button("🖥️ 관리자앱 열기"):
+                        webbrowser.open("https://adminapp.com")  # 실제 URL로 변경
+                
+                st.markdown("---")
+                if st.button("🌐 제로아이즈 홈페이지"):
+                    webbrowser.open_new_tab("https://zeroeyes.com")
+            
+            # 오른쪽 컬럼: 추가 정보
+            with col2:
+                st.subheader("부가 정보")
+                st.write(f"**지점 채널:** {branch_data.get(COLUMN_MAPPING['channel'], 'N/A')}")
+                st.write(f"**스터디룸 여부:** {branch_data.get(COLUMN_MAPPING['study_room'], 'N/A')}")
+                
+                if st.button("📩 지점채널 안내문 생성"):
+                    channel_info = branch_data.get(COLUMN_MAPPING['channel'], '')
+                    if pd.notna(channel_info) and channel_info != '':
+                        message = f"""
+                        안녕하세요, 멘토즈스터디카페 운영본부입니다.
+                        유선상 전달드린 카카오톡 지점 채널 안내드립니다.
+
+                        {channel_info}
+                        ※ 상담 가능 시간 이외라도 긴급 건의 경우 점주님이 확인 후 답변 주시고 있으며, 
+                        전화 문의는 불가한 점 양해 부탁드립니다.
+                        """
+                        st.code(message)
+                    else:
+                        st.error("지점 채널 정보가 없습니다")
+    
+    elif search_term:
+        st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
+
 
 # ✅ 홈 페이지
 def home_page():
@@ -1008,6 +1087,7 @@ def main():
         {"icon": "📊", "label": "데이터 관리", "key": "data", "sub": [
             {"label": "전체 지점 리스트", "key": "spreadsheet"},
         ]},
+        {"icon": "🏢", "label": "지점 정보 확인", "key": "branch_info"},
     ]
 
     # 메뉴 버튼 클릭 이벤트 처리
@@ -1041,6 +1121,8 @@ def main():
             refund_calculator_page()
         elif st.session_state.page == "spreadsheet":
             load_and_display_spreadsheet_data()
+        elif st.sesstion_state.page == "banch_info":
+            branch_info_page()
 
     # ✅ 메뉴 렌더링 함수 호출
     render_page()
