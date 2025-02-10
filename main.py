@@ -299,9 +299,9 @@ def branch_info_page():
     
     # 컬럼명 매핑 (시트 구조에 맞게 수정 필요)
     COLUMN_MAPPING = {
-        'id': '아이디',
-        'pw': '비밀번호',
-        'channel': '지점채널',
+        'id': 'ID',
+        'pw': 'PWD',
+        'channel': '지점 카카오톡 채널',
         'study_room': '스터디룸 여부',
         'branch_name': '지점명'
     }
