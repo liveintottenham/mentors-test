@@ -1121,7 +1121,7 @@ def main():
             refund_calculator_page()
         elif st.session_state.page == "spreadsheet":
             load_and_display_spreadsheet_data()
-        elif st.session_state.page == "banch_info":
+        elif st.sesstion_state.page == "banch_info":
             branch_info_page()
 
     # ✅ 메뉴 렌더링 함수 호출
