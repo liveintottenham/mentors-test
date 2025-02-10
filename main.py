@@ -302,93 +302,89 @@ def branch_info_page():
     st.title("🏢 지점 정보 확인")
     df = get_real_time_data()
     
-    # 컬럼명 매핑
-    COLUMN_MAPPING = {
-        'id': 'ID', 
-        'pw': 'PWD',
-        'channel': '지점 카카오톡 채널',
-        'study_room': '스터디룸 여부',
-        'branch_name': '지점명'
-    }
+    # ✅ 컬럼명 정규화 (공백 제거 및 대소문자 통일)
+    df.columns = df.columns.str.strip().str.replace(" ", "")
     
-    # 검색 로직
+    # ✅ 필수 컬럼 존재 여부 확인
+    required_columns = ["지점명", "사물함ID", "사물함PWD", "ID", "PWD", "지점카카오톡채널", "스터디룸여부", "특이사항"]
+    for col in required_columns:
+        if col not in df.columns:
+            st.error(f"구글 시트에 '{col}' 컬럼이 없습니다. 시트 구조를 확인해주세요.")
+            return
+    
+    # ✅ 지점명 검색 입력
     search_term = st.text_input("🔍 지점명 검색 (일부 입력 가능)", key="branch_info_search")
+    
+    # ✅ 검색 결과 필터링
     if search_term:
-        filtered = df[df[COLUMN_MAPPING['branch_name']].str.contains(search_term, case=False, na=False)]
-        filtered = filtered.drop_duplicates(subset=[COLUMN_MAPPING['branch_name']])
+        filtered = df[df["지점명"].str.contains(search_term, case=False, na=False)]
+        filtered = filtered.drop_duplicates(subset=["지점명"])
     else:
         filtered = pd.DataFrame()
 
     if not filtered.empty:
-        selected_branch = st.selectbox("지점 선택", filtered[COLUMN_MAPPING['branch_name']].tolist())
-        branch_data = filtered[filtered[COLUMN_MAPPING['branch_name']] == selected_branch].iloc[0]
+        # 지점 선택 드롭다운
+        branch_names = filtered["지점명"].tolist()
+        selected_branch = st.selectbox("지점 선택", branch_names, key="branch_select")
+        
+        # 선택된 지점 데이터
+        branch_data = filtered[filtered["지점명"] == selected_branch].iloc[0]
+        id_val = str(branch_data["ID"]).strip()
+        pw_val = str(branch_data["PWD"]).strip()
+        channel_info = str(branch_data.get("지점카카오톡채널", "N/A")).strip()
+        special_notes = str(branch_data.get("특이사항", "")).strip()
         
         with st.container():
             col1, col2 = st.columns(2)
             
-            # 계정 정보 섹션
+            # 왼쪽 컬럼: 계정 정보
             with col1:
                 st.subheader("계정 정보")
-                id_val = str(branch_data[COLUMN_MAPPING['id']]).zfill(4)  # 0 패딩
-                pw_val = str(branch_data[COLUMN_MAPPING['pw']])
                 
-                # 마스킹 여부 확인
-                is_masked = (id_val == "****") and (pw_val == "****")
+                # ✅ 아이디/비밀번호 존재 여부 체크
+                has_id = id_val != "" and id_val != "***"
+                has_pw = pw_val != "" and pw_val != "***"
                 
-                if is_masked:
-                    st.error("해당 지점은 로그인 할 수 없습니다. 지점채널로 안내 부탁드립니다.")
-                else:
-                    # 아이디 표시 (0 패딩)
+                if has_id and has_pw:
+                    # 아이디 표시
                     with st.expander("🔑 아이디", expanded=True):
                         st.code(f"{id_val}")
                     
                     # 비밀번호 표시
                     with st.expander("🔒 비밀번호", expanded=True):
-                        st.code(f"{'*' * len(pw_val) if pw_val != '****' else pw_val}")
+                        st.code(f"{'*' * len(pw_val)}")
+                else:
+                    st.warning("컴앤패스 관리자앱을 이용해주세요")
+                    if st.button("🖥️ 관리자앱 열기", key="open_admin_app"):
+                        open_link_in_new_tab("https://adminapp.com")  # 실제 URL로 변경
 
                 st.markdown("---")
                 if st.button("🌐 제로아이즈 홈페이지"):
                     open_link_in_new_tab("https://zeroeyes.com")
 
-            # 부가 정보 섹션 (Material Design 스타일)
+            # 오른쪽 컬럼: 부가 정보
             with col2:
                 st.subheader("📌 지점 상세 정보")
                 
-                # 카드형 디자인
-                with st.container():
-                    st.markdown("""
-                    <style>
-                    .info-card {
-                        background: #ffffff;
-                        border-radius: 10px;
-                        padding: 20px;
-                        margin: 10px 0;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                    }
-                    </style>
-                    """, unsafe_allow_html=True)
-                    
-                    # 지점 채널 정보
-                    channel_info = branch_data.get(COLUMN_MAPPING['channel'], 'N/A')
-                    st.markdown(f'<div class="info-card"><h4>💬 지점 채널</h4><p>{channel_info}</p></div>', unsafe_allow_html=True)
-                    
-                    # 안내문 생성
-                    if st.button("📩 지점채널 안내문 생성"):
-                        message = f"""
-                        안녕하세요, 멘토즈스터디카페 운영본부입니다.
-                        유선상 전달드린 카카오톡 지점 채널 안내드립니다.
-
-                        {channel_info}
-                        ▶ 카카오톡 지점 채널 [ 멘토즈 {selected_branch} ]
-
-                        ※ 상담 가능 시간 이외라도 긴급 건의 경우 점주님이 확인 후 답변 주시고 있으며, 
-                        전화 문의는 불가한 점 양해 부탁드립니다.
-                        """
-                        st.code(message)
-                    
-                    # 스터디룸 정보
-                    study_room = branch_data.get(COLUMN_MAPPING['study_room'], 'N/A')
-                    st.markdown(f'<div class="info-card"><h4>📚 스터디룸 여부</h4><p>{study_room}</p></div>', unsafe_allow_html=True)
+                # ✅ 지점 채널 정보
+                with st.expander("💬 지점 채널", expanded=True):
+                    if channel_info != "N/A":
+                        st.write(f"카카오톡 채널: {channel_info}")
+                    else:
+                        st.warning("지점 채널 정보가 없습니다.")
+                
+                # ✅ 특이사항 팝업
+                if special_notes and special_notes != "":
+                    with st.expander("🚨 특이사항", expanded=True):
+                        st.write(special_notes)
+                
+                # ✅ 스터디룸 정보
+                study_room = str(branch_data.get("스터디룸여부", "N/A")).strip()
+                with st.expander("📚 스터디룸 여부", expanded=True):
+                    st.write(f"{study_room}")
+    
+    elif search_term:
+        st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
 
 # ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
 def open_link_in_new_tab(url):
@@ -1034,19 +1030,37 @@ def main():
             overflow: hidden !important;
         }
         
-        <style>
+        
          /* 경고 메시지 스타일 */
          .stAlert {
             background-color: #ffebee !important;
             border-radius: 8px !important;
              padding: 15px !important;
         }
+
         /* 특이사항 팝업 스타일 */
         .stExpander {
             background-color: #fff3e0 !important;
             border-radius: 8px !important;
             padding: 15px !important;
         }
+
+        
+        
+        /* 사이드바 버튼 스타일 */
+        .sidebar .stButton button {
+            background-color: #34495e !important;  /* 기본 색상 */
+            color: white !important;
+            border-radius: 8px;
+            padding: 8px 16px;
+        }
+        .sidebar .stButton button:hover {
+            background-color: #3d566e !important;  /* 호버 시 색상 */
+        }
+        .sidebar .stButton button:active {
+            background-color: #2ecc71 !important;  /* 활성화 시 색상 */
+        }
+
         </style>
         """,
         unsafe_allow_html=True
