@@ -330,21 +330,29 @@ def branch_info_page():
             # 왼쪽 컬럼: 계정 정보
             with col1:
                 st.subheader("계정 정보")
-                has_credentials = all(pd.notna(branch_data[COLUMN_MAPPING[key]]) for key in ['id', 'pw'])
+                
+                # 아이디와 비밀번호가 모두 있는지 확인
+                has_credentials = (
+                    pd.notna(branch_data[COLUMN_MAPPING['id']]) and 
+                    pd.notna(branch_data[COLUMN_MAPPING['pw']]) and 
+                    branch_data[COLUMN_MAPPING['id']] != "" and 
+                    branch_data[COLUMN_MAPPING['pw']] != ""
+                )
                 
                 if has_credentials:
-                    # 아이디 복사 섹션
+                    # 아이디 표시 및 복사 버튼
                     st.code(f"아이디: {branch_data[COLUMN_MAPPING['id']]}")
                     if st.button("📋 아이디 복사", key="copy_id"):
                         copy_to_clipboard(str(branch_data[COLUMN_MAPPING['id']]))
                         st.success("아이디가 복사되었습니다!")
                     
-                    # 비밀번호 복사 섹션
+                    # 비밀번호 표시 및 복사 버튼
                     st.code(f"비밀번호: {'*' * len(str(branch_data[COLUMN_MAPPING['pw']]))}")
                     if st.button("📋 비밀번호 복사", key="copy_pw"):
                         copy_to_clipboard(str(branch_data[COLUMN_MAPPING['pw']]))
                         st.success("비밀번호가 복사되었습니다!")
                 else:
+                    # 아이디 또는 비밀번호가 없는 경우
                     st.warning("컴앤패스 관리자앱을 이용해주세요")
                     if st.button("🖥️ 관리자앱 열기", key="open_admin_app"):
                         open_link_in_new_tab("https://adminapp.com")  # 실제 URL로 변경
