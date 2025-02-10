@@ -395,9 +395,6 @@ def branch_info_page():
     elif search_term:
         st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
 
-
-
-
 # ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
 def open_link_in_new_tab(url):
     js_code = f"""
@@ -406,7 +403,6 @@ def open_link_in_new_tab(url):
     </script>
     """
     html(js_code)
-
 
 
 
@@ -549,6 +545,9 @@ def locker_masterkey_page():
         selected_branch = None
 
     if st.button("마스터키 안내 보기"):
+        kst = pytz.timezone('Asia/Seoul')
+        current_time_kst = datetime.now(kst).strftime('%Y-%m-%d %H:%M')
+
         if not selected_branch:
             st.error("❌ 지점명을 선택하세요!")
         else:
@@ -570,7 +569,7 @@ def locker_masterkey_page():
                 info_text = (
                     f"구매 확인이 완료되어 마스터키 발급이 완료되었습니다.\n"
                     f"아래의 사물함에서 마스터키를 찾아 본인 사물함을 개방하시면 됩니다.\n\n"
-                    f"발급일시 : {current_time}\n"
+                    f"발급일시 : {current_time_kst}\n"
                     f"지점명 : {selected_branch}\n"
                     f"(1) 사물함 번호 : {locker_number}\n"
                     f"(2) 비밀번호 : {locker_password}\n\n"
