@@ -538,8 +538,14 @@ def locker_masterkey_page():
         branch_data = df[df["지점명"] == selected_branch].iloc[0]
         locker_number = str(branch_data["사물함ID"]).strip()
         locker_password = str(branch_data["사물함PWD"]).strip()
+        special_notes = branch_data.get("특이사항", "")  # 특이사항 컬럼 값 가져오기
         
-        # ✅ 특이사항 팝업
+        # ✅ 특이사항 팝업 (항상 표시)
+        if special_notes and pd.notna(special_notes) and special_notes != "":
+            with st.expander("🚨 특이사항 알림", expanded=True):
+                st.write(special_notes)
+        
+        # ✅ 마스터키 안내 불가 팝업
         if locker_number == "***" and locker_password == "***":
             st.warning("🚨 해당 지점은 사물함 마스터키 안내가 불가합니다. 지점채널로 안내 부탁드립니다.")
             return
@@ -1035,8 +1041,14 @@ def main():
             border-radius: 8px !important;
              padding: 15px !important;
         }
-         </style>
-         """,
+        /* 특이사항 팝업 스타일 */
+        .stExpander {
+            background-color: #fff3e0 !important;
+            border-radius: 8px !important;
+            padding: 15px !important;
+        }
+        </style>
+        """,
         unsafe_allow_html=True
     )
 
