@@ -405,10 +405,7 @@ def main():
         """,
         unsafe_allow_html=True
     )
-
-    # ✅ 사이드바 타이틀
-    st.sidebar.markdown('<p class="sidebar-title">🎖️⭐</p>', unsafe_allow_html=True)
-
+    
     # ✅ 메뉴 아이템 리스트
     menu_items = [
         {"icon": "🏠", "label": "대시보드", "key": "home"},
