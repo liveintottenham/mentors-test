@@ -413,8 +413,10 @@ def copy_to_clipboard(text):
             document.body.removeChild(tempInput);
         </script>
         """
-        html(js_code)
+        # Streamlit에서 JavaScript 실행
+        st.markdown(js_code, unsafe_allow_html=True)
         st.success("클립보드에 복사되었습니다! (Ctrl+V로 붙여넣기)")
+
 
 # ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
 def open_link_in_new_tab(url):
