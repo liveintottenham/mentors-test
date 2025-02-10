@@ -112,11 +112,11 @@ def get_real_time_data():
             if col not in df.columns:
                 raise KeyError(f"구글 시트에 '{col}' 컬럼이 없습니다. 시트 구조를 확인해주세요.")
         
-        # ✅ 숫자 컬럼 처리 (0 패딩 제거)
-        df["사물함PWD"] = df["사물함PWD"].astype(str)
-        df["사물함ID"] = df["사물함ID"].astype(str)
-        df["ID"] = df["ID"].astype(str)
-        df["PWD"] = df["PWD"].astype(str)
+        # ✅ 모든 0 패딩 제거
+        df["사물함ID"] = df["사물함ID"].astype(str).str.strip()  # 0 패딩 제거
+        df["사물함PWD"] = df["사물함PWD"].astype(str).str.strip()
+        df["ID"] = df["ID"].astype(str).str.strip()
+        df["PWD"] = df["PWD"].astype(str).str.strip()
 
         return df
 
@@ -365,11 +365,25 @@ def branch_info_page():
             # 오른쪽 컬럼: 부가 정보
             with col2:
                 st.subheader("📌 지점 상세 정보")
-                
+        
                 # ✅ 지점 채널 정보
                 with st.expander("💬 지점 채널", expanded=True):
                     if channel_info != "N/A":
                         st.write(f"카카오톡 채널: {channel_info}")
+                        
+                        # ✅ 지점채널 안내문 생성 버튼 추가
+                        if st.button("📩 지점채널 안내문 생성", key="generate_channel_message"):
+                            message = f"""
+                            안녕하세요, 멘토즈스터디카페 운영본부입니다.
+                            유선상 전달드린 카카오톡 지점 채널 안내드립니다.
+
+                            {channel_info}
+                            ▶ 카카오톡 지점 채널 [ 멘토즈 {selected_branch} ]
+
+                            ※ 상담 가능 시간 이외라도 긴급 건의 경우 점주님이 확인 후 답변 주시고 있으며, 
+                            전화 문의는 불가한 점 양해 부탁드립니다.
+                            """
+                            st.code(message)
                     else:
                         st.warning("지점 채널 정보가 없습니다.")
                 
