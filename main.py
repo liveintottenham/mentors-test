@@ -1057,12 +1057,11 @@ def main():
         ]},
     ]
 
-    # ✅ 버튼 클릭 이벤트 처리
+    # 메뉴 버튼 클릭 이벤트 처리
     for item in menu_items:
         if "sub" in item:  # 서브 메뉴가 있는 경우
-            with st.sidebar.expander(f"{item['icon']} {item['label']}", expanded=True):
+            with st.sidebar.expander(f"{item['icon']} {item['label']}", expanded=True):  # 기본적으로 열려있도록 설정
                 for sub_item in item["sub"]:
-                    # 서브 메뉴 항목에 대해 고유한 key 값 부여
                     if st.button(
                         f"↳ {sub_item['label']}",
                         key=f"menu_{sub_item['key']}",  # key는 sub_item의 key로 지정
@@ -1070,7 +1069,6 @@ def main():
                     ):
                         st.session_state.page = sub_item["key"]
         else:  # 일반 메뉴
-            # 일반 메뉴 항목에 대해 고유한 key 값 부여
             if st.sidebar.button(
                 f"{item['icon']} {item['label']}",
                 key=f"menu_{item['key']}",  # key는 item의 key로 지정
@@ -1086,7 +1084,7 @@ def main():
             locker_masterkey_page()
         elif st.session_state.page == "restore":
             restore_checkout_page()
-        elif st.session_state.page == "refund":
+        elif st.session_state.page == "refund_calc":
             refund_calculator_page()
         elif st.session_state.page == "spreadsheet":
             load_and_display_spreadsheet_data()
