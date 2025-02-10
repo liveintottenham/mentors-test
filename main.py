@@ -14,53 +14,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ✅ 야간 모드 대응
-st.markdown(
-    """
-    <style>
-    /* 기본 색상 설정 */
-    :root {
-        --primary-text: #2c3e50;
-        --primary-bg: #ffffff;
-    }
-
-    @media (prefers-color-scheme: dark) {
-        :root {
-            --primary-text: #ffffff !important;
-            --primary-bg: #1e1e1e !important;
-        }
-        
-        /* 모든 텍스트 색상 변경 */
-        * {
-            color: var(--primary-text) !important;
-        }
-        
-        /* 배경색 변경 */
-        .stApp, .sidebar-content {
-            background-color: var(--primary-bg) !important;
-        }
-        
-        /* 입력 필드 스타일 */
-        .stTextInput>div>div>input,
-        .stNumberInput>div>div>input,
-        .stDateInput>div>div>input {
-            background-color: #2e2e2e !important;
-            border-color: #4a4a4a !important;
-        }
-        
-        /* 테이블 스타일 */
-        .dataframe {
-            background-color: #2e2e2e !important;
-        }
-        .dataframe th {
-            background-color: #3d3d3d !important;
-        }
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
 # ✅ Pretendard 폰트 적용 (Google Fonts)
 st.markdown(
     """
