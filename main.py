@@ -293,6 +293,7 @@ def load_and_display_spreadsheet_data():
 # ✅ Google Sheets 인증 함수 (end)
 
 # ✅ 지점 정보 확인 페이지
+
 # ✅ 지점 정보 확인 페이지
 def branch_info_page():
     st.title("🏢 지점 정보 확인")
@@ -352,7 +353,7 @@ def branch_info_page():
                     
                     # 비밀번호 표시 및 복사 (수정된 부분: 비밀번호를 텍스트로 표시)
                     st.markdown("**비밀번호**")
-                    pw_value = str(branch_data[COLUMN_MAPPING['pw']])
+                    pw_value = str(branch_data[COLUMN_MAPPING['pw']]) if branch_data[COLUMN_MAPPING['pw']] is not None else ""
                     pw_text = st.text_area(
                         "비밀번호", 
                         value=pw_value, 
@@ -361,6 +362,7 @@ def branch_info_page():
                         disabled=True
                     )
                     st.markdown("👉 비밀번호를 선택하고 `Ctrl+C`로 복사하세요.")
+                    
                 else:
                     st.warning("컴앤패스 관리자앱을 이용해주세요")
                     if st.button("🖥️ 관리자앱 열기", key="open_admin_app"):
@@ -369,6 +371,10 @@ def branch_info_page():
                 st.markdown("---")
                 if st.button("🌐 제로아이즈 홈페이지", key="open_zeroeyes"):
                     open_link_in_new_tab("https://zeroeyes.com")
+
+            # 오른쪽 컬럼: 추가 정보 (생략)
+
+
             
             # 오른쪽 컬럼: 추가 정보
             with col2:
