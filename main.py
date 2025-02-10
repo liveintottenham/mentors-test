@@ -329,7 +329,7 @@ def branch_info_page():
         
         # 선택된 지점 데이터
         branch_data = filtered[filtered["지점명"] == selected_branch].iloc[0]
-        id_val = str(branch_data["ID"]).strip()
+        id_val = str(branch_data["ID"]).strip()  # 문자열로 강제 변환
         pw_val = str(branch_data["PWD"]).strip()
         channel_info = str(branch_data.get("지점카카오톡채널", "N/A")).strip()
         special_notes = str(branch_data.get("특이사항", "")).strip()
@@ -346,11 +346,11 @@ def branch_info_page():
                 has_pw = pw_val != "" and pw_val != "***"
                 
                 if has_id and has_pw:
-                    # 아이디 표시 (그대로 표시)
+                    # 아이디 표시 (앞의 0 유지)
                     st.markdown("**아이디**")
                     st.text_input(
                         "아이디", 
-                        value=id_val, 
+                        value=id_val,  # 문자열로 처리하여 앞의 0 유지
                         key=f"id_{selected_branch}", 
                         disabled=True
                     )
