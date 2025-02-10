@@ -294,7 +294,6 @@ def load_and_display_spreadsheet_data():
 
 # ✅ 지점 정보 확인 페이지
 
-# ✅ 지점 정보 확인 페이지
 def branch_info_page():
     st.title("🏢 지점 정보 확인")
     
@@ -351,14 +350,12 @@ def branch_info_page():
                     )
                     st.markdown("👉 아이디를 선택하고 `Ctrl+C`로 복사하세요.")
                     
-                    # 비밀번호 표시 및 복사 (수정된 부분: 비밀번호를 텍스트로 표시)
+                    # 비밀번호 표시 및 복사
                     st.markdown("**비밀번호**")
-                    pw_value = str(branch_data[COLUMN_MAPPING['pw']]) if branch_data[COLUMN_MAPPING['pw']] is not None else ""
-                    pw_text = st.text_area(
+                    pw_text = st.text_input(
                         "비밀번호", 
-                        value=pw_value, 
+                        value=str(branch_data[COLUMN_MAPPING['pw']]),  # 실제 비밀번호 값 표시
                         key=f"pw_{selected_branch}",
-                        height=50,  # 크기 조정
                         disabled=True
                     )
                     st.markdown("👉 비밀번호를 선택하고 `Ctrl+C`로 복사하세요.")
@@ -371,8 +368,6 @@ def branch_info_page():
                 st.markdown("---")
                 if st.button("🌐 제로아이즈 홈페이지", key="open_zeroeyes"):
                     open_link_in_new_tab("https://zeroeyes.com")
-
-            # 오른쪽 컬럼: 추가 정보 (생략)
 
 
             
