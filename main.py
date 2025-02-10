@@ -1027,8 +1027,16 @@ def main():
             border-radius: 8px !important;
             overflow: hidden !important;
         }
-        </style>
-        """,
+        
+        <style>
+         /* 경고 메시지 스타일 */
+         .stAlert {
+            background-color: #ffebee !important;
+            border-radius: 8px !important;
+             padding: 15px !important;
+        }
+         </style>
+         """,
         unsafe_allow_html=True
     )
 
