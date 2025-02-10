@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import pytz, gspread, random, string, os, json
 from google.oauth2.service_account import Credentials
 import pandas as pd
+from streamlit.components.v1 import html  # HTML/JS 사용
 import plotly.express as px
 import base64, tempfile
 import pyperclip,webbrowser
@@ -289,7 +290,7 @@ def load_and_display_spreadsheet_data():
 
 # ✅ Google Sheets 인증 함수 (end)
 
-# 지점 정보 출력
+# ✅ 지점 정보 확인 페이지
 def branch_info_page():
     st.title("🏢 지점 정보 확인")
     
@@ -298,20 +299,30 @@ def branch_info_page():
     
     # 컬럼명 매핑 (시트 구조에 맞게 수정 필요)
     COLUMN_MAPPING = {
-        'id': 'ID',
-        'pw': 'PWD',
-        'channel': '지점 카카오톡 채널',
-        'study_room': '스터디룸 여부'
+        'id': '아이디',
+        'pw': '비밀번호',
+        'channel': '지점채널',
+        'study_room': '스터디룸 여부',
+        'branch_name': '지점명'
     }
     
     # 지점명 검색 입력
     search_term = st.text_input("🔍 지점명 검색 (일부 입력 가능)", key="branch_info_search")
     
-    # 검색 결과 필터링
-    filtered = df[df["지점명"].str.contains(search_term, case=False, na=False)] if search_term else pd.DataFrame()
+    # 검색 결과 필터링 (중복 제거 및 정확한 검색)
+    if search_term:
+        filtered = df[df[COLUMN_MAPPING['branch_name']].str.contains(search_term, case=False, na=False)]
+        filtered = filtered.drop_duplicates(subset=[COLUMN_MAPPING['branch_name']])  # 중복 제거
+    else:
+        filtered = pd.DataFrame()
 
     if not filtered.empty:
-        branch_data = filtered.iloc[0]
+        # 지점 선택 드롭다운
+        branch_names = filtered[COLUMN_MAPPING['branch_name']].tolist()
+        selected_branch = st.selectbox("지점 선택", branch_names, key="branch_select")
+        
+        # 선택된 지점 데이터
+        branch_data = filtered[filtered[COLUMN_MAPPING['branch_name']] == selected_branch].iloc[0]
         
         with st.container():
             col1, col2 = st.columns(2)
@@ -325,22 +336,22 @@ def branch_info_page():
                     # 아이디 복사 섹션
                     st.code(f"아이디: {branch_data[COLUMN_MAPPING['id']]}")
                     if st.button("📋 아이디 복사", key="copy_id"):
-                        pyperclip.copy(str(branch_data[COLUMN_MAPPING['id']]))
+                        copy_to_clipboard(str(branch_data[COLUMN_MAPPING['id']]))
                         st.success("아이디가 복사되었습니다!")
                     
                     # 비밀번호 복사 섹션
                     st.code(f"비밀번호: {'*' * len(str(branch_data[COLUMN_MAPPING['pw']]))}")
                     if st.button("📋 비밀번호 복사", key="copy_pw"):
-                        pyperclip.copy(str(branch_data[COLUMN_MAPPING['pw']]))
+                        copy_to_clipboard(str(branch_data[COLUMN_MAPPING['pw']]))
                         st.success("비밀번호가 복사되었습니다!")
                 else:
                     st.warning("컴앤패스 관리자앱을 이용해주세요")
-                    if st.button("🖥️ 관리자앱 열기"):
-                        webbrowser.open("https://adminapp.com")  # 실제 URL로 변경
+                    if st.button("🖥️ 관리자앱 열기", key="open_admin_app"):
+                        open_link_in_new_tab("https://adminapp.com")  # 실제 URL로 변경
                 
                 st.markdown("---")
-                if st.button("🌐 제로아이즈 홈페이지"):
-                    webbrowser.open_new_tab("https://zeroeyes.com")
+                if st.button("🌐 제로아이즈 홈페이지", key="open_zeroeyes"):
+                    open_link_in_new_tab("https://zeroeyes.com")
             
             # 오른쪽 컬럼: 추가 정보
             with col2:
@@ -348,7 +359,7 @@ def branch_info_page():
                 st.write(f"**지점 채널:** {branch_data.get(COLUMN_MAPPING['channel'], 'N/A')}")
                 st.write(f"**스터디룸 여부:** {branch_data.get(COLUMN_MAPPING['study_room'], 'N/A')}")
                 
-                if st.button("📩 지점채널 안내문 생성"):
+                if st.button("📩 지점채널 안내문 생성", key="generate_channel_message"):
                     channel_info = branch_data.get(COLUMN_MAPPING['channel'], '')
                     if pd.notna(channel_info) and channel_info != '':
                         message = f"""
@@ -365,6 +376,29 @@ def branch_info_page():
     
     elif search_term:
         st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
+
+# ✅ 클립보드 복사 함수 (JavaScript 사용)
+def copy_to_clipboard(text):
+    js_code = f"""
+    <script>
+    function copyToClipboard() {{
+        navigator.clipboard.writeText("{text}");
+    }}
+    copyToClipboard();
+    </script>
+    """
+    html(js_code)
+
+# ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
+def open_link_in_new_tab(url):
+    js_code = f"""
+    <script>
+    window.open("{url}", "_blank");
+    </script>
+    """
+    html(js_code)
+
+
 
 
 # ✅ 홈 페이지
@@ -1080,6 +1114,7 @@ def main():
         {"icon": "🔑", "label": "마스터키 관리", "key": "master", "sub": [
             {"label": "마스터키 안내", "key": "locker"},
             {"label": "퇴실 복구", "key": "restore"},
+            {"label": "지점 정보 확인", "key": "branch_info"},
         ]},
         {"icon": "💰", "label": "환불 관리", "key": "refund", "sub": [
             {"label": "환불 계산", "key": "refund_calc"},
@@ -1087,7 +1122,6 @@ def main():
         {"icon": "📊", "label": "데이터 관리", "key": "data", "sub": [
             {"label": "전체 지점 리스트", "key": "spreadsheet"},
         ]},
-        {"icon": "🏢", "label": "지점 정보 확인", "key": "branch_info"},
     ]
 
     # 메뉴 버튼 클릭 이벤트 처리
