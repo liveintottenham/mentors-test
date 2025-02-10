@@ -1081,69 +1081,82 @@ def main():
     )
 
     # ✅ 사이드바 스타일 적용
-    st.sidebar.markdown(
+    st.markdown(
         """
         <style>
-        /* 사이드바 전체 배경색 변경 */
-        .sidebar .sidebar-content {
-            background-color: #2c3e50 !important;  /* 어두운 회색 배경 */
+         /* 전체 폰트 및 색상 통일 */
+        * {
+            font-family: 'Pretendard', sans-serif !important;
         }
 
-        /* 타이틀 스타일 */
-        .sidebar-title {
-            font-size: 28px;
-            font-weight: bold;
-            text-align: center;
-            color: #ffffff;
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #34495e;  /* 밝은 회색 배경 */
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        /* 헤더 디자인 */
+        .stApp header {
+            background:rgb(239, 229, 229) !important;
+            padding: 15px !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        /* 버튼 스타일 */
-        .sidebar-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            margin: 8px 0;
-            font-size: 16px;
-            color: #ffffff;
-            background-color: #34495e;  /* 밝은 회색 배경 */
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            text-align: left;
-            border: none;
+        /* 입력 필드 통일성 추가 */
+        .stTextInput input, .stNumberInput input, .stDateInput input {
+            border-radius: 8px !important;
+            padding: 10px !important;
         }
 
-        .sidebar-item:hover {
-            background-color: #3d566e;  /* 호버 시 약간 더 밝은 회색 */
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        /* 버튼 디자인 */
+        .stButton button {
+            border-radius: 8px !important;
+            padding: 10px 20px !important;
+            transition: all 0.3s !important;
         }
 
-        .sidebar-item.active {
-            background-color: #2ecc71 !important;  /* 활성화된 버튼은 초록색 */
+        /* 표 디자인 */
+        .dataframe {
+            border-radius: 8px !important;
+            overflow: hidden !important;
+        }
+
+        /* 경고 메시지 스타일 */
+        .stAlert {
+            background-color: #ffebee !important;
+            border-radius: 8px !important;
+            padding: 15px !important;
+        }
+
+        /* 사이드바 버튼 스타일 */
+        .sidebar .stButton button {
+            background-color: #34495e !important;  /* 기본 색상 */
             color: white !important;
+            border-radius: 8px;
+            padding: 8px 16px;
+        }
+        .sidebar .stButton button:hover {
+            background-color: #3d566e !important;  /* 호버 시 색상 */
+        }
+        .sidebar .stButton button:active {
+            background-color: #2ecc71 !important;  /* 활성화 시 색상 */
         }
 
-        /* 푸터 스타일 */
-        .sidebar-footer {
-            text-align: center;
-            font-size: 12px;
-            color: #bdc3c7;
-            margin-top: 30px;
-        }ㅙ
+        /* 사이드바 내 특이사항 팝업 스타일 수정 */
+        .sidebar .stExpander {
+            background-color: #fff3e0 !important;
+            border-radius: 8px !important;
+            padding: 15px !important;
+        }
+
+        /* 일반 팝업(Expander) 스타일 */
+        .stExpander {
+            background-color: #ffffff !important;
+            border-radius: 8px !important;
+            padding: 15px !important;
+        }
+
         </style>
         """,
         unsafe_allow_html=True
+    
     )
-
-            # 사이드바 제목에 이미지 추가
+    
+     # 사이드바 제목에 이미지 추가
     st.sidebar.markdown(
         """
         <h2 style="text-align: center;">
