@@ -7,6 +7,8 @@ from streamlit.components.v1 import html  # HTML/JS 사용
 import plotly.express as px
 import base64, tempfile
 import pyperclip,webbrowser
+import streamlit.components.v1 as components
+
 
 # ✅ 페이지 설정
 st.set_page_config(
@@ -394,7 +396,6 @@ def branch_info_page():
     elif search_term:
         st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
 
-# ✅ 클립보드 복사 함수 
 def copy_to_clipboard(text):
     try:
         # pyperclip을 사용한 로컬 환경 대응
@@ -405,16 +406,15 @@ def copy_to_clipboard(text):
         # JavaScript를 통한 웹 환경 대응
         js_code = f"""
         <script>
-            const tempInput = document.createElement('input');
-            tempInput.value = `{text}`;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempInput);
+            navigator.clipboard.writeText('{text}').then(function() {{
+                alert("클립보드에 복사되었습니다! (Ctrl+V로 붙여넣기)");
+            }}).catch(function(error) {{
+                alert("복사에 실패했습니다: " + error);
+            }});
         </script>
         """
         # Streamlit에서 JavaScript 실행
-        st.markdown(js_code, unsafe_allow_html=True)
+        components.html(js_code, height=0, width=0)
         st.success("클립보드에 복사되었습니다! (Ctrl+V로 붙여넣기)")
 
 
