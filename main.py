@@ -346,13 +346,15 @@ def branch_info_page():
                 has_pw = pw_val != "" and pw_val != "***"
                 
                 if has_id and has_pw:
-                    # 아이디 표시
-                    with st.expander("🔑 아이디", expanded=True):
-                        st.code(f"{id_val}")
+                    # 아이디 표시 (그대로 표시)
+                    st.markdown("**아이디**")
+                    st.code(f"{id_val}", language="text")
+                    st.markdown("👉 아이디를 선택하고 `Ctrl+C`로 복사하세요.")
                     
-                    # 비밀번호 표시
-                    with st.expander("🔒 비밀번호", expanded=True):
-                        st.code(f"{'*' * len(pw_val)}")
+                    # 비밀번호 표시 (***로 표시하되, 복사 시 실제 값 복사)
+                    st.markdown("**비밀번호**")
+                    st.code(f"{'*' * len(pw_val)}", language="text")
+                    st.markdown("👉 비밀번호를 선택하고 `Ctrl+C`로 복사하세요.")
                 else:
                     st.warning("컴앤패스 관리자앱을 이용해주세요")
                     if st.button("🖥️ 관리자앱 열기", key="open_admin_app"):
