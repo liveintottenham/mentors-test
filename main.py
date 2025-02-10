@@ -94,7 +94,8 @@ def authenticate_google_sheets():
     except Exception as e:
         raise Exception(f"🚨 인증 실패: {str(e)}")
 
-@st.cache_data(ttl=5, show_spinner=False)
+
+@st.cache_data(ttl=5)
 def get_real_time_data():
     try:
         client = authenticate_google_sheets()
@@ -102,27 +103,26 @@ def get_real_time_data():
         sheet = spreadsheet.worksheet("시트1")  # 시트 이름
         df = pd.DataFrame(sheet.get_all_records())
 
-        # ✅ '마스터키 PWD' 열을 문자열로 변환
-        df["마스터키 PWD"] = df["마스터키 PWD"].astype(str)
-
-        # ✅ 비어 있는 값(`""` 또는 NaN)은 그대로 두고, 나머지만 `zfill(4)` 적용
-        df["마스터키 PWD"] = df["마스터키 PWD"].apply(lambda x: str(x).zfill(4) if pd.notna(x) and x != "" else x)
-
-        # ✅ 숫자 컬럼 변환 (시트에서 숫자가 문자열로 올 경우)
-        numeric_cols = ['시간권 금액', '기간권 금액']
-        for col in numeric_cols:
-            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
-
-        # 숫자형 컬럼 처리 방식 변경
+        # ✅ 컬럼명 정규화 (공백 제거 및 대소문자 통일)
+        df.columns = df.columns.str.strip().str.replace(" ", "")
+        
+        # ✅ 필수 컬럼 존재 여부 확인
+        required_columns = ["지점명", "사물함ID", "사물함PWD", "ID", "PWD", "지점카카오톡채널", "스터디룸여부"]
+        for col in required_columns:
+            if col not in df.columns:
+                raise KeyError(f"구글 시트에 '{col}' 컬럼이 없습니다. 시트 구조를 확인해주세요.")
+        
+        # ✅ 숫자 컬럼 처리
+        df["사물함PWD"] = df["사물함PWD"].astype(str).str.zfill(4)  # 4자리 0 패딩
+        df["사물함ID"] = df["사물함ID"].astype(str).str.zfill(4)  # 4자리 0 패딩
         df["ID"] = df["ID"].astype(str).str.zfill(4)  # 4자리 0 패딩
         df["PWD"] = df["PWD"].astype(str)
 
         return df
 
-    
     except Exception as e:
         st.error(f"📊 데이터 조회 실패: {str(e)}")
-        return pd.DataFrame()
+        return pd.DataFrame()  # 빈 데이터프레임 반환
 
 # ✅ 데이터 업데이트 함수
 def update_sheet(new_data):
@@ -511,13 +511,7 @@ def locker_masterkey_page():
     st.title("🔑 사물함 마스터키 안내")
     df = get_real_time_data()
     
-    # 컬럼명 변경 반영
-    df = df.rename(columns={
-        "마스터키 L": "사물함 ID",
-        "마스터키 PWD": "사물함 PWD"
-    })
-    
-    # 지점 검색 로직
+    # ✅ 지점 검색 로직
     search_term = st.text_input("지점명 입력 (예: '연산' → '부산연산점')", key="branch_search")
     filtered_branches = df[df["지점명"].str.contains(search_term, case=False)] if search_term else []
     
@@ -529,8 +523,8 @@ def locker_masterkey_page():
     
     if selected_branch:
         branch_data = df[df["지점명"] == selected_branch].iloc[0]
-        locker_number = str(branch_data["사물함 ID"]).strip()
-        locker_password = str(branch_data["사물함 PWD"]).strip()
+        locker_number = str(branch_data["사물함ID"]).strip()
+        locker_password = str(branch_data["사물함PWD"]).strip()
         
         # 특이사항 체크
         if locker_number == "***" and locker_password == "***":
