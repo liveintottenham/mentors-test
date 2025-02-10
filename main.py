@@ -552,35 +552,37 @@ def locker_masterkey_page():
         if not selected_branch:
             st.error("❌ 지점명을 선택하세요!")
         else:
-            # ✅ 지점명으로 데이터 필터링 (정확한 일치)
             filtered_data = df[df["지점명"] == selected_branch]
-
+            
             if filtered_data.empty:
                 st.error("❌ 해당 지점명이 없습니다. 지점채널로 문의해주세요.")
             else:
-                # ✅ 사물함 정보 추출
-                locker_number = str(filtered_data.iloc[0]["마스터키 L"]).strip()  # 문자열 변환 및 공백 제거
-                locker_password = filtered_data.iloc[0]["마스터키 PWD"]  # 이미 문자열로 처리됨
+                # ✅ 특이사항 체크 및 팝업 표시
+                special_notes = str(filtered_data.iloc[0].get("특이사항", "")).strip()
+                if special_notes not in ["", "nan", "NaN"]:
+                    st.warning(f"🚨 특이사항 알림: {special_notes}")
 
-                # ✅ 빈 값 또는 NaN 체크 (문자열로 비교)
-                if (locker_number in ["", "nan", "NaN", "0"]) or (locker_password in ["", "nan", "NaN", "0"]):
-                    st.error("❌ 사물함 정보가 없습니다. 지점채널로 문의해주세요.")
-                else:
-                    info_text = (
-                        f"✅ 구매 확인 완료되어,\n"
-                        f"사물함 마스터키 안내드립니다💛\n\n"
-                        f"🔑 [{locker_number}]번 사물함에 가셔서\n"
-                        f"비밀번호 [{locker_password}]을(를) 눌러주시면,\n"
-                        f"내부에 마스터키가 들어 있습니다.\n"
-                        "키는 사용 후 제자리에 넣고 다시 [" + locker_password + "] 입력하여 잠금 부탁드립니다.\n\n"
-                        "✅ 마스터키 사용 방법\n"
-                        "마스터키를 잠겨있는 사물함의\n"
-                        "키패드 중간에 보이는 ‘동그란 홈 부분’에 대시면 문이 열립니다.\n\n"
-                        "✅ 사물함 비밀번호 설정 방법\n"
-                        "문을 닫고 원하는 비밀번호 4자리를 누르세요.\n"
-                        "‘설정했던 비밀번호 4자리’를 다시 누르면 문이 열립니다."
-                    )
-                    st.text_area("📌 마스터키 안내", info_text, height=250)
+                # ✅ 사물함 정보 추출
+                locker_number = str(filtered_data.iloc[0]["마스터키 L"]).strip()
+                locker_password = filtered_data.iloc[0]["마스터키 PWD"]
+
+                # ✅ 새로운 안내문 형식 적용
+                info_text = (
+                    f"구매 확인이 완료되어 마스터키 발급이 완료되었습니다.\n"
+                    f"아래의 사물함에서 마스터키를 찾아 본인 사물함을 개방하시면 됩니다.\n\n"
+                    f"발급일시 : {current_time}\n"
+                    f"지점명 : {selected_branch}\n"
+                    f"(1) 사물함 번호 : {locker_number}\n"
+                    f"(2) 비밀번호 : {locker_password}\n\n"
+                    "사물함 안에 마스터키가 들어 있습니다.\n"
+                    "비밀번호를 눌러 사물함을 열어주세요.\n\n"
+                    "🔑 마스터키 사용법:\n"
+                    "마스터키를 사물함의 키패드 중간에 보이는 '동그란 홈 부분'에 대면 문이 열립니다.\n\n"
+                    "🔐 사물함 비밀번호 설정 방법:\n"
+                    "문을 닫고, 원하는 4자리 비밀번호를 입력하세요.\n"
+                    "설정한 비밀번호를 다시 입력하면 문이 열립니다."
+                )
+                st.text_area("📌 마스터키 안내", info_text, height=300)
 
 def restore_checkout_page():
     st.title("🛠️ 퇴실 미처리 복구")
