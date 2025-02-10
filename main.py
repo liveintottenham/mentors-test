@@ -343,99 +343,84 @@ def main():
     if "page" not in st.session_state:
         st.session_state.page = "home"
 
-    # ✅ 사이드바 스타일 적용
-    st.sidebar.markdown(
-        """
-        <style>
-        /* 사이드바 전체 배경색 변경 */
-        .sidebar .sidebar-content {
-            background-color: #2c3e50 !important;  /* 어두운 회색 배경 */
-        }
-
-        /* 타이틀 스타일 */
-        .sidebar-title {
-            font-size: 28px;
-            font-weight: bold;
-            text-align: center;
-            color: #ffffff;
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #34495e;  /* 밝은 회색 배경 */
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        /* 버튼 스타일 */
-        .sidebar-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            margin: 8px 0;
-            font-size: 16px;
-            color: #ffffff;
-            background-color: #34495e;  /* 밝은 회색 배경 */
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            text-align: left;
-            border: none;
-        }
-
-        .sidebar-item:hover {
-            background-color: #3d566e;  /* 호버 시 약간 더 밝은 회색 */
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .sidebar-item.active {
-            background-color: #2ecc71 !important;  /* 활성화된 버튼은 초록색 */
-            color: white !important;
-        }
-
-        /* 푸터 스타일 */
-        .sidebar-footer {
-            text-align: center;
-            font-size: 12px;
-            color: #bdc3c7;
-            margin-top: 30px;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
     
-    # ✅ 메뉴 아이템 리스트
-    menu_items = [
-        {"icon": "🏠", "label": "대시보드", "key": "home"},
-        {"icon": "🔑", "label": "마스터키 안내", "key": "locker"},
-        {"icon": "🔄", "label": "퇴실 미처리 복구", "key": "restore"},
-        {"icon": "💰", "label": "이용권 환불 계산", "key": "refund"},
-        {"icon": "📊", "label": "전체 지점 리스트", "key": "spreadsheet"},
-    ]
+    st.sidebar.markdown(
+    """
+    <style>
+    /* 사이드바 전체 배경색 변경 */
+    .sidebar .sidebar-content {
+        background-color: #2c3e50 !important;
+        padding: 15px !important;
+    }
 
-    # ✅ 버튼 클릭 이벤트 처리
-    for item in menu_items:
-        # 버튼 클릭 시 세션 상태 업데이트
+    /* 메뉴 아이템 스타일 (하위 메뉴 느낌) */
+    .sidebar-item {
+        padding: 10px 25px !important;
+        margin: 5px 0 !important;
+        font-size: 14px !important;
+        background-color: #34495e !important;
+        border-radius: 5px !important;
+        transition: all 0.2s !important;
+        cursor: pointer !important;
+        width: 90% !important;
+        text-align: left !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .sidebar-item:hover {
+        background-color: #3d566e !important;
+        transform: translateX(5px) !important;
+    }
+
+    .sidebar-item.active {
+        background-color: #2ecc71 !important;
+        font-weight: 600 !important;
+    }
+
+    /* 서브 메뉴 들여쓰기 */
+    .sub-menu {
+        margin-left: 20px !important;
+        font-size: 13px !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# ✅ 메뉴 아이템 리스트 (계층 구조 추가)
+menu_items = [
+    {"icon": "🏠", "label": "대시보드", "key": "home"},
+    {"icon": "🔑", "label": "마스터키 관리", "key": "master", "sub": [
+        {"label": "마스터키 안내", "key": "locker"},
+        {"label": "퇴실 복구", "key": "restore"},
+    ]},
+    {"icon": "💰", "label": "환불 관리", "key": "refund", "sub": [
+        {"label": "환불 계산", "key": "refund"},
+    ]},
+    {"icon": "📊", "label": "데이터 관리", "key": "data", "sub": [
+        {"label": "전체 지점 리스트", "key": "spreadsheet"},
+    ]},
+]
+
+# ✅ 메뉴 렌더링
+for item in menu_items:
+    if "sub" in item:  # 서브 메뉴가 있는 경우
+        with st.sidebar.expander(f"{item['icon']} {item['label']}", expanded=False):
+            for sub_item in item["sub"]:
+                if st.button(
+                    f"↳ {sub_item['label']}",
+                    key=f"menu_{sub_item['key']}",
+                    use_container_width=True,
+                ):
+                    st.session_state.page = sub_item["key"]
+    else:  # 일반 메뉴
         if st.sidebar.button(
             f"{item['icon']} {item['label']}",
             key=f"menu_{item['key']}",
             use_container_width=True,
         ):
             st.session_state.page = item["key"]
-
-    # ✅ 현재 페이지에 따라 동적으로 렌더링
-    if st.session_state.page == "home":
-        home_page()
-    elif st.session_state.page == "locker":
-        locker_masterkey_page()
-    elif st.session_state.page == "restore":
-        restore_checkout_page()
-    elif st.session_state.page == "refund":
-        refund_calculator_page()
-    elif st.session_state.page == "spreadsheet":
-        load_and_display_spreadsheet_data()
 
 # ✅ 홈 페이지
 def home_page():
