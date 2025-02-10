@@ -356,11 +356,11 @@ def branch_info_page():
                 else:
                     st.warning("컴앤패스 관리자앱을 이용해주세요")
                     if st.button("🖥️ 관리자앱 열기", key="open_admin_app"):
-                        open_link_in_new_tab("https://adminapp.com")  # 실제 URL로 변경
+                        open_link_in_new_tab("https://mg.smonster.kr/")
 
                 st.markdown("---")
                 if st.button("🌐 제로아이즈 홈페이지"):
-                    open_link_in_new_tab("https://zeroeyes.com")
+                    open_link_in_new_tab("https://mentors.mooin.kr/login")
 
             # 오른쪽 컬럼: 부가 정보
             with col2:
@@ -1155,7 +1155,7 @@ def main():
         unsafe_allow_html=True
     
     )
-    
+
      # 사이드바 제목에 이미지 추가
     st.sidebar.markdown(
         """
