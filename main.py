@@ -297,10 +297,10 @@ def branch_info_page():
     # Google Sheets 데이터 로드
     df = get_real_time_data()
     
-    # 컬럼명 매핑 (시트 구조에 맞게 수정 필요)
+    # 컬럼명 매핑 (실제 시트 구조에 맞게 수정)
     COLUMN_MAPPING = {
-        'id': 'ID',
-        'pw': 'PWD',
+        'id': 'ID',          # 실제 시트의 아이디 컬럼명
+        'pw': 'PWD',         # 실제 시트의 비밀번호 컬럼명
         'channel': '지점 카카오톡 채널',
         'study_room': '스터디룸 여부',
         'branch_name': '지점명'
@@ -309,10 +309,10 @@ def branch_info_page():
     # 지점명 검색 입력
     search_term = st.text_input("🔍 지점명 검색 (일부 입력 가능)", key="branch_info_search")
     
-    # 검색 결과 필터링 (중복 제거 및 정확한 검색)
+    # 검색 결과 필터링
     if search_term:
         filtered = df[df[COLUMN_MAPPING['branch_name']].str.contains(search_term, case=False, na=False)]
-        filtered = filtered.drop_duplicates(subset=[COLUMN_MAPPING['branch_name']])  # 중복 제거
+        filtered = filtered.drop_duplicates(subset=[COLUMN_MAPPING['branch_name']])
     else:
         filtered = pd.DataFrame()
 
@@ -331,32 +331,41 @@ def branch_info_page():
             with col1:
                 st.subheader("계정 정보")
                 
-                # 아이디와 비밀번호가 모두 있는지 확인
-                has_credentials = (
-                    pd.notna(branch_data[COLUMN_MAPPING['id']]) and 
-                    pd.notna(branch_data[COLUMN_MAPPING['pw']]) and 
-                    branch_data[COLUMN_MAPPING['id']] != "" and 
-                    branch_data[COLUMN_MAPPING['pw']] != ""
-                )
-                
+                # ✅ 아이디/비밀번호 존재 여부 체크 (NaN 및 빈 문자열 처리)
+                has_id = pd.notna(branch_data[COLUMN_MAPPING['id']]) and str(branch_data[COLUMN_MAPPING['id']]) != ''
+                has_pw = pd.notna(branch_data[COLUMN_MAPPING['pw']]) and str(branch_data[COLUMN_MAPPING['pw']]) != ''
+                has_credentials = has_id and has_pw
+
                 if has_credentials:
-                    # 아이디 표시 및 복사 버튼
-                    st.code(f"아이디: {branch_data[COLUMN_MAPPING['id']]}")
-                    if st.button("📋 아이디 복사", key="copy_id"):
-                        copy_to_clipboard(str(branch_data[COLUMN_MAPPING['id']]))
-                        st.success("아이디가 복사되었습니다!")
+                    # 아이디 표시 및 복사
+                    with st.container():
+                        st.markdown("**아이디**")
+                        id_text = st.text_input(
+                            "아이디", 
+                            value=str(branch_data[COLUMN_MAPPING['id']]), 
+                            key=f"id_{selected_branch}",
+                            disabled=True
+                        )
+                        if st.button("📋 아이디 복사", key=f"copy_id_{selected_branch}"):
+                            copy_to_clipboard(id_text)
                     
-                    # 비밀번호 표시 및 복사 버튼
-                    st.code(f"비밀번호: {'*' * len(str(branch_data[COLUMN_MAPPING['pw']]))}")
-                    if st.button("📋 비밀번호 복사", key="copy_pw"):
-                        copy_to_clipboard(str(branch_data[COLUMN_MAPPING['pw']]))
-                        st.success("비밀번호가 복사되었습니다!")
+                    # 비밀번호 표시 및 복사
+                    with st.container():
+                        st.markdown("**비밀번호**")
+                        pw_text = st.text_input(
+                            "비밀번호", 
+                            value="*" * len(str(branch_data[COLUMN_MAPPING['pw']])), 
+                            key=f"pw_{selected_branch}",
+                            disabled=True
+                        )
+                        if st.button("📋 비밀번호 복사", key=f"copy_pw_{selected_branch}"):
+                            copy_to_clipboard(str(branch_data[COLUMN_MAPPING['pw']]))
+                            
                 else:
-                    # 아이디 또는 비밀번호가 없는 경우
                     st.warning("컴앤패스 관리자앱을 이용해주세요")
                     if st.button("🖥️ 관리자앱 열기", key="open_admin_app"):
                         open_link_in_new_tab("https://adminapp.com")  # 실제 URL로 변경
-                
+
                 st.markdown("---")
                 if st.button("🌐 제로아이즈 홈페이지", key="open_zeroeyes"):
                     open_link_in_new_tab("https://zeroeyes.com")
@@ -385,17 +394,27 @@ def branch_info_page():
     elif search_term:
         st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
 
-# ✅ 클립보드 복사 함수 (JavaScript 사용)
+# ✅ 클립보드 복사 함수 
 def copy_to_clipboard(text):
-    js_code = f"""
-    <script>
-    function copyToClipboard() {{
-        navigator.clipboard.writeText("{text}");
-    }}
-    copyToClipboard();
-    </script>
-    """
-    html(js_code)
+    try:
+        # pyperclip을 사용한 로컬 환경 대응
+        import pyperclip
+        pyperclip.copy(text)
+        st.success("클립보드에 복사되었습니다! (Ctrl+V로 붙여넣기)")
+    except:
+        # JavaScript를 통한 웹 환경 대응
+        js_code = f"""
+        <script>
+            const tempInput = document.createElement('input');
+            tempInput.value = `{text}`;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+        </script>
+        """
+        html(js_code)
+        st.success("클립보드에 복사되었습니다! (Ctrl+V로 붙여넣기)")
 
 # ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
 def open_link_in_new_tab(url):
