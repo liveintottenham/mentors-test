@@ -112,10 +112,10 @@ def get_real_time_data():
             if col not in df.columns:
                 raise KeyError(f"구글 시트에 '{col}' 컬럼이 없습니다. 시트 구조를 확인해주세요.")
         
-        # ✅ 숫자 컬럼 처리
-        df["사물함PWD"] = df["사물함PWD"].astype(str).str.zfill(4)  # 4자리 0 패딩
-        df["사물함ID"] = df["사물함ID"].astype(str).str.zfill(4)  # 4자리 0 패딩
-        df["ID"] = df["ID"].astype(str).str.zfill(4)  # 4자리 0 패딩
+        # ✅ 숫자 컬럼 처리 (0 패딩 제거)
+        df["사물함PWD"] = df["사물함PWD"].astype(str)
+        df["사물함ID"] = df["사물함ID"].astype(str)
+        df["ID"] = df["ID"].astype(str)
         df["PWD"] = df["PWD"].astype(str)
 
         return df
@@ -539,16 +539,19 @@ def locker_masterkey_page():
         locker_number = str(branch_data["사물함ID"]).strip()
         locker_password = str(branch_data["사물함PWD"]).strip()
         
-        # 특이사항 체크
+        # ✅ 특이사항 팝업
         if locker_number == "***" and locker_password == "***":
             st.warning("🚨 해당 지점은 사물함 마스터키 안내가 불가합니다. 지점채널로 안내 부탁드립니다.")
             return
+        elif locker_number == "***" or locker_password == "***":
+            st.warning("🚨 특이사항: 사물함 정보가 누락되었습니다. 지점채널로 문의해주세요.")
+            return
         
-        # 현재 시간 (KST)
+        # ✅ 현재 시간 (KST)
         kst = pytz.timezone('Asia/Seoul')
         current_time_kst = datetime.now(kst).strftime('%Y-%m-%d %H:%M')
         
-        # 안내문 생성
+        # ✅ 안내문 생성
         info_text = (
             f"구매 확인이 완료되어 마스터키 발급이 완료되었습니다.\n"
             f"아래의 사물함에서 마스터키를 찾아 본인 사물함을 개방하시면 됩니다.\n\n"
@@ -565,7 +568,7 @@ def locker_masterkey_page():
             "설정한 비밀번호를 다시 입력하면 문이 열립니다."
         )
         
-        # 안내문 출력
+        # ✅ 안내문 출력
         st.text_area("📌 마스터키 안내", info_text, height=400)
 
 def restore_checkout_page():
