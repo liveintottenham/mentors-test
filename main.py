@@ -338,26 +338,41 @@ def load_and_display_spreadsheet_data():
 # ✅ 홈 페이지
 def home_page():
     st.markdown(
-        """
-        <style>
-        /* 기본 스타일 */
-        .stApp { background-color: #f5f7fa; }
-        .title-text { text-align: center; font-size: 40px; font-weight: bold; color: white; background-color: #2c3e50; padding: 15px; border-radius: 10px; }
-        .sub-title { text-align: center; font-size: 20px; color: #ffffff; background-color: #34495e; padding: 10px; border-radius: 10px; }
-        .card { background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); margin: 10px 0; }
+    """
+    <style>
+    /* 카드 디자인 업그레이드 */
+    .card {
+        background: linear-gradient(145deg, #ffffff, #f8f9fa);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 15px 0;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+        border: 1px solid #e0e0e0;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
 
-        /* 야간 모드 대응 */
-        @media (prefers-color-scheme: dark) {
-            .stApp { background-color: #1e1e1e; }
-            .title-text { color: #ffffff !important; background-color: #2c3e50; }
-            .sub-title { color: #ffffff !important; background-color: #34495e; }
-            .card { background-color: #2e2e2e; color: #ffffff !important; }
-            .card a { color: #4dabf7 !important; } /* 링크 색상 변경 */
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+    /* 타이틀 디자인 */
+    .section-title {
+        font-size: 24px !important;
+        color: #2c3e50 !important;
+        border-left: 4px solid #2ecc71;
+        padding-left: 15px;
+        margin: 25px 0 !important;
+    }
+
+    /* 그래프 색상 통일 */
+    .stPlotlyChart {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 
     # ✅ 공지사항 데이터
@@ -377,16 +392,17 @@ def home_page():
     col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader("📢 공지사항")
+        st.markdown('<div class="section-title">📢 최신 공지사항</div>', unsafe_allow_html=True)
         for notice in notices:
             st.markdown(
                 f"""
                 <div class="card">
-                    <h4>✅ {notice['날짜']}</h4>
-                    <p><strong>{notice['제목']}</strong></p>
-                    <a href="{notice['링크']}" target="_blank">🔗 바로가기</a>
+                    <div style="color: #2ecc71; font-size: 12px;">{notice['날짜']}</div>
+                    <div style="font-size: 16px; font-weight: 600; margin: 10px 0;">{notice['제목']}</div>
+                    <a href="{notice['링크']}" target="_blank" style="text-decoration: none; color: #3498db;">👉 바로가기</a>
                 </div>
-                """, unsafe_allow_html=True
+                """, 
+                unsafe_allow_html=True
             )
 
     with col2:
@@ -913,6 +929,45 @@ def main():
     if "page" not in st.session_state:
         st.session_state.page = "home"
 
+    # ✅ 전체 페이지 CSS (main() 함수 상단 추가)
+    st.markdown(
+        """
+        <style>
+        /* 전체 폰트 및 색상 통일 */
+        * {
+            font-family: 'Pretendard', sans-serif !important;
+        }
+
+        /* 헤더 디자인 */
+        .stApp header {
+            background:rgb(239, 229, 229) !important;
+            padding: 15px !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 입력 필드 통일성 추가 */
+        .stTextInput input, .stNumberInput input, .stDateInput input {
+            border-radius: 8px !important;
+            padding: 10px !important;
+        }
+
+        /* 버튼 디자인 */
+        .stButton button {
+            border-radius: 8px !important;
+            padding: 10px 20px !important;
+            transition: all 0.3s !important;
+        }
+
+        /* 표 디자인 */
+        .dataframe {
+            border-radius: 8px !important;
+            overflow: hidden !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
     # ✅ 사이드바 스타일 적용
     st.sidebar.markdown(
         """
@@ -970,7 +1025,7 @@ def main():
             font-size: 12px;
             color: #bdc3c7;
             margin-top: 30px;
-        }
+        }ㅙ
         </style>
         """,
         unsafe_allow_html=True
