@@ -397,25 +397,26 @@ def branch_info_page():
         st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
 
 def copy_to_clipboard(text):
-    try:
-        # pyperclip을 사용한 로컬 환경 대응
-        import pyperclip
-        pyperclip.copy(text)
-        st.success("클립보드에 복사되었습니다! (Ctrl+V로 붙여넣기)")
-    except:
-        # JavaScript를 통한 웹 환경 대응
-        js_code = f"""
-        <script>
-            navigator.clipboard.writeText('{text}').then(function() {{
-                alert("클립보드에 복사되었습니다! (Ctrl+V로 붙여넣기)");
-            }}).catch(function(error) {{
-                alert("복사에 실패했습니다: " + error);
-            }});
-        </script>
-        """
-        # Streamlit에서 JavaScript 실행
-        components.html(js_code, height=0, width=0)
-        st.success("클립보드에 복사되었습니다! (Ctrl+V로 붙여넣기)")
+    if st.button("텍스트 복사하기"):  # 사용자가 버튼을 클릭했을 때만 복사
+        try:
+            # pyperclip을 사용한 로컬 환경 대응
+            import pyperclip
+            pyperclip.copy(text)
+            st.success("클립보드에 복사되었습니다! (Ctrl+V로 붙여넣기)")
+        except:
+            # JavaScript를 통한 웹 환경 대응
+            js_code = f"""
+            <script>
+                navigator.clipboard.writeText('{text}').then(function() {{
+                    alert("클립보드에 복사되었습니다! (Ctrl+V로 붙여넣기)");
+                }}).catch(function(error) {{
+                    alert("복사에 실패했습니다: " + error);
+                }});
+            </script>
+            """
+            # Streamlit에서 JavaScript 실행
+            components.html(js_code, height=0, width=0)
+            st.success("클립보드에 복사되었습니다! (Ctrl+V로 붙여넣기)")
 
 
 # ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
