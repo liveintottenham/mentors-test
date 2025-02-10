@@ -113,6 +113,10 @@ def get_real_time_data():
         for col in numeric_cols:
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
 
+        # 숫자형 컬럼 처리 방식 변경
+        df["ID"] = df["ID"].astype(str).str.zfill(4)  # 4자리 0 패딩
+        df["PWD"] = df["PWD"].astype(str)
+
         return df
 
     
@@ -296,23 +300,19 @@ def load_and_display_spreadsheet_data():
 
 def branch_info_page():
     st.title("🏢 지점 정보 확인")
-    
-    # Google Sheets 데이터 로드
     df = get_real_time_data()
     
-    # 컬럼명 매핑 (실제 시트 구조에 맞게 수정)
+    # 컬럼명 매핑
     COLUMN_MAPPING = {
-        'id': 'ID',          # 실제 시트의 아이디 컬럼명
-        'pw': 'PWD',         # 실제 시트의 비밀번호 컬럼명
+        'id': 'ID', 
+        'pw': 'PWD',
         'channel': '지점 카카오톡 채널',
         'study_room': '스터디룸 여부',
         'branch_name': '지점명'
     }
     
-    # 지점명 검색 입력
+    # 검색 로직
     search_term = st.text_input("🔍 지점명 검색 (일부 입력 가능)", key="branch_info_search")
-    
-    # 검색 결과 필터링
     if search_term:
         filtered = df[df[COLUMN_MAPPING['branch_name']].str.contains(search_term, case=False, na=False)]
         filtered = filtered.drop_duplicates(subset=[COLUMN_MAPPING['branch_name']])
@@ -320,89 +320,81 @@ def branch_info_page():
         filtered = pd.DataFrame()
 
     if not filtered.empty:
-        # 지점 선택 드롭다운
-        branch_names = filtered[COLUMN_MAPPING['branch_name']].tolist()
-        selected_branch = st.selectbox("지점 선택", branch_names, key="branch_select")
-        
-        # 선택된 지점 데이터
+        selected_branch = st.selectbox("지점 선택", filtered[COLUMN_MAPPING['branch_name']].tolist())
         branch_data = filtered[filtered[COLUMN_MAPPING['branch_name']] == selected_branch].iloc[0]
         
         with st.container():
             col1, col2 = st.columns(2)
             
-            # 왼쪽 컬럼: 계정 정보
+            # 계정 정보 섹션
             with col1:
                 st.subheader("계정 정보")
+                id_val = str(branch_data[COLUMN_MAPPING['id']]).zfill(4)  # 0 패딩
+                pw_val = str(branch_data[COLUMN_MAPPING['pw']])
                 
-                # ✅ 아이디/비밀번호 존재 여부 체크 (NaN 및 빈 문자열 처리)
-                has_id = pd.notna(branch_data[COLUMN_MAPPING['id']]) and str(branch_data[COLUMN_MAPPING['id']]) != ''
-                has_pw = pd.notna(branch_data[COLUMN_MAPPING['pw']]) and str(branch_data[COLUMN_MAPPING['pw']]) != ''
-                has_credentials = has_id and has_pw
-
-                if has_credentials:
-                    # 아이디 표시 및 복사
-                    st.markdown("**아이디**")
-                    id_text = st.text_input(
-                        "아이디", 
-                        value=str(branch_data[COLUMN_MAPPING['id']]), 
-                        key=f"id_{selected_branch}",
-                        disabled=True
-                    )
-                    st.markdown("👉 아이디를 선택하고 `Ctrl+C`로 복사하세요.")
-                    
-                    # 비밀번호 표시 및 복사
-                    st.markdown("**비밀번호**")
-                    pw_text = st.text_input(
-                        "비밀번호", 
-                        value=str(branch_data[COLUMN_MAPPING['pw']]),  # 실제 비밀번호 값 표시
-                        key=f"pw_{selected_branch}",
-                        disabled=True
-                    )
-                    st.markdown("👉 비밀번호를 선택하고 `Ctrl+C`로 복사하세요.")
-                    
+                # 마스킹 여부 확인
+                is_masked = (id_val == "****") and (pw_val == "****")
+                
+                if is_masked:
+                    st.error("해당 지점은 로그인 할 수 없습니다. 지점채널로 안내 부탁드립니다.")
                 else:
-                    st.warning("컴앤패스 관리자앱을 이용해주세요")
-                    if st.button("🖥️ 관리자앱 열기", key="open_admin_app"):
-                        open_link_in_new_tab("https://adminapp.com")  # 실제 URL로 변경
+                    # 아이디 표시 (0 패딩)
+                    with st.expander("🔑 아이디", expanded=True):
+                        st.code(f"{id_val}")
+                    
+                    # 비밀번호 표시
+                    with st.expander("🔒 비밀번호", expanded=True):
+                        st.code(f"{'*' * len(pw_val) if pw_val != '****' else pw_val}")
 
                 st.markdown("---")
-                if st.button("🌐 제로아이즈 홈페이지", key="open_zeroeyes"):
+                if st.button("🌐 제로아이즈 홈페이지"):
                     open_link_in_new_tab("https://zeroeyes.com")
 
-
-            
-            # 오른쪽 컬럼: 추가 정보
+            # 부가 정보 섹션 (Material Design 스타일)
             with col2:
-                st.subheader("부가 정보")
-                st.write(f"**지점 채널:** {branch_data.get(COLUMN_MAPPING['channel'], 'N/A')}")
-                st.write(f"**스터디룸 여부:** {branch_data.get(COLUMN_MAPPING['study_room'], 'N/A')}")
+                st.subheader("📌 지점 상세 정보")
                 
-                if st.button("📩 지점채널 안내문 생성", key="generate_channel_message"):
-                    channel_info = branch_data.get(COLUMN_MAPPING['channel'], '')
-                    if pd.notna(channel_info) and channel_info != '':
+                # 카드형 디자인
+                with st.container():
+                    st.markdown("""
+                    <style>
+                    .info-card {
+                        background: #ffffff;
+                        border-radius: 10px;
+                        padding: 20px;
+                        margin: 10px 0;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    }
+                    </style>
+                    """, unsafe_allow_html=True)
+                    
+                    # 지점 채널 정보
+                    channel_info = branch_data.get(COLUMN_MAPPING['channel'], 'N/A')
+                    st.markdown(f'<div class="info-card"><h4>💬 지점 채널</h4><p>{channel_info}</p></div>', unsafe_allow_html=True)
+                    
+                    # 안내문 생성
+                    if st.button("📩 지점채널 안내문 생성"):
                         message = f"""
                         안녕하세요, 멘토즈스터디카페 운영본부입니다.
                         유선상 전달드린 카카오톡 지점 채널 안내드립니다.
 
                         {channel_info}
+                        ▶ 카카오톡 지점 채널 [ 멘토즈 {selected_branch} ]
+
                         ※ 상담 가능 시간 이외라도 긴급 건의 경우 점주님이 확인 후 답변 주시고 있으며, 
                         전화 문의는 불가한 점 양해 부탁드립니다.
                         """
                         st.code(message)
-                    else:
-                        st.error("지점 채널 정보가 없습니다")
-    
-    elif search_term:
-        st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
+                    
+                    # 스터디룸 정보
+                    study_room = branch_data.get(COLUMN_MAPPING['study_room'], 'N/A')
+                    st.markdown(f'<div class="info-card"><h4>📚 스터디룸 여부</h4><p>{study_room}</p></div>', unsafe_allow_html=True)
 
 # ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
 def open_link_in_new_tab(url):
-    js_code = f"""
-    <script>
-    window.open("{url}", "_blank");
-    </script>
-    """
-    html(js_code)
+    # JavaScript 실행 방식 개선
+    js = f"""<script>window.open("{url}", "_blank");</script>"""
+    html(js, height=0, width=0)
 
 
 
@@ -516,72 +508,58 @@ def home_page():
     st.plotly_chart(fig_trend, use_container_width=True)
 
 def locker_masterkey_page():
-    st.title("🛠️ 사물함 마스터키 안내")
-    st.subheader("사물함의 마스터키를 한눈에 볼 수 있어요.")
-
-    # ✅ Google Sheets에서 데이터 가져오기
+    st.title("🔑 사물함 마스터키 안내")
     df = get_real_time_data()
-
-    # ✅ 마스터키 PWD 컬럼을 문자열로 강제 변환
-    df["마스터키 PWD"] = df["마스터키 PWD"].astype(str).str.strip()
-
-    # ✅ 모든 지점명 목록 추출 (중복 제거)
-    branch_list = df["지점명"].dropna().unique().tolist()  # NaN 제거
-
-    # ✅ 지점명 입력 필드 (검색어 자동완성)
-    search_term = st.text_input("지점명 입력 후 엔터 (예: '연산' 입력 → '부산연산점' 추천)", key="branch_search")
-
-    # ✅ 검색어와 부분 일치하는 지점명 필터링
-    if search_term:
-        # 검색어와 부분 일치하는 지점명 필터링 (대소문자 구분 없음)
-        filtered_branches = [branch for branch in branch_list if search_term.lower() in branch.lower()]
-        if filtered_branches:
-            # 드롭다운으로 지점명 선택
-            selected_branch = st.selectbox("검색된 지점명 선택", filtered_branches, key="branch_select")
-        else:
-            st.warning("⚠️ 일치하는 지점이 없습니다.")
-            selected_branch = None
-    else:
-        selected_branch = None
-
-    if st.button("마스터키 안내 보기"):
+    
+    # 컬럼명 변경 반영
+    df = df.rename(columns={
+        "마스터키 L": "사물함 ID",
+        "마스터키 PWD": "사물함 PWD"
+    })
+    
+    # 지점 검색 로직
+    search_term = st.text_input("지점명 입력 (예: '연산' → '부산연산점')", key="branch_search")
+    filtered_branches = df[df["지점명"].str.contains(search_term, case=False)] if search_term else []
+    
+    if filtered_branches.empty and search_term:
+        st.warning("⚠️ 일치하는 지점이 없습니다.")
+        return
+    
+    selected_branch = st.selectbox("지점 선택", filtered_branches["지점명"].unique()) if not filtered_branches.empty else None
+    
+    if selected_branch:
+        branch_data = df[df["지점명"] == selected_branch].iloc[0]
+        locker_number = str(branch_data["사물함 ID"]).strip()
+        locker_password = str(branch_data["사물함 PWD"]).strip()
+        
+        # 특이사항 체크
+        if locker_number == "***" and locker_password == "***":
+            st.warning("🚨 해당 지점은 사물함 마스터키 안내가 불가합니다. 지점채널로 안내 부탁드립니다.")
+            return
+        
+        # 현재 시간 (KST)
         kst = pytz.timezone('Asia/Seoul')
         current_time_kst = datetime.now(kst).strftime('%Y-%m-%d %H:%M')
-
-        if not selected_branch:
-            st.error("❌ 지점명을 선택하세요!")
-        else:
-            filtered_data = df[df["지점명"] == selected_branch]
-            
-            if filtered_data.empty:
-                st.error("❌ 해당 지점명이 없습니다. 지점채널로 문의해주세요.")
-            else:
-                # ✅ 특이사항 체크 및 팝업 표시
-                special_notes = str(filtered_data.iloc[0].get("특이사항", "")).strip()
-                if special_notes not in ["", "nan", "NaN"]:
-                    st.warning(f"🚨 특이사항 알림: {special_notes}")
-
-                # ✅ 사물함 정보 추출
-                locker_number = str(filtered_data.iloc[0]["마스터키 L"]).strip()
-                locker_password = filtered_data.iloc[0]["마스터키 PWD"]
-
-                # ✅ 새로운 안내문 형식 적용
-                info_text = (
-                    f"구매 확인이 완료되어 마스터키 발급이 완료되었습니다.\n"
-                    f"아래의 사물함에서 마스터키를 찾아 본인 사물함을 개방하시면 됩니다.\n\n"
-                    f"발급일시 : {current_time_kst}\n"
-                    f"지점명 : {selected_branch}\n"
-                    f"(1) 사물함 번호 : {locker_number}\n"
-                    f"(2) 비밀번호 : {locker_password}\n\n"
-                    "사물함 안에 마스터키가 들어 있습니다.\n"
-                    "비밀번호를 눌러 사물함을 열어주세요.\n\n"
-                    "🔑 마스터키 사용법:\n"
-                    "마스터키를 사물함의 키패드 중간에 보이는 '동그란 홈 부분'에 대면 문이 열립니다.\n\n"
-                    "🔐 사물함 비밀번호 설정 방법:\n"
-                    "문을 닫고, 원하는 4자리 비밀번호를 입력하세요.\n"
-                    "설정한 비밀번호를 다시 입력하면 문이 열립니다."
-                )
-                st.text_area("📌 마스터키 안내", info_text, height=300)
+        
+        # 안내문 생성
+        info_text = (
+            f"구매 확인이 완료되어 마스터키 발급이 완료되었습니다.\n"
+            f"아래의 사물함에서 마스터키를 찾아 본인 사물함을 개방하시면 됩니다.\n\n"
+            f"발급일시 : {current_time_kst}\n"
+            f"지점명 : {selected_branch}\n"
+            f"(1) 사물함 번호 : {locker_number}\n"
+            f"(2) 비밀번호 : {locker_password}\n\n"
+            "사물함 안에 마스터키가 들어 있습니다.\n"
+            "비밀번호를 눌러 사물함을 열어주세요.\n\n"
+            "🔑 마스터키 사용법:\n"
+            "마스터키를 사물함의 키패드 중간에 보이는 '동그란 홈 부분'에 대면 문이 열립니다.\n\n"
+            "🔐 사물함 비밀번호 설정 방법:\n"
+            "문을 닫고, 원하는 4자리 비밀번호를 입력하세요.\n"
+            "설정한 비밀번호를 다시 입력하면 문이 열립니다."
+        )
+        
+        # 안내문 출력
+        st.text_area("📌 마스터키 안내", info_text, height=400)
 
 def restore_checkout_page():
     st.title("🛠️ 퇴실 미처리 복구")
