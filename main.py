@@ -293,6 +293,7 @@ def load_and_display_spreadsheet_data():
 # ✅ Google Sheets 인증 함수 (end)
 
 # ✅ 지점 정보 확인 페이지
+# ✅ 지점 정보 확인 페이지
 def branch_info_page():
     st.title("🏢 지점 정보 확인")
     
@@ -340,29 +341,25 @@ def branch_info_page():
 
                 if has_credentials:
                     # 아이디 표시 및 복사
-                    with st.container():
-                        st.markdown("**아이디**")
-                        id_text = st.text_input(
-                            "아이디", 
-                            value=str(branch_data[COLUMN_MAPPING['id']]), 
-                            key=f"id_{selected_branch}",
-                            disabled=True
-                        )
-                        if st.button("📋 아이디 복사", key=f"copy_id_{selected_branch}"):
-                            copy_to_clipboard(id_text)
+                    st.markdown("**아이디**")
+                    id_text = st.text_input(
+                        "아이디", 
+                        value=str(branch_data[COLUMN_MAPPING['id']]), 
+                        key=f"id_{selected_branch}",
+                        disabled=True
+                    )
+                    st.markdown("👉 아이디를 선택하고 `Ctrl+C`로 복사하세요.")
                     
                     # 비밀번호 표시 및 복사
-                    with st.container():
-                        st.markdown("**비밀번호**")
-                        pw_text = st.text_input(
-                            "비밀번호", 
-                            value="*" * len(str(branch_data[COLUMN_MAPPING['pw']])), 
-                            key=f"pw_{selected_branch}",
-                            disabled=True
-                        )
-                        if st.button("📋 비밀번호 복사", key=f"copy_pw_{selected_branch}"):
-                            copy_to_clipboard(str(branch_data[COLUMN_MAPPING['pw']]))
-                            
+                    st.markdown("**비밀번호**")
+                    pw_text = st.text_input(
+                        "비밀번호", 
+                        value="*" * len(str(branch_data[COLUMN_MAPPING['pw']])), 
+                        key=f"pw_{selected_branch}",
+                        disabled=True
+                    )
+                    st.markdown("👉 비밀번호를 선택하고 `Ctrl+C`로 복사하세요.")
+                    
                 else:
                     st.warning("컴앤패스 관리자앱을 이용해주세요")
                     if st.button("🖥️ 관리자앱 열기", key="open_admin_app"):
@@ -396,27 +393,7 @@ def branch_info_page():
     elif search_term:
         st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
 
-def copy_to_clipboard(text):
-    if st.button("텍스트 복사하기"):  # 사용자가 버튼을 클릭했을 때만 복사
-        try:
-            # pyperclip을 사용한 로컬 환경 대응
-            import pyperclip
-            pyperclip.copy(text)
-            st.success("클립보드에 복사되었습니다! (Ctrl+V로 붙여넣기)")
-        except:
-            # JavaScript를 통한 웹 환경 대응
-            js_code = f"""
-            <script>
-                navigator.clipboard.writeText('{text}').then(function() {{
-                    alert("클립보드에 복사되었습니다! (Ctrl+V로 붙여넣기)");
-                }}).catch(function(error) {{
-                    alert("복사에 실패했습니다: " + error);
-                }});
-            </script>
-            """
-            # Streamlit에서 JavaScript 실행
-            components.html(js_code, height=0, width=0)
-            st.success("클립보드에 복사되었습니다! (Ctrl+V로 붙여넣기)")
+
 
 
 # ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
