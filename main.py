@@ -116,9 +116,9 @@ def get_real_time_data():
         df["사물함ID"] = df["사물함ID"].astype(str).str.strip()  # 0 패딩 제거
         df["사물함PWD"] = df["사물함PWD"].astype(str).str.strip()
 
-        # ✅ ID, PWD 컬럼 문자열로 변환 (빈 값은 그대로 유지)
-        df["ID"] = df["ID"].astype(str).str.strip()
-        df["PWD"] = df["PWD"].astype(str).str.strip()
+        # ✅ ID, PWD 컬럼 문자열로 강제 변환 (앞의 0 유지)
+        df["ID"] = df["ID"].astype(str).str.strip().str.zfill(len(df["ID"].astype(str).str.strip().max()))  # 앞의 0 유지
+        df["PWD"] = df["PWD"].astype(str).str.strip().str.zfill(len(df["PWD"].astype(str).str.strip().max()))  # 앞의 0 유지
 
         return df
 
