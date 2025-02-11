@@ -99,8 +99,8 @@ def authenticate_google_sheets():
 def get_real_time_data():
     try:
         client = authenticate_google_sheets()
-        spreadsheet = client.open("멘토즈 지점 정보")  # Google Sheets 문서 이름
-        sheet = spreadsheet.worksheet("시트1")  # 시트 이름
+        spreadsheet = client.open("멘토즈 지점 정보")
+        sheet = spreadsheet.worksheet("시트1")
         df = pd.DataFrame(sheet.get_all_records())
 
         # ✅ 컬럼명 정규화 (공백 제거 및 대소문자 통일)
@@ -112,19 +112,22 @@ def get_real_time_data():
             if col not in df.columns:
                 raise KeyError(f"구글 시트에 '{col}' 컬럼이 없습니다. 시트 구조를 확인해주세요.")
         
-        # ✅ 모든 0 패딩 제거
-        df["사물함ID"] = df["사물함ID"].astype(str).str.strip()  # 0 패딩 제거
+        # ✅ 모든 0 패딩 제거 (사물함ID, 사물함PWD)
+        df["사물함ID"] = df["사물함ID"].astype(str).str.strip()
         df["사물함PWD"] = df["사물함PWD"].astype(str).str.strip()
 
-        # ✅ ID, PWD 컬럼 문자열로 강제 변환 (앞의 0 유지)
-        df["ID"] = df["ID"].astype(str).str.strip().str.zfill(len(df["ID"].astype(str).str.strip().max()))  # 앞의 0 유지
-        df["PWD"] = df["PWD"].astype(str).str.strip().str.zfill(len(df["PWD"].astype(str).str.strip().max()))  # 앞의 0 유지
+        # ✅ ID, PWD 컬럼: 문자열로 강제 변환 (앞의 0 유지, 빈 값은 공백 처리)
+        df["ID"] = df["ID"].apply(lambda x: str(x).strip() if pd.notna(x) else "")
+        df["PWD"] = df["PWD"].apply(lambda x: str(x).strip() if pd.notna(x) else "")
 
         return df
 
     except Exception as e:
         st.error(f"📊 데이터 조회 실패: {str(e)}")
         return pd.DataFrame()  # 빈 데이터프레임 반환
+
+
+
 
 # ✅ 데이터 업데이트 함수
 def update_sheet(new_data):
