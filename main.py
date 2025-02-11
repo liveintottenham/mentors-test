@@ -5,9 +5,6 @@ from google.oauth2.service_account import Credentials
 import pandas as pd
 from streamlit.components.v1 import html  # HTML/JS 사용
 import plotly.express as px
-import base64
-import pyperclip,webbrowser
-import streamlit.components.v1 as components
 
 
 # ✅ 페이지 설정
@@ -699,18 +696,6 @@ def convert_currency(value):
             return 0.0
     return float(value) if value else 0.0
 
-def convert_currency(value):
-    """통화 형식을 숫자로 변환하는 함수"""
-    if isinstance(value, str):
-        # 백슬래시, 쉼표, 공백 제거 후 숫자 변환
-        cleaned_value = value.replace('\\', '').replace(',', '').strip()
-        try:
-            return float(cleaned_value) if cleaned_value else 0.0
-        except ValueError:
-            st.error(f"🚨 금액 변환 실패: '{cleaned_value}'는 숫자로 변환할 수 없습니다.")
-            return 0.0
-    return float(value) if value else 0.0
-
 def refund_calculator_page():
     st.title("💰 이용권 환불 계산")
     
@@ -759,15 +744,9 @@ def refund_calculator_page():
         time_price_str = branch_data.get("시간권금액", "0")
         period_price_str = branch_data.get("기간권금액", "0")
     
-        st.write(f"시간권 금액 (원본): {time_price_str}")  # 디버깅용 출력
-        st.write(f"기간권 금액 (원본): {period_price_str}")  # 디버깅용 출력
-    
         # ✅ 통화 형식 변환 함수 호출
         time_price = convert_currency(time_price_str)
         period_price = convert_currency(period_price_str)
-    
-        st.write(f"시간권 금액 (변환 후): {time_price}")  # 디버깅용 출력
-        st.write(f"기간권 금액 (변환 후): {period_price}")  # 디버깅용 출력
     
         # ✅ 시간권/기간권 금액이 유효한지 확인
         has_time_period_pricing = (time_price > 0) or (period_price > 0)
