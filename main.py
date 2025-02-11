@@ -115,8 +115,6 @@ def get_real_time_data():
         # ✅ 모든 0 패딩 제거
         df["사물함ID"] = df["사물함ID"].astype(str).str.strip()  # 0 패딩 제거
         df["사물함PWD"] = df["사물함PWD"].astype(str).str.strip()
-        df["ID"] = df["ID"].astype(str).str.strip()
-        df["PWD"] = df["PWD"].astype(str).str.strip()
 
         return df
 
