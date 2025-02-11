@@ -374,6 +374,11 @@ def branch_info_page():
                         type="password"
                     )
                     st.markdown("👉 비밀번호를 선택하고 `Ctrl+C`로 복사하세요.")
+
+                    # ✅ "제로아이즈 관리자 홈페이지" 버튼 추가
+                    if st.button("🖥️ 제로아이즈 관리자 홈페이지", key="open_zeroeyes_admin"):
+                        open_link_in_new_tab("https://zeroeyes.example.com")  # 실제 URL로 변경 필요
+
                 else:
                     st.warning("컴앤패스 관리자앱을 이용해주세요")
                     if st.button("🖥️ 관리자앱 열기", key="open_admin_app"):
