@@ -155,13 +155,6 @@ def get_real_time_data():
         st.error(f"📊 데이터 조회 실패: {str(e)}")
         return pd.DataFrame()  # 빈 데이터프레임 반환
 
-def convert_currency(value):
-    if isinstance(value, str):
-        # 백슬래시, 쉼표, 공백 제거 후 숫자 변환
-        cleaned_value = value.replace('\\', '').replace(',', '').strip()
-        return float(cleaned_value) if cleaned_value else 0.0
-    return float(value) if value else 0.0
-
 
 # ✅ 데이터 업데이트 함수
 def update_sheet(new_data):
@@ -694,6 +687,30 @@ def restore_checkout_page():
             st.error(f"❌ 오류 발생: {str(e)}")
 
 
+def convert_currency(value):
+    """통화 형식을 숫자로 변환하는 함수"""
+    if isinstance(value, str):
+        # 백슬래시, 쉼표, 공백 제거 후 숫자 변환
+        cleaned_value = value.replace('\\', '').replace(',', '').strip()
+        try:
+            return float(cleaned_value) if cleaned_value else 0.0
+        except ValueError:
+            st.error(f"🚨 금액 변환 실패: '{cleaned_value}'는 숫자로 변환할 수 없습니다.")
+            return 0.0
+    return float(value) if value else 0.0
+
+def convert_currency(value):
+    """통화 형식을 숫자로 변환하는 함수"""
+    if isinstance(value, str):
+        # 백슬래시, 쉼표, 공백 제거 후 숫자 변환
+        cleaned_value = value.replace('\\', '').replace(',', '').strip()
+        try:
+            return float(cleaned_value) if cleaned_value else 0.0
+        except ValueError:
+            st.error(f"🚨 금액 변환 실패: '{cleaned_value}'는 숫자로 변환할 수 없습니다.")
+            return 0.0
+    return float(value) if value else 0.0
+
 def refund_calculator_page():
     st.title("💰 이용권 환불 계산")
     
@@ -734,13 +751,13 @@ def refund_calculator_page():
     phone = st.text_input("전화번호")
     ticket_type = st.radio("이용권 종류", ["기간권", "시간권", "노블레스석"])
 
-     # ✅ 환불 규정 자동 선택 (업데이트 버전)
+    # ✅ 환불 규정 자동 선택 (업데이트 버전)
     if selected_branch:
         branch_data = df[df["지점명"] == selected_branch].iloc[0]
     
         # ✅ 통화 형식 변환 적용
-        time_price = convert_currency(branch_data.get("시간권 금액", "0"))
-        period_price = convert_currency(branch_data.get("기간권 금액", "0"))
+        time_price = convert_currency(branch_data.get("시간권 금액", 0))
+        period_price = convert_currency(branch_data.get("기간권 금액", 0))
     
         # ✅ 시간권/기간권 금액이 유효한지 확인
         has_time_period_pricing = (time_price > 0) or (period_price > 0)
@@ -753,8 +770,6 @@ def refund_calculator_page():
             st.info("📌 % 환불 규정 적용")
     else:
         policy = st.radio("환불 규정", ["일반", "% 규정"])
-     
-     
 
     # ✅ 결제 및 환불 정보 입력 (날짜는 기본값으로 오늘 날짜 설정)
     ticket_price = st.number_input("결제 금액 (원)", min_value=0)
