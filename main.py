@@ -373,7 +373,7 @@ def branch_info_page():
             
             # 왼쪽 컬럼: 계정 정보
             with col1:
-                st.subheader("계정 정보")
+                st.subheader("🖥️계정 정보")
         
                 # ✅ 아이디/비밀번호 존재 여부 체크
                 has_id = id_val != "" and id_val != "***"
