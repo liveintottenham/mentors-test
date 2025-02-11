@@ -201,7 +201,7 @@ def load_and_display_spreadsheet_data():
     df = get_real_time_data()
 
     # ✅ 지점명 검색 필드 추가
-    branch_name = st.text_input("🔍 지점명 검색", key=f"branch_search_{st.session_state.random_id}")
+    branch_name = st.text_input("🔍 지점명 입력 후 엔터 (예시: '부산연산점' -> '연산')", key=f"branch_search_{st.session_state.random_id}")
 
     # ✅ 검색된 지점명에 맞춰 데이터 필터링
     filtered_df = df[df["지점명"].str.contains(branch_name, case=False, na=False)] if branch_name else df
@@ -342,7 +342,7 @@ def branch_info_page():
             return
     
     # ✅ 지점명 검색 입력
-    search_term = st.text_input("🔍 지점명 검색 (일부 입력 가능)", key="branch_info_search")
+    search_term = st.text_input("🔍 지점명 검색 (예시: '부산연산점' -> '연산')", key="branch_info_search")
     
     # ✅ 검색 결과 필터링
     if search_term:
@@ -565,7 +565,7 @@ def locker_masterkey_page():
     df = get_real_time_data()
     
     # ✅ 지점 검색 로직
-    search_term = st.text_input("지점명 입력 (예: '연산' → '부산연산점')", key="branch_search")
+    search_term = st.text_input("🔍 지점명 검색 (예시: '부산연산점' -> '연산')", key="branch_search")
     
     # ✅ 검색 결과 필터링
     if search_term:
@@ -706,7 +706,7 @@ def refund_calculator_page():
     branch_list = df["지점명"].dropna().unique().tolist()
 
     # ✅ 지점명 검색 기능 (자동완성)
-    search_term = st.text_input("지점명 입력 후 엔터 (예: '연산' 입력 → '부산연산점' 추천)", key="branch_search_refund")
+    search_term = st.text_input("🔍 지점명 입력 후 엔터 (예시: '부산연산점' -> '연산')", key="branch_search_refund")
     
     # ✅ 검색어 기반 지점명 필터링
     filtered_branches = []
