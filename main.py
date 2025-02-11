@@ -155,7 +155,12 @@ def get_real_time_data():
         st.error(f"📊 데이터 조회 실패: {str(e)}")
         return pd.DataFrame()  # 빈 데이터프레임 반환
 
-
+def convert_currency(value):
+    if isinstance(value, str):
+        # 백슬래시, 쉼표, 공백 제거 후 숫자 변환
+        cleaned_value = value.replace('\\', '').replace(',', '').strip()
+        return float(cleaned_value) if cleaned_value else 0.0
+    return float(value) if value else 0.0
 
 
 # ✅ 데이터 업데이트 함수
@@ -732,14 +737,14 @@ def refund_calculator_page():
     # ✅ 환불 규정 자동 선택 (업데이트 버전)
     if selected_branch:
         branch_data = df[df["지점명"] == selected_branch].iloc[0]
-        
-        # ✅ 시트에서 시간권/기간권 금액 추출 (숫자로 변환)
-        time_price = float(branch_data.get("시간권 금액", 0))
-        period_price = float(branch_data.get("기간권 금액", 0))
-        
-        # ✅ 시간권/기간권 금액이 있는지 확인
+    
+        # ✅ 통화 형식 변환 적용
+        time_price = convert_currency(branch_data.get("시간권 금액", 0))
+        period_price = convert_currency(branch_data.get("기간권 금액", 0))
+    
+        # ✅ 시간권/기간권 금액이 유효한지 확인
         has_time_period_pricing = (time_price > 0) or (period_price > 0)
-        
+    
         if has_time_period_pricing:
             policy = "일반"
             st.info(f"📌 일반 환불 규정 적용 (시간권: {int(time_price):,}원, 기간권: {int(period_price):,}원)")
