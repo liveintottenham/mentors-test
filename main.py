@@ -755,9 +755,19 @@ def refund_calculator_page():
     if selected_branch:
         branch_data = df[df["지점명"] == selected_branch].iloc[0]
     
-        # ✅ 통화 형식 변환 적용
-        time_price = convert_currency(branch_data.get("시간권 금액", 0))
-        period_price = convert_currency(branch_data.get("기간권 금액", 0))
+        # ✅ 통화 형식 변환 적용 (디버깅용 출력 추가)
+        time_price_str = branch_data.get("시간권 금액", "0")
+        period_price_str = branch_data.get("기간권 금액", "0")
+    
+        st.write(f"시간권 금액 (원본): {time_price_str}")  # 디버깅용 출력
+        st.write(f"기간권 금액 (원본): {period_price_str}")  # 디버깅용 출력
+    
+        # ✅ 통화 형식 변환 함수 호출
+        time_price = convert_currency(time_price_str)
+        period_price = convert_currency(period_price_str)
+    
+        st.write(f"시간권 금액 (변환 후): {time_price}")  # 디버깅용 출력
+        st.write(f"기간권 금액 (변환 후): {period_price}")  # 디버깅용 출력
     
         # ✅ 시간권/기간권 금액이 유효한지 확인
         has_time_period_pricing = (time_price > 0) or (period_price > 0)
