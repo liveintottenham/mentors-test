@@ -5,7 +5,7 @@ from google.oauth2.service_account import Credentials
 import pandas as pd
 from streamlit.components.v1 import html  # HTML/JS 사용
 import plotly.express as px
-import base64, tempfile
+import base64, tempfil
 import pyperclip,webbrowser
 import streamlit.components.v1 as components
 
@@ -866,7 +866,6 @@ def refund_calculator_page():
         # ✅ 환불 내역서 출력
         st.text_area("📄 환불 내역서 (Ctrl+C로 복사 가능)", refund_detail.strip(), height=400)
 
-
         # ✅ 계산 결과를 세션 상태에 저장
         st.session_state['refund_data'] = {
             'branch': branch,
@@ -907,7 +906,6 @@ def refund_calculator_page():
                 st.success("계좌 정보가 저장되었습니다.")
                 st.rerun()  # 즉시 페이지 리로드
 
-
     # ✅ 계좌 정보가 입력된 경우 다운로드 버튼 표시
     if "account_info" in st.session_state:
         refund_data = st.session_state['refund_data']
@@ -930,7 +928,6 @@ def refund_calculator_page():
             file_name="refund_receipt.html",
             mime="text/html"
         )
-
         
 # ✅ HTML 템플릿 (기존과 동일)
 def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, valid_period,
