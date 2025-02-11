@@ -116,6 +116,10 @@ def get_real_time_data():
         df["사물함ID"] = df["사물함ID"].astype(str).str.strip()  # 0 패딩 제거
         df["사물함PWD"] = df["사물함PWD"].astype(str).str.strip()
 
+        # ✅ ID, PWD 컬럼 문자열로 변환 (빈 값은 그대로 유지)
+        df["ID"] = df["ID"].astype(str).str.strip()
+        df["PWD"] = df["PWD"].astype(str).str.strip()
+
         return df
 
     except Exception as e:
@@ -338,40 +342,36 @@ def branch_info_page():
             # 왼쪽 컬럼: 계정 정보
             with col1:
                 st.subheader("계정 정보")
-                
+        
                 # ✅ 아이디/비밀번호 존재 여부 체크
                 has_id = id_val != "" and id_val != "***"
                 has_pw = pw_val != "" and pw_val != "***"
-                
+        
                 if has_id and has_pw:
-                    # 아이디 표시 (앞의 0 유지)
+                    # 아이디 표시 (문자열로 처리, 앞의 0 유지)
                     st.markdown("**아이디**")
                     st.markdown(
-                        f'<div style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; background-color: #f9f9f9;">'
-                        f'{id_val}'
+                        f'<div style="border:1px solid #ddd; padding:10px; border-radius:5px;">'
+                        f'<code style="font-size:16px;">{id_val}</code>'
                         f'</div>',
                         unsafe_allow_html=True
                     )
                     st.markdown("👉 아이디를 선택하고 `Ctrl+C`로 복사하세요.")
-                    
-                    # 비밀번호 표시 (***로 표시하되, 복사 시 실제 값 복사)
+            
+                    # 비밀번호 표시
                     st.markdown("**비밀번호**")
                     st.text_input(
                         "비밀번호", 
                         value=pw_val, 
                         key=f"pw_{selected_branch}", 
                         disabled=True,
-                        type="password"  # 비밀번호는 ***로 표시
+                        type="password"
                     )
                     st.markdown("👉 비밀번호를 선택하고 `Ctrl+C`로 복사하세요.")
                 else:
                     st.warning("컴앤패스 관리자앱을 이용해주세요")
                     if st.button("🖥️ 관리자앱 열기", key="open_admin_app"):
                         open_link_in_new_tab("https://mg.smonster.kr/")
-
-                st.markdown("---")
-                if st.button("🌐 제로아이즈 홈페이지"):
-                    open_link_in_new_tab("https://mentors.mooin.kr/login")
 
             # 오른쪽 컬럼: 부가 정보
             with col2:
