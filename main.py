@@ -5,7 +5,7 @@ from google.oauth2.service_account import Credentials
 import pandas as pd
 from streamlit.components.v1 import html  # HTML/JS 사용
 import plotly.express as px
-import base64, tempfil
+import base64
 import pyperclip,webbrowser
 import streamlit.components.v1 as components
 
