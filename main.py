@@ -18,6 +18,32 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# 야간모드 비활성화
+st.markdown(
+    """
+    <style>
+        /* 라이트 모드 강제 적용 */
+        body {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+        }
+
+        /* 다크 모드의 스타일을 강제로 변경 */
+        .dark .stApp {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+        }
+
+        /* 다크 모드에서 배경 색상 등을 흰색으로 설정 */
+        .dark .stTextInput input, .dark .stButton button, .dark .stExpander {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+        }
+
+    </style>
+    """, unsafe_allow_html=True
+)
+
 # ✅ Pretendard 폰트 적용 (Google Fonts)
 st.markdown(
     """
@@ -373,7 +399,7 @@ def branch_info_page():
                         disabled=True,
                         type="password"
                     )
-                    st.markdown("👉 비밀번호를 선택하고 `Ctrl+C`로 복사하세요.")
+                    st.markdown("👉 비밀번호 옆 👁️‍🗨️ 선택하고 `Ctrl+C`로 복사하세요.")
 
                     # ✅ "제로아이즈 관리자 홈페이지" 버튼 추가
                     if st.button("🖥️ 제로아이즈 관리자 홈페이지", key="open_zeroeyes_admin"):
