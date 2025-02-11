@@ -751,8 +751,6 @@ def refund_calculator_page():
         else:
             policy = "% 규정"
             st.info("📌 % 환불 규정 적용")
-    else:
-        policy = st.radio("환불 규정", ["일반", "% 규정"])
 
     # ✅ 결제 및 환불 정보 입력 (날짜는 기본값으로 오늘 날짜 설정)
     ticket_price = st.number_input("결제 금액 (원)", min_value=0)
