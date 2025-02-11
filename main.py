@@ -734,13 +734,13 @@ def refund_calculator_page():
     phone = st.text_input("전화번호")
     ticket_type = st.radio("이용권 종류", ["기간권", "시간권", "노블레스석"])
 
-    # ✅ 환불 규정 자동 선택 (업데이트 버전)
+     # ✅ 환불 규정 자동 선택 (업데이트 버전)
     if selected_branch:
         branch_data = df[df["지점명"] == selected_branch].iloc[0]
     
         # ✅ 통화 형식 변환 적용
-        time_price = convert_currency(branch_data.get("시간권 금액", 0))
-        period_price = convert_currency(branch_data.get("기간권 금액", 0))
+        time_price = convert_currency(branch_data.get("시간권 금액", "0"))
+        period_price = convert_currency(branch_data.get("기간권 금액", "0"))
     
         # ✅ 시간권/기간권 금액이 유효한지 확인
         has_time_period_pricing = (time_price > 0) or (period_price > 0)
@@ -753,6 +753,8 @@ def refund_calculator_page():
             st.info("📌 % 환불 규정 적용")
     else:
         policy = st.radio("환불 규정", ["일반", "% 규정"])
+     
+     
 
     # ✅ 결제 및 환불 정보 입력 (날짜는 기본값으로 오늘 날짜 설정)
     ticket_price = st.number_input("결제 금액 (원)", min_value=0)
