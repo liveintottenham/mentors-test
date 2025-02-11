@@ -101,7 +101,10 @@ def get_real_time_data():
         client = authenticate_google_sheets()
         spreadsheet = client.open("멘토즈 지점 정보")
         sheet = spreadsheet.worksheet("시트1")
-        df = pd.DataFrame(sheet.get_all_records())
+        
+        # ✅ 모든 데이터를 텍스트로 가져오기
+        data = sheet.get_all_values()  # 모든 데이터를 텍스트로 가져옴
+        df = pd.DataFrame(data[1:], columns=data[0])  # 첫 번째 행을 컬럼명으로 사용
 
         # ✅ 컬럼명 정규화 (공백 제거 및 대소문자 통일)
         df.columns = df.columns.str.strip().str.replace(" ", "")
@@ -116,9 +119,9 @@ def get_real_time_data():
         df["사물함ID"] = df["사물함ID"].astype(str).str.strip()
         df["사물함PWD"] = df["사물함PWD"].astype(str).str.strip()
 
-        # ✅ ID, PWD 컬럼: 문자열로 강제 변환 (앞의 0 유지, 빈 값은 공백 처리)
-        df["ID"] = df["ID"].apply(lambda x: str(x).strip() if pd.notna(x) else "")
-        df["PWD"] = df["PWD"].apply(lambda x: str(x).strip() if pd.notna(x) else "")
+        # ✅ ID, PWD 컬럼: 텍스트 형식으로 강제 변환 (앞의 0 유지, 빈 값은 공백 처리)
+        df["ID"] = df["ID"].apply(lambda x: str(x).strip() if x else "")
+        df["PWD"] = df["PWD"].apply(lambda x: str(x).strip() if x else "")
 
         return df
 
