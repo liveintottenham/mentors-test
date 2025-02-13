@@ -740,8 +740,12 @@ def refund_calculator_page():
     if ticket_type == "시간권":
         valid_period = f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(weeks=weeks_given)).strftime('%Y-%m-%d')}"
     else:
-        valid_period = f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(days=days_given-1)).strftime('%Y-%m-%d')}" if days_given else "정보 없음"
-    
+        valid_period = (
+        f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(days=days_given)).strftime('%Y-%m-%d')}" 
+        if days_given 
+        else "정보 없음"
+    )
+        
     # 이용권 종류 표시 형식 수정
     formatted_ticket_type = f"{ticket_type} ({days_given}일)" if ticket_type != "시간권" else f"{ticket_type} ({total_hours}시간)"
     
@@ -761,7 +765,20 @@ def refund_calculator_page():
         # 환불 규정에 따른 계산
         if policy == "% 규정":
             percent_used = (used_days / days_given) * 100 if ticket_type in ["기간권", "노블레스석"] else (hours_used / total_hours) * 100
-            
+    
+            # 사용량 정보 포맷 변경
+            usage_info = (
+                f"{percent_used:.1f}% 사용 ({used_days}일 사용)" 
+                if ticket_type in ["기간권", "노블레스석"] 
+                else f"{percent_used:.1f}% 사용 ({hours_used}시간 사용)"
+            )
+        else:
+            # 일반 규정일 경우 단순 표기
+            usage_info = (
+                f"{used_days}일 사용" 
+                if ticket_type in ["기간권", "노블레스석"] 
+                else f"{hours_used}시간 사용"
+    )
             if percent_used < 25:
                 refund_amount = ticket_price * 0.5
                 deduction_amount = ticket_price * 0.5
@@ -815,7 +832,6 @@ def refund_calculator_page():
         ---------------------------------------------
         [환 불 내역]
         ▣ 사용량 : {usage_info}
-        ▣ 사용 시간/기간 : {usage_detail}
         ▣ 공제 금액 : {int(used_amount):,}원 ({deduction_detail})
         ▣ 위약금 : {int(penalty_amount):,}원 ({penalty_rate} 위약금)
         ▣ 환불 가능액 : {int(final_refund_amount):,}원
@@ -1001,9 +1017,9 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
                 </table>
 
                 <div class="section" style="margin-top:30px;">
-                    <div class="section-title">💳 입금 예정 금액</div>
+                    <div class="section-title">💳 입금 하실 금액</div>
                     <div style="font-size:24px; color:#2ecc71; font-weight:700; text-align:center;">
-                        {int(final_refund_amount):,}원
+                        {int(used_amount):,}원
                 </div>
             </div>
 
