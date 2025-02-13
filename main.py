@@ -5,6 +5,8 @@ from google.oauth2.service_account import Credentials
 import pandas as pd
 from streamlit.components.v1 import html  # HTML/JS 사용
 import plotly.express as px
+import folium
+from streamlit_folium import folium_static 
 
 
 # ✅ 페이지 설정
@@ -334,7 +336,7 @@ def branch_info_page():
     
     # 필수 컬럼 존재 여부 확인
     required_columns = ["지점명", "사물함ID", "사물함PWD", "ID", "PWD", 
-                       "지점카카오톡채널", "스터디룸여부", "특이사항", "주차여부", "노트북/프린트"]
+                       "지점카카오톡채널", "스터디룸여부", "특이사항", "주차여부", "노트북/프린트", "주소"]
     for col in required_columns:
         if col not in df.columns:
             st.error(f"구글 시트에 '{col}' 컬럼이 없습니다. 시트 구조를 확인해주세요.")
@@ -363,6 +365,7 @@ def branch_info_page():
         special_notes = str(branch_data.get("특이사항", "")).strip()
         parking = str(branch_data.get("주차여부", "N/A")).strip()
         laptop_printer = str(branch_data.get("노트북/프린트", "N/A")).strip()
+        address = str(branch_data.get("주소", "N/A")).strip()
         
         with st.container():
             col1, col2 = st.columns(2)
@@ -409,8 +412,8 @@ def branch_info_page():
             # 오른쪽 컬럼: 부가 정보
             with col2:
                 st.subheader("📌 지점 상세 정보")
-        
-                # ✅ 지점 채널 정보
+    
+                # ✅ 지점 채널 (기존 코드 유지)
                 with st.expander("💬 지점 채널", expanded=True):
                     if channel_info != "N/A":
                         st.write(f"카카오톡 채널: {channel_info}")
@@ -430,24 +433,55 @@ def branch_info_page():
                             st.code(message)
                     else:
                         st.warning("지점 채널 정보가 없습니다.")
-                
-                # ✅ 특이사항 팝업
+    
+                # ✅ 노트북/프린트 (디자인 강조)
+                with st.expander("💻 노트북/프린트", expanded=True):
+                    st.markdown(f"""
+                    <div style="font-size:16px; font-weight:600; color:#2c3e50; white-space: pre-line;">
+                        {laptop_printer}
+                    </div>
+                    """, unsafe_allow_html=True)
+    
+                # ✅ 특이사항 (빨간색 강조)
                 if special_notes and special_notes != "":
                     with st.expander("🚨 특이사항", expanded=True):
-                        st.write(special_notes)
+                        st.markdown(f"""
+                        <div style="font-size:16px; color:#e74c3c; font-weight:600; white-space: pre-line;">
+                            {special_notes}
+                        </div>
+                        """, unsafe_allow_html=True)
+    
+                # ✅ 주차 여부 (초록색 강조)
+                with st.expander("🚗 주차 여부", expanded=True):
+                    st.markdown(f"""
+                    <div style="font-size:16px; color:#2ecc71; font-weight:600; white-space: pre-line;">
+                        {parking}
+                    </div>
+                    """, unsafe_allow_html=True)
                 
                 # ✅ 스터디룸 정보
                 study_room = str(branch_data.get("스터디룸여부", "N/A")).strip()
                 with st.expander("📚 스터디룸 여부", expanded=True):
                     st.write(f"{study_room}")
                 
-                # ✅ 주차 여부
-                with st.expander("🚗 주차 여부", expanded=True):
-                    st.write(f"{parking}")
-                
-                # ✅ 노트북/프린트
-                with st.expander("💻 노트북/프린트", expanded=True):
-                    st.write(f"{laptop_printer}")
+                # ✅ 주소 및 지도 표시
+                if address != "N/A":
+                    with st.expander("📍 지점 위치", expanded=True):
+                        st.markdown(f"**주소**: {address}")
+                        
+                        # 임시 좌표 (실제 구현시 Geocoding API 사용)
+                        LAT, LON = 37.5665, 126.9780  # 서울시청 좌표
+                        m = folium.Map(location=[LAT, LON], zoom_start=15)
+                        folium.Marker(
+                            [LAT, LON],
+                            tooltip=selected_branch,
+                            popup=address
+                        ).add_to(m)
+                        folium_static(m)  # 지도 렌더링
+    
+    elif search_term:
+        st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
+        
 
 # ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
 def open_link_in_new_tab(url):
@@ -736,27 +770,20 @@ def refund_calculator_page():
     else:
         noble_rate = None
     
-    # 유효 기간 계산
+    # ▼▼▼ 유효기간 계산 수정 (결제일 포함) ▼▼▼
     if ticket_type == "시간권":
         valid_period = f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(weeks=weeks_given)).strftime('%Y-%m-%d')}"
     else:
-        valid_period = (
-        f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(days=days_given)).strftime('%Y-%m-%d')}" 
-        if days_given 
-        else "정보 없음"
-    )
-        
-    # 이용권 종류 표시 형식 수정
-    formatted_ticket_type = f"{ticket_type} ({days_given}일)" if ticket_type != "시간권" else f"{ticket_type} ({total_hours}시간)"
-    
-    # 환불 금액 계산
+        valid_period = f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(days=days_given)).strftime('%Y-%m-%d')}" if days_given else "정보 없음"
+    # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+    # ▼▼▼ 환불 계산 로직 수정 ▼▼▼
     if st.button("환불 금액 계산"):
         used_days = (refund_date - purchase_date).days + 1
         daily_rate = period_price if ticket_type == "기간권" else 11000  # 시트의 기간권 금액 사용
         hourly_rate = time_price if ticket_type == "시간권" else 2000  # 시트의 시간권 금액 사용
         used_amount = 0
         refund_amount = 0  # refund_amount 초기화 추가
-        usage_detail = ""  # usage_detail 초기화 추가
 
         # 결제일자 30일 초과 시 팝업 알림
         if (refund_date - purchase_date).days > 30:
@@ -779,8 +806,12 @@ def refund_calculator_page():
                 deduction_amount = ticket_price
                 deduction_detail = f"50% 이상 사용 구간 : 환불 불가 ({int(deduction_amount):,}원)"
             
-            usage_info = f"{percent_used:.1f}% 사용"
-            usage_detail = f"{hours_used if ticket_type=='시간권' else used_days} {'시간' if ticket_type=='시간권' else '일'} 사용"
+            # 사용량 정보 포맷 변경
+            usage_info = (
+                f"{percent_used:.1f}% 사용 ({used_days}일 사용)" 
+                if ticket_type in ["기간권", "노블레스석"] 
+                else f"{percent_used:.1f}% 사용 ({hours_used}시간 사용)"
+            )
         else:
             # 일반 환불 규정
             if ticket_type == "기간권":
@@ -790,15 +821,19 @@ def refund_calculator_page():
             elif ticket_type == "시간권":
                 used_amount = hours_used * hourly_rate
             refund_amount = max(ticket_price - used_amount, 0)
-            usage_info = f"{used_days}일 사용" if ticket_type in ["기간권", "노블레스석"] else f"{hours_used}시간 사용"
-            usage_detail = ""  # 일반 규정일 경우 비움
+            usage_info = (
+                f"{used_days}일 사용" 
+                if ticket_type in ["기간권", "노블레스석"] 
+                else f"{hours_used}시간 사용"
+            )
             deduction_detail = f"{used_days}일 × {int(daily_rate):,}원" if ticket_type == "기간권" else f"{used_days}일 × {int(noble_rate):,}원 (노블레스석 1일 요금)" if ticket_type == "노블레스석" else f"{hours_used}시간 × {int(hourly_rate):,}원"
+        # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         # 위약금 계산 (결제금액 기준)
         penalty_rate_value = int(penalty_rate.strip("%")) / 100  # 위약금 비율 (10% → 0.1)
         penalty_amount = ticket_price * penalty_rate_value  # 위약금 금액 (결제금액 기준)
         final_refund_amount = max(refund_amount - penalty_amount, 0)  # 최종 환불 금액 (음수 방지)
-
+        
         # 한국 시간대 (KST)로 현재 시간 설정
         kst = pytz.timezone('Asia/Seoul')
         current_time_kst = datetime.now(kst).strftime('%Y-%m-%d %H:%M')
@@ -819,7 +854,6 @@ def refund_calculator_page():
         ---------------------------------------------
         [환 불 내역]
         ▣ 사용량 : {usage_info}
-        ▣ 사용 시간/기간 : {usage_detail}
         ▣ 공제 금액 : {int(used_amount):,}원 ({deduction_detail})
         ▣ 위약금 : {int(penalty_amount):,}원 ({penalty_rate} 위약금)
         ▣ 환불 가능액 : {int(final_refund_amount):,}원
