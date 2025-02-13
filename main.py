@@ -409,9 +409,17 @@ def branch_info_page():
             # 오른쪽 컬럼: 부가 정보
             with col2:
                 st.subheader("📌 지점 상세 정보")
-        
+
+                # ✅ 주차 여부 정보 추가
+                with st.expander("🚗 주차 여부", expanded=True):
+                    st.write(parking)
+
+                # ✅ 노트북/프린트 정보 추가
+                with st.expander("💻 노트북/프린트", expanded=True):
+                    st.write(laptop_printer)
+
                 # ✅ 지점 채널 정보
-                with st.expander("💬 지점 채널", expanded=True):
+                with st.expander("💬 지점 채널", expanded=True):        
                     if channel_info != "N/A":
                         st.write(f"카카오톡 채널: {channel_info}")
                         
@@ -630,6 +638,14 @@ def locker_masterkey_page():
         
         # ✅ 안내문 출력
         st.text_area("📌 마스터키 안내", info_text, height=400)
+
+def convert_currency(currency_str):
+    """통화 형식 문자열을 숫자로 변환 (예: '10,000원' → 10000)"""
+    if not currency_str:
+        return 0
+    # 숫자와 쉼표만 추출
+    cleaned = ''.join(filter(str.isdigit, currency_str))
+    return int(cleaned) if cleaned else 0
 
 def refund_calculator_page():
     st.title("💰 이용권 환불 계산")
