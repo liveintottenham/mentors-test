@@ -409,11 +409,13 @@ def branch_info_page():
             # 오른쪽 컬럼: 부가 정보
             with col2:
                 st.subheader("📌 지점 상세 정보")
-    
-                # ✅ 지점 채널 (기존 코드 유지)
+        
+                # ✅ 지점 채널 정보
                 with st.expander("💬 지점 채널", expanded=True):
                     if channel_info != "N/A":
                         st.write(f"카카오톡 채널: {channel_info}")
+                        
+                        # ✅ 지점채널 안내문 생성 버튼 추가
                         if st.button("📩 지점채널 안내문 생성", key="generate_channel_message"):
                             message = f"""
                             안녕하세요, 멘토즈스터디카페 운영본부입니다.
@@ -428,39 +430,24 @@ def branch_info_page():
                             st.code(message)
                     else:
                         st.warning("지점 채널 정보가 없습니다.")
-    
-    # ✅ 노트북/프린트 (디자인 강조)
-    with st.expander("💻 노트북/프린트", expanded=True):
-        st.markdown(f"""
-        <div style="font-size:16px; font-weight:600; color:#2c3e50; white-space: pre-line;">
-            {laptop_printer}
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # ✅ 특이사항 (빨간색 강조)
-    if special_notes and special_notes != "":
-        with st.expander("🚨 특이사항", expanded=True):
-            st.markdown(f"""
-            <div style="font-size:16px; color:#e74c3c; font-weight:600; white-space: pre-line;">
-                {special_notes}
-            </div>
-            """, unsafe_allow_html=True)
-    
-    # ✅ 주차 여부 (초록색 강조)
-    with st.expander("🚗 주차 여부", expanded=True):
-        st.markdown(f"""
-        <div style="font-size:16px; color:#2ecc71; font-weight:600; white-space: pre-line;">
-            {parking}
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # ✅ 스터디룸 정보
-    study_room = str(branch_data.get("스터디룸여부", "N/A")).strip()
-    with st.expander("📚 스터디룸 여부", expanded=True):
-        st.write(f"{study_room}")
-    
-    elif search_term:
-        st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
+                
+                # ✅ 특이사항 팝업
+                if special_notes and special_notes != "":
+                    with st.expander("🚨 특이사항", expanded=True):
+                        st.write(special_notes)
+                
+                # ✅ 스터디룸 정보
+                study_room = str(branch_data.get("스터디룸여부", "N/A")).strip()
+                with st.expander("📚 스터디룸 여부", expanded=True):
+                    st.write(f"{study_room}")
+                
+                # ✅ 주차 여부
+                with st.expander("🚗 주차 여부", expanded=True):
+                    st.write(f"{parking}")
+                
+                # ✅ 노트북/프린트
+                with st.expander("💻 노트북/프린트", expanded=True):
+                    st.write(f"{laptop_printer}")
 
 # ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
 def open_link_in_new_tab(url):
@@ -765,49 +752,48 @@ def refund_calculator_page():
         hourly_rate = time_price if ticket_type == "시간권" else 2000  # 시트의 시간권 금액 사용
         used_amount = 0
         refund_amount = 0  # refund_amount 초기화 추가
+        usage_detail = ""  # usage_detail 초기화 추가
 
-    # 결제일자 30일 초과 시 팝업 알림
-    if (refund_date - purchase_date).days > 30:
-        st.warning("결제한지 30일이 지났으므로 위약금이 발생하거나, 환불이 불가할 수 있습니다.")
+        # 결제일자 30일 초과 시 팝업 알림
+        if (refund_date - purchase_date).days > 30:
+            st.warning("결제한지 30일이 지났으므로 위약금이 발생하거나, 환불이 불가할 수 있습니다.")
 
-    # 환불 규정에 따른 계산
-    if policy == "% 규정":
-        percent_used = (used_days / days_given) * 100 if ticket_type in ["기간권", "노블레스석"] else (hours_used / total_hours) * 100
-        
-        if percent_used < 25:
-            refund_amount = ticket_price * 0.5
-            deduction_amount = ticket_price * 0.5
-            deduction_detail = f"0~24% 환불 구간 : 결제금액의 50% 환불 ({int(deduction_amount):,}원)"
-        elif percent_used < 50:
-            refund_amount = ticket_price * 0.25
-            deduction_amount = ticket_price * 0.75
-            deduction_detail = f"25~50% 환불 구간 : 결제금액의 25% 환불 ({int(deduction_amount):,}원)"
+        # 환불 규정에 따른 계산
+        if policy == "% 규정":
+            percent_used = (used_days / days_given) * 100 if ticket_type in ["기간권", "노블레스석"] else (hours_used / total_hours) * 100
+            
+            if percent_used < 25:
+                refund_amount = ticket_price * 0.5
+                deduction_amount = ticket_price * 0.5
+                deduction_detail = f"0~24% 환불 구간 : 결제금액의 50% 환불 ({int(deduction_amount):,}원)"
+            elif percent_used < 50:
+                refund_amount = ticket_price * 0.25
+                deduction_amount = ticket_price * 0.75
+                deduction_detail = f"25~50% 환불 구간 : 결제금액의 25% 환불 ({int(deduction_amount):,}원)"
+            else:
+                refund_amount = 0
+                deduction_amount = ticket_price
+                deduction_detail = f"50% 이상 사용 구간 : 환불 불가 ({int(deduction_amount):,}원)"
+            
+            usage_info = f"{percent_used:.1f}% 사용"
+            usage_detail = f"{hours_used if ticket_type=='시간권' else used_days} {'시간' if ticket_type=='시간권' else '일'} 사용"
         else:
-            refund_amount = 0
-            deduction_amount = ticket_price
-            deduction_detail = f"50% 이상 사용 구간 : 환불 불가 ({int(deduction_amount):,}원)"
-        
-        usage_info = f"{percent_used:.1f}% 사용"
-        usage_detail = f"{hours_used if ticket_type=='시간권' else used_days} {'시간' if ticket_type=='시간권' else '일'} 사용"
-        
-    else:
-        # 일반 환불 규정
-        if ticket_type == "기간권":
-            used_amount = used_days * daily_rate
-        elif ticket_type == "노블레스석":
-            used_amount = used_days * noble_rate
-        elif ticket_type == "시간권":
-            used_amount = hours_used * hourly_rate
-        refund_amount = max(ticket_price - used_amount, 0)
-        usage_info = f"{used_days}일 사용" if ticket_type in ["기간권", "노블레스석"] else f"{hours_used}시간 사용"
-        usage_detail = ""  # 일반 규정일 경우 비움
-        deduction_detail = f"{used_days}일 × {int(daily_rate):,}원" if ticket_type == "기간권" else f"{used_days}일 × {int(noble_rate):,}원 (노블레스석 1일 요금)" if ticket_type == "노블레스석" else f"{hours_used}시간 × {int(hourly_rate):,}원"
+            # 일반 환불 규정
+            if ticket_type == "기간권":
+                used_amount = used_days * daily_rate
+            elif ticket_type == "노블레스석":
+                used_amount = used_days * noble_rate
+            elif ticket_type == "시간권":
+                used_amount = hours_used * hourly_rate
+            refund_amount = max(ticket_price - used_amount, 0)
+            usage_info = f"{used_days}일 사용" if ticket_type in ["기간권", "노블레스석"] else f"{hours_used}시간 사용"
+            usage_detail = ""  # 일반 규정일 경우 비움
+            deduction_detail = f"{used_days}일 × {int(daily_rate):,}원" if ticket_type == "기간권" else f"{used_days}일 × {int(noble_rate):,}원 (노블레스석 1일 요금)" if ticket_type == "노블레스석" else f"{hours_used}시간 × {int(hourly_rate):,}원"
 
         # 위약금 계산 (결제금액 기준)
         penalty_rate_value = int(penalty_rate.strip("%")) / 100  # 위약금 비율 (10% → 0.1)
         penalty_amount = ticket_price * penalty_rate_value  # 위약금 금액 (결제금액 기준)
         final_refund_amount = max(refund_amount - penalty_amount, 0)  # 최종 환불 금액 (음수 방지)
-
 
         # 한국 시간대 (KST)로 현재 시간 설정
         kst = pytz.timezone('Asia/Seoul')
@@ -829,7 +815,7 @@ def refund_calculator_page():
         ---------------------------------------------
         [환 불 내역]
         ▣ 사용량 : {usage_info}
-        ▣ 사용 시간/기간 : {hours_used if ticket_type=='시간권' else used_days} {'시간' if ticket_type=='시간권' else '일'} 사용
+        ▣ 사용 시간/기간 : {usage_detail}
         ▣ 공제 금액 : {int(used_amount):,}원 ({deduction_detail})
         ▣ 위약금 : {int(penalty_amount):,}원 ({penalty_rate} 위약금)
         ▣ 환불 가능액 : {int(final_refund_amount):,}원
