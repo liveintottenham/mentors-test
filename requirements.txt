@@ -9,6 +9,10 @@ pandas
 weasyprint
 streamlit
 pyperclip
-folium
-stremlit-folium
-geopandas
+folium==0.12.1
+streamlit-folium==0.6.0
+geopandas==0.10.2
+shapely
+pyproj
+fiona
+rtree
