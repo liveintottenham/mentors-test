@@ -409,17 +409,9 @@ def branch_info_page():
             # 오른쪽 컬럼: 부가 정보
             with col2:
                 st.subheader("📌 지점 상세 정보")
-
-                # ✅ 주차 여부 정보 추가
-                with st.expander("🚗 주차 여부", expanded=True):
-                    st.write(parking)
-
-                # ✅ 노트북/프린트 정보 추가
-                with st.expander("💻 노트북/프린트", expanded=True):
-                    st.write(laptop_printer)
-
-                # ✅ 지점 채널 정보
-                with st.expander("💬 지점 채널", expanded=True):        
+    
+                # ✅ 지점 채널 (기존 코드 유지)
+                with st.expander("💬 지점 채널", expanded=True):
                     if channel_info != "N/A":
                         st.write(f"카카오톡 채널: {channel_info}")
                         
@@ -438,11 +430,31 @@ def branch_info_page():
                             st.code(message)
                     else:
                         st.warning("지점 채널 정보가 없습니다.")
-                
-                # ✅ 특이사항 팝업
+    
+                # ✅ 노트북/프린트 (디자인 강조)
+                with st.expander("💻 노트북/프린트", expanded=True):
+                    st.markdown(f"""
+                    <div style="font-size:16px; font-weight:600; color:#2c3e50;">
+                        {laptop_printer}
+                    </div>
+                    """, unsafe_allow_html=True)
+    
+                # ✅ 특이사항 (빨간색 강조)
                 if special_notes and special_notes != "":
                     with st.expander("🚨 특이사항", expanded=True):
-                        st.write(special_notes)
+                        st.markdown(f"""
+                        <div style="font-size:16px; color:#e74c3c; font-weight:600;">
+                        {special_notes}
+                        </div>
+                        """, unsafe_allow_html=True)
+    
+                # ✅ 주차 여부 (초록색 강조)
+                with st.expander("🚗 주차 여부", expanded=True):
+                    st.markdown(f"""
+                    <div style="font-size:16px; color:#2ecc71; font-weight:600;">
+                        {parking}
+                    </div>
+                    """, unsafe_allow_html=True)
                 
                 # ✅ 스터디룸 정보
                 study_room = str(branch_data.get("스터디룸여부", "N/A")).strip()
@@ -776,9 +788,13 @@ def refund_calculator_page():
                 deduction_amount = ticket_price
                 deduction_detail = f"50% 이상 사용 구간 : 환불 불가 ({int(deduction_amount):,}원)"
             
-            usage_info = f"{percent_used:.1f}% 사용"
-            used_amount = deduction_amount
-        else:
+            if policy == "% 규정":
+                usage_info = f"{percent_used:.1f}% 사용"
+                usage_detail = f"{hours_used if ticket_type=='시간권' else used_days} {'시간' if ticket_type=='시간권' else '일'} 사용"
+            else:
+                usage_info = f"{used_days}일 사용" if ticket_type in ["기간권", "노블레스석"] else f"{hours_used}시간 사용"
+                usage_detail = ""  # 일반 규정일 경우 비움
+            
             if ticket_type == "기간권":
                 used_amount = used_days * daily_rate
             elif ticket_type == "노블레스석":
@@ -998,6 +1014,12 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
                     <tr><td>은행명</td><td>{bank_name}</td></tr>
                     <tr><td>계좌번호</td><td>{account_number}</td></tr>
                 </table>
+
+                <div class="section" style="margin-top:30px;">
+                    <div class="section-title">💳 입금 예정 금액</div>
+                    <div style="font-size:24px; color:#2ecc71; font-weight:700; text-align:center;">
+                        {int(final_refund_amount):,}원
+                </div>
             </div>
 
             <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #7f8c8d;">
@@ -1008,6 +1030,60 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
     </html>
     """
     return html_content
+
+
+def restore_checkout_page():
+    st.title("🛠️ 퇴실 미처리 복구")
+    
+    # ✅ 날짜 선택 (캘린더)
+    checkout_date = st.date_input("퇴실 일자 선택", value=datetime.now(pytz.timezone('Asia/Seoul')).date())
+
+    # ✅ 시간 입력 (텍스트 입력, HH:MM 형식)
+    checkout_time_str = st.text_input("퇴실 시간 입력 (HH:MM 형식, 예: 15:30)", value="00:00")
+
+    # ✅ 현재 시간 (기본값: 현재 시간)
+    current_time = st.checkbox("현재 시간으로 설정", value=True)
+    if current_time:
+        now = datetime.now(pytz.timezone('Asia/Seoul'))
+    else:
+        now_date = st.date_input("현재 날짜 입력", value=datetime.now(pytz.timezone('Asia/Seoul')).date())
+        now_time_str = st.text_input("현재 시간 입력 (HH:MM 형식, 예: 10:45)", value="00:00")
+        try:
+            now_time = datetime.strptime(now_time_str, "%H:%M").time()
+            now = datetime.combine(now_date, now_time)
+            now = pytz.timezone('Asia/Seoul').localize(now)
+        except ValueError:
+            st.error("❌ 올바른 시간 형식(HH:MM)을 입력하세요!")
+            return
+
+    # ✅ 폼 제출 버튼
+    if st.button("미처리 시간 계산"):
+        try:
+            # ✅ 퇴실 시간 조합 (HH:MM 형식 파싱)
+            checkout_time = datetime.strptime(checkout_time_str, "%H:%M").time()
+            checkout_datetime = datetime.combine(checkout_date, checkout_time)
+            checkout_datetime = pytz.timezone('Asia/Seoul').localize(checkout_datetime)
+
+            # ✅ 퇴실 시간이 미래인지 확인
+            if checkout_datetime > now:
+                st.error("❌ 퇴실 시간이 미래일 수 없습니다!")
+                return
+
+            # ✅ 시간 차 계산
+            lost_time = now - checkout_datetime
+            lost_minutes = int(lost_time.total_seconds() // 60)
+            lost_hours = lost_minutes // 60
+            remaining_minutes = lost_minutes % 60
+            extra_fee = (lost_minutes // 30) * 1000  # 30분당 1000원 초과 요금 계산
+
+            # ✅ 결과 출력
+            st.success(f"📅 미처리 기간: {checkout_datetime.strftime('%Y-%m-%d %H:%M')} ~ {now.strftime('%Y-%m-%d %H:%M')}")
+            st.success(f"⏳ 미처리 시간: {lost_hours}시간 {remaining_minutes}분")
+            st.success(f"💰 초과 요금: {extra_fee:,}원 (30분당 1,000원)")
+        except ValueError:
+            st.error("❌ 올바른 시간 형식(HH:MM)을 입력하세요!")
+        except Exception as e:
+            st.error(f"❌ 오류 발생: {str(e)}")
 
 def main():
     if not check_password():
