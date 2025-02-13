@@ -471,7 +471,7 @@ def branch_info_page():
                         
                         # 임시 좌표 (실제 구현시 Geocoding API 사용)
                         LAT, LON = 37.5665, 126.9780  # 서울시청 좌표
-                        m = folium.Map(location=[LAT, LON], zoom_start=15)
+                        m = folium.Map(location=[LAT, LON], zoom_start=15, width="100%", height=300)  # 지도 크기 조정
                         folium.Marker(
                             [LAT, LON],
                             tooltip=selected_branch,
@@ -481,6 +481,7 @@ def branch_info_page():
     
     elif search_term:
         st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
+    
         
 
 # ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
@@ -717,6 +718,9 @@ def refund_calculator_page():
     branch = selected_branch if selected_branch else st.text_input("지점명 (수동입력)")
     phone = st.text_input("전화번호")
     ticket_type = st.radio("이용권 종류", ["기간권", "시간권", "노블레스석"])
+
+    # ✅ formatted_ticket_type 변수 정의
+    formatted_ticket_type = ticket_type  # 기본값으로 ticket_type을 사용
 
     # 환불 규정 자동 선택
     if selected_branch:
@@ -1116,6 +1120,27 @@ def main():
     if "page" not in st.session_state:
         st.session_state.page = "home"
 
+    st.markdown(
+        """
+        <style>
+        .stExpander {
+            margin-bottom: 20px;
+        }
+        .stExpander > div {
+            padding: 10px;
+        }
+        .stExpander > div > div {
+            white-space: pre-line;
+        }
+        .folium-map {
+            width: 100% !important;
+            height: 300px !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
     # ✅ 전체 페이지 CSS (main() 함수 상단 추가)
     st.markdown(
         """
@@ -1166,7 +1191,6 @@ def main():
             padding: 15px !important;
         }
 
-        
         
         /* 사이드바 버튼 스타일 */
         .sidebar .stButton button {
