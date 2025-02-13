@@ -133,7 +133,8 @@ def get_real_time_data():
         df.columns = df.columns.str.strip().str.replace(" ", "")
         
         # ✅ 필수 컬럼 존재 여부 확인
-        required_columns = ["지점명", "사물함ID", "사물함PWD", "ID", "PWD", "지점카카오톡채널", "스터디룸여부"]
+        required_columns = ["지점명", "사물함ID", "사물함PWD", "ID", "PWD", 
+                   "지점카카오톡채널", "스터디룸여부", "주차여부", "노트북/프린트"]
         for col in required_columns:
             if col not in df.columns:
                 raise KeyError(f"구글 시트에 '{col}' 컬럼이 없습니다. 시트 구조를 확인해주세요.")
@@ -197,7 +198,7 @@ if "show_add_form" not in st.session_state:
 def load_and_display_spreadsheet_data():
     st.title("📊 스프레드시트 데이터 관리")
 
-    # ✅ 실시간 데이터 가져오기
+    # ✅ 실시간 데이터 가져오기``
     df = get_real_time_data()
 
     # ✅ 지점명 검색 필드 추가
@@ -331,20 +332,18 @@ def branch_info_page():
     st.title("🏢 지점 정보 확인")
     df = get_real_time_data()
     
-    # ✅ 컬럼명 정규화 (공백 제거 및 대소문자 통일)
-    df.columns = df.columns.str.strip().str.replace(" ", "")
-    
-    # ✅ 필수 컬럼 존재 여부 확인
-    required_columns = ["지점명", "사물함ID", "사물함PWD", "ID", "PWD", "지점카카오톡채널", "스터디룸여부", "특이사항"]
+    # 필수 컬럼 존재 여부 확인
+    required_columns = ["지점명", "사물함ID", "사물함PWD", "ID", "PWD", 
+                       "지점카카오톡채널", "스터디룸여부", "특이사항", "주차여부", "노트북/프린트"]
     for col in required_columns:
         if col not in df.columns:
             st.error(f"구글 시트에 '{col}' 컬럼이 없습니다. 시트 구조를 확인해주세요.")
             return
     
-    # ✅ 지점명 검색 입력
+    # 지점명 검색 입력
     search_term = st.text_input("🔍 지점명 검색 (예시: '부산연산점' -> '연산')", key="branch_info_search")
     
-    # ✅ 검색 결과 필터링
+    # 검색 결과 필터링
     if search_term:
         filtered = df[df["지점명"].str.contains(search_term, case=False, na=False)]
         filtered = filtered.drop_duplicates(subset=["지점명"])
@@ -362,6 +361,8 @@ def branch_info_page():
         pw_val = str(branch_data["PWD"]).strip()
         channel_info = str(branch_data.get("지점카카오톡채널", "N/A")).strip()
         special_notes = str(branch_data.get("특이사항", "")).strip()
+        parking = str(branch_data.get("주차여부", "N/A")).strip()
+        laptop_printer = str(branch_data.get("노트북/프린트", "N/A")).strip()
         
         with st.container():
             col1, col2 = st.columns(2)
@@ -370,7 +371,7 @@ def branch_info_page():
             with col1:
                 st.subheader("🖥️계정 정보")
         
-                # ✅ 아이디/비밀번호 존재 여부 체크
+                # 아이디/비밀번호 존재 여부 체크
                 has_id = id_val != "" and id_val != "***"
                 has_pw = pw_val != "" and pw_val != "***"
         
@@ -396,7 +397,7 @@ def branch_info_page():
                     )
                     st.markdown("👉 비밀번호 옆 👁️‍🗨️ 선택하고 `Ctrl+C`로 복사하세요.")
 
-                    # ✅ "제로아이즈 관리자 홈페이지" 버튼 추가
+                    # "제로아이즈 관리자 홈페이지" 버튼 추가
                     if st.button("🖥️ 제로아이즈 관리자 홈페이지", key="open_zeroeyes_admin"):
                         open_link_in_new_tab("https://mentors.mooin.kr/login")  # 실제 URL로 변경 필요
 
@@ -630,125 +631,59 @@ def locker_masterkey_page():
         # ✅ 안내문 출력
         st.text_area("📌 마스터키 안내", info_text, height=400)
 
-def restore_checkout_page():
-    st.title("🛠️ 퇴실 미처리 복구")
-    
-    # ✅ 날짜 선택 (캘린더)
-    checkout_date = st.date_input("퇴실 일자 선택", value=datetime.now(pytz.timezone('Asia/Seoul')).date())
-
-    # ✅ 시간 입력 (텍스트 입력, HH:MM 형식)
-    checkout_time_str = st.text_input("퇴실 시간 입력 (HH:MM 형식, 예: 15:30)", value="00:00")
-
-    # ✅ 현재 시간 (기본값: 현재 시간)
-    current_time = st.checkbox("현재 시간으로 설정", value=True)
-    if current_time:
-        now = datetime.now(pytz.timezone('Asia/Seoul'))
-    else:
-        now_date = st.date_input("현재 날짜 입력", value=datetime.now(pytz.timezone('Asia/Seoul')).date())
-        now_time_str = st.text_input("현재 시간 입력 (HH:MM 형식, 예: 10:45)", value="00:00")
-        try:
-            now_time = datetime.strptime(now_time_str, "%H:%M").time()
-            now = datetime.combine(now_date, now_time)
-            now = pytz.timezone('Asia/Seoul').localize(now)
-        except ValueError:
-            st.error("❌ 올바른 시간 형식(HH:MM)을 입력하세요!")
-            return
-
-    # ✅ 폼 제출 버튼
-    if st.button("미처리 시간 계산"):
-        try:
-            # ✅ 퇴실 시간 조합 (HH:MM 형식 파싱)
-            checkout_time = datetime.strptime(checkout_time_str, "%H:%M").time()
-            checkout_datetime = datetime.combine(checkout_date, checkout_time)
-            checkout_datetime = pytz.timezone('Asia/Seoul').localize(checkout_datetime)
-
-            # ✅ 퇴실 시간이 미래인지 확인
-            if checkout_datetime > now:
-                st.error("❌ 퇴실 시간이 미래일 수 없습니다!")
-                return
-
-            # ✅ 시간 차 계산
-            lost_time = now - checkout_datetime
-            lost_minutes = int(lost_time.total_seconds() // 60)
-            lost_hours = lost_minutes // 60
-            remaining_minutes = lost_minutes % 60
-            extra_fee = (lost_minutes // 30) * 1000  # 30분당 1000원 초과 요금 계산
-
-            # ✅ 결과 출력
-            st.success(f"📅 미처리 기간: {checkout_datetime.strftime('%Y-%m-%d %H:%M')} ~ {now.strftime('%Y-%m-%d %H:%M')}")
-            st.success(f"⏳ 미처리 시간: {lost_hours}시간 {remaining_minutes}분")
-            st.success(f"💰 초과 요금: {extra_fee:,}원 (30분당 1,000원)")
-        except ValueError:
-            st.error("❌ 올바른 시간 형식(HH:MM)을 입력하세요!")
-        except Exception as e:
-            st.error(f"❌ 오류 발생: {str(e)}")
-
-
-def convert_currency(value):
-    """통화 형식을 숫자로 변환하는 함수"""
-    if isinstance(value, str):
-        # 백슬래시, 쉼표, 공백 제거 후 숫자 변환
-        cleaned_value = value.replace('\\', '').replace(',', '').strip()
-        try:
-            return float(cleaned_value) if cleaned_value else 0.0
-        except ValueError:
-            st.error(f"🚨 금액 변환 실패: '{cleaned_value}'는 숫자로 변환할 수 없습니다.")
-            return 0.0
-    return float(value) if value else 0.0
-
 def refund_calculator_page():
     st.title("💰 이용권 환불 계산")
     
-    # ✅ Google Sheets에서 데이터 가져오기
+    # Google Sheets에서 데이터 가져오기
     df = get_real_time_data()
     
-    # ✅ 지점명 목록
+    # 지점명 목록
     branch_list = df["지점명"].dropna().unique().tolist()
 
-    # ✅ 지점명 검색 기능 (자동완성)
+    # 지점명 검색 기능 (자동완성)
     search_term = st.text_input("🔍 지점명 입력 후 엔터 (예시: '부산연산점' -> '연산')", key="branch_search_refund")
     
-    # ✅ 검색어 기반 지점명 필터링
+    # 검색어 기반 지점명 필터링
     filtered_branches = []
     if search_term:
         filtered_branches = [branch for branch in branch_list if search_term.lower() in branch.lower()]
     
-    # ✅ 지점명 선택 (드롭다운)
+    # 지점명 선택 (드롭다운)
     selected_branch = None
     if filtered_branches:
         selected_branch = st.selectbox("검색된 지점 선택", filtered_branches, key="branch_select_refund")
     else:
         st.warning("⚠️ 일치하는 지점이 없습니다.")
 
-    # ✅ 선택된 지점의 추가 정보 조회
+    # 선택된 지점의 추가 정보 조회
     if selected_branch:
         branch_data = df[df["지점명"] == selected_branch].iloc[0]
         
-        # ✅ 환불 정책 팝업
+        # 환불 정책 팝업
         with st.expander("📌 해당 지점 환불 정책", expanded=True):
             cols = st.columns(3)
             cols[0].metric("환불기간", branch_data.get("환불기간", "미입력"))
             cols[1].metric("환불응대금지", branch_data.get("환불응대금지", "미입력"))
             cols[2].metric("스터디룸 여부", branch_data.get("스터디룸 여부", "미입력"))
 
-    # ✅ 기본 정보 입력 (지점명은 선택된 값으로 고정)
+    # 기본 정보 입력 (지점명은 선택된 값으로 고정)
     branch = selected_branch if selected_branch else st.text_input("지점명 (수동입력)")
     phone = st.text_input("전화번호")
     ticket_type = st.radio("이용권 종류", ["기간권", "시간권", "노블레스석"])
 
-    # ✅ 환불 규정 자동 선택 (업데이트 버전)
+    # 환불 규정 자동 선택
     if selected_branch:
         branch_data = df[df["지점명"] == selected_branch].iloc[0]
     
-        # ✅ 통화 형식 변환 적용 (디버깅용 출력 추가)
+        # 통화 형식 변환 적용
         time_price_str = branch_data.get("시간권금액", "0")
         period_price_str = branch_data.get("기간권금액", "0")
     
-        # ✅ 통화 형식 변환 함수 호출
+        # 통화 형식 변환 함수 호출
         time_price = convert_currency(time_price_str)
         period_price = convert_currency(period_price_str)
     
-        # ✅ 시간권/기간권 금액이 유효한지 확인
+        # 시간권/기간권 금액이 유효한지 확인
         has_time_period_pricing = (time_price > 0) or (period_price > 0)
     
         if has_time_period_pricing:
@@ -760,7 +695,7 @@ def refund_calculator_page():
     else:
         policy = st.radio("환불 규정", ["일반", "% 규정"])
 
-    # ✅ 결제 및 환불 정보 입력 (날짜는 기본값으로 오늘 날짜 설정)
+    # 결제 및 환불 정보 입력
     ticket_price = st.number_input("결제 금액 (원)", min_value=0)
     purchase_date = st.date_input("결제일", value=datetime.now(pytz.timezone('Asia/Seoul')).date())
     refund_date = st.date_input("환불 요청일", value=datetime.now(pytz.timezone('Asia/Seoul')).date())
@@ -768,7 +703,7 @@ def refund_calculator_page():
     # 위약금 선택 (0%, 10%, 20%)
     penalty_rate = st.selectbox("위약금 선택", ["0%", "10%", "20%"], index=0)
     
-    # ✅ 이용권 종류에 따른 추가 입력 필드
+    # 이용권 종류에 따른 추가 입력 필드
     if ticket_type in ["기간권", "노블레스석"]:
         days_given = st.number_input("전체 부여 기간 [일] (기간권/노블레스석)", min_value=1)
     else:
@@ -788,27 +723,27 @@ def refund_calculator_page():
     else:
         noble_rate = None
     
-    # ✅ 유효 기간 계산
+    # 유효 기간 계산
     if ticket_type == "시간권":
         valid_period = f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(weeks=weeks_given)).strftime('%Y-%m-%d')}"
     else:
         valid_period = f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(days=days_given-1)).strftime('%Y-%m-%d')}" if days_given else "정보 없음"
     
-    # ✅ 이용권 종류 표시 형식 수정
+    # 이용권 종류 표시 형식 수정
     formatted_ticket_type = f"{ticket_type} ({days_given}일)" if ticket_type != "시간권" else f"{ticket_type} ({total_hours}시간)"
     
-    # ✅ 환불 금액 계산 (엔터 키로도 실행 가능)
-    if st.button("환불 금액 계산"):  # 항상 계산 실행
+    # 환불 금액 계산
+    if st.button("환불 금액 계산"):
         used_days = (refund_date - purchase_date).days + 1
         daily_rate = period_price if ticket_type == "기간권" else 11000  # 시트의 기간권 금액 사용
         hourly_rate = time_price if ticket_type == "시간권" else 2000  # 시트의 시간권 금액 사용
         used_amount = 0
         
-        # ✅ 결제일자 30일 초과 시 팝업 알림
+        # 결제일자 30일 초과 시 팝업 알림
         if (refund_date - purchase_date).days > 30:
             st.warning("결제한지 30일이 지났으므로 위약금이 발생하거나, 환불이 불가할 수 있습니다.")
         
-        # ✅ 환불 규정에 따른 계산
+        # 환불 규정에 따른 계산
         if policy == "% 규정":
             percent_used = (used_days / days_given) * 100 if ticket_type in ["기간권", "노블레스석"] else (hours_used / total_hours) * 100
             
@@ -838,16 +773,16 @@ def refund_calculator_page():
             usage_info = f"{used_days}일 사용" if ticket_type in ["기간권", "노블레스석"] else f"{hours_used}시간 사용"
             deduction_detail = f"{used_days}일 × {int(daily_rate):,}원" if ticket_type == "기간권" else f"{used_days}일 × {int(noble_rate):,}원 (노블레스석 1일 요금)" if ticket_type == "노블레스석" else f"{hours_used}시간 × {int(hourly_rate):,}원"
         
-        # ✅ 위약금 계산 (결제금액 기준)
+        # 위약금 계산 (결제금액 기준)
         penalty_rate_value = int(penalty_rate.strip("%")) / 100  # 위약금 비율 (10% → 0.1)
         penalty_amount = ticket_price * penalty_rate_value  # 위약금 금액 (결제금액 기준)
         final_refund_amount = max(refund_amount - penalty_amount, 0)  # 최종 환불 금액 (음수 방지)
         
-        # ✅ 한국 시간대 (KST)로 현재 시간 설정
+        # 한국 시간대 (KST)로 현재 시간 설정
         kst = pytz.timezone('Asia/Seoul')
         current_time_kst = datetime.now(kst).strftime('%Y-%m-%d %H:%M')
         
-        # ✅ 환불 내역서 구성
+        # 환불 내역서 구성
         refund_detail = f"""
         [멘토즈 스터디카페 환불 내역서]
         =============================================
@@ -863,8 +798,9 @@ def refund_calculator_page():
         ---------------------------------------------
         [환 불 내역]
         ▣ 사용량 : {usage_info}
-        ▣ 공제 금액 : -{int(used_amount):,}원 ({deduction_detail})
-        ▣ 위약금 : -{int(penalty_amount):,}원 ({penalty_rate} 위약금)
+        ▣ 사용 시간/기간 : {hours_used if ticket_type=='시간권' else used_days} {'시간' if ticket_type=='시간권' else '일'} 사용
+        ▣ 공제 금액 : {int(used_amount):,}원 ({deduction_detail})
+        ▣ 위약금 : {int(penalty_amount):,}원 ({penalty_rate} 위약금)
         ▣ 환불 가능액 : {int(final_refund_amount):,}원
         ▶ 회원 정보 : {phone} (고객 전화번호 기준)
         =============================================
@@ -874,10 +810,10 @@ def refund_calculator_page():
         - 환불 처리에는 최대 3~5영업일이 소요될 수 있습니다.
         """
         
-        # ✅ 환불 내역서 출력
+        # 환불 내역서 출력
         st.text_area("📄 환불 내역서 (Ctrl+C로 복사 가능)", refund_detail.strip(), height=400)
 
-        # ✅ 계산 결과를 세션 상태에 저장
+        # 계산 결과를 세션 상태에 저장
         st.session_state['refund_data'] = {
             'branch': branch,
             'phone': phone,
@@ -893,12 +829,12 @@ def refund_calculator_page():
             'final_refund_amount': final_refund_amount
         }
 
-    # ✅ 계산 완료 후 계좌 정보 입력 폼 표시 (계산 버튼 아래로 이동)
+    # 계산 완료 후 계좌 정보 입력 폼 표시
     if 'refund_data' in st.session_state:
         st.markdown("---")
         st.subheader("✅ 환불 계좌 정보 입력")
         
-        # ✅ 계좌 정보 입력 폼
+        # 계좌 정보 입력 폼
         with st.form(key="account_form"):
             col1, col2 = st.columns(2)
             with col1:
@@ -907,7 +843,7 @@ def refund_calculator_page():
             with col2:
                 account_number = st.text_input("계좌번호")
             
-            # ✅ 계좌 정보 확인 버튼
+            # 계좌 정보 확인 버튼
             if st.form_submit_button("확인"):
                 st.session_state["account_info"] = {
                     'account_holder': account_holder,
@@ -917,7 +853,7 @@ def refund_calculator_page():
                 st.success("계좌 정보가 저장되었습니다.")
                 st.rerun()  # 즉시 페이지 리로드
 
-    # ✅ 계좌 정보가 입력된 경우 다운로드 버튼 표시
+    # 계좌 정보가 입력된 경우 다운로드 버튼 표시
     if "account_info" in st.session_state:
         refund_data = st.session_state['refund_data']
         account_info = st.session_state['account_info']
@@ -1129,6 +1065,21 @@ def main():
         }
         .sidebar .stButton button:active {
             background-color: #2ecc71 !important;  /* 활성화 시 색상 */
+        }
+
+        .material-chip {
+            background: #e0f2f1;
+            border-radius: 16px;
+            padding: 4px 12px;
+            display: inline-flex;
+            align-items: center;
+            margin: 4px;
+        }
+        .metric-card {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 8px 0;
         }
 
         </style>
