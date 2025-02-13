@@ -765,20 +765,7 @@ def refund_calculator_page():
         # 환불 규정에 따른 계산
         if policy == "% 규정":
             percent_used = (used_days / days_given) * 100 if ticket_type in ["기간권", "노블레스석"] else (hours_used / total_hours) * 100
-    
-            # 사용량 정보 포맷 변경
-            usage_info = (
-                f"{percent_used:.1f}% 사용 ({used_days}일 사용)" 
-                if ticket_type in ["기간권", "노블레스석"] 
-                else f"{percent_used:.1f}% 사용 ({hours_used}시간 사용)"
-            )
-        else:
-            # 일반 규정일 경우 단순 표기
-            usage_info = (
-                f"{used_days}일 사용" 
-                if ticket_type in ["기간권", "노블레스석"] 
-                else f"{hours_used}시간 사용"
-    )
+            
             if percent_used < 25:
                 refund_amount = ticket_price * 0.5
                 deduction_amount = ticket_price * 0.5
@@ -832,6 +819,7 @@ def refund_calculator_page():
         ---------------------------------------------
         [환 불 내역]
         ▣ 사용량 : {usage_info}
+        ▣ 사용 시간/기간 : {usage_detail}
         ▣ 공제 금액 : {int(used_amount):,}원 ({deduction_detail})
         ▣ 위약금 : {int(penalty_amount):,}원 ({penalty_rate} 위약금)
         ▣ 환불 가능액 : {int(final_refund_amount):,}원
