@@ -497,7 +497,7 @@ def branch_info_page():
                                                 initializeMap();
                                             }});
                                         }} else {{
-                                            console.error("카카오 API 로드 실패: kakao.maps 또는 kakao.maps.services가 정의되지 않음");
+                                            console.error("카카오 API 로드 실패: kakao.maps.services가 정의되지 않음");
                                         }}
                                     }} else {{
                                         console.error("카카오 API 로드 실패: kakao가 정의되지 않음");
@@ -550,6 +550,7 @@ def branch_info_page():
                         </script>
                         """
                         st.components.v1.html(map_html, height=420)
+
 
 
 
