@@ -490,7 +490,7 @@ def branch_info_page():
                 st.write(f"{study_room}")
 
         # 하단: 지점 위치 지도 (1단 레이아웃)
-        st.subheader("📍 지점 위치")
+        st.subheader("🗺️ 지점 위치")
         st.markdown(f"""
         <div style="padding-left: 20px;">
             <div style="
@@ -532,7 +532,7 @@ def branch_info_page():
             </div>
         </div>
         """, unsafe_allow_html=True)
-        
+
         # ✅ REST API를 사용하여 주소를 좌표로 변환
         if address != "N/A":
             y, x = get_address_coordinates(address)
