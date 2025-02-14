@@ -478,38 +478,40 @@ def branch_info_page():
                         map_html = f"""
                         <div id="map" style="width:95%;height:400px;border-radius:12px;margin:0 auto;"></div>
                         <script>
-                            // HTTPS 강제 로드
                             var script = document.createElement('script');
                             script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services";
                             script.type = "text/javascript";
-                            script.onload = function() {{
-                                var mapContainer = document.getElementById('map');
-                                var mapOption = {{
-                                    center: new kakao.maps.LatLng(37.5665, 126.9780),
-                                    level: 3
-                                }};
-                                var map = new kakao.maps.Map(mapContainer, mapOption);
+                            document.head.appendChild(script);
 
-                                // 주소 검색
-                                var geocoder = new kakao.maps.services.Geocoder();
-                                geocoder.addressSearch("{address}", function(result, status) {{
-                                    if (status === kakao.maps.services.Status.OK) {{
-                                        var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-                                        var marker = new kakao.maps.Marker({{
-                                            map: map,
-                                            position: coords
-                                        }});
-                                        var infowindow = new kakao.maps.InfoWindow({{
-                                            content: '<div style="padding:10px;">{selected_branch}</div>'
-                                        }});
-                                        infowindow.open(map, marker);
-                                        map.setCenter(coords);
-                                    }} else {{
-                                        console.error("주소 변환 실패");
-                                    }}
+                            script.onload = function() {{
+                                kakao.maps.load(function() {{
+                                    var mapContainer = document.getElementById('map');
+                                    var mapOption = {{
+                                        center: new kakao.maps.LatLng(37.5665, 126.9780),
+                                        level: 3
+                                    }};
+                                    var map = new kakao.maps.Map(mapContainer, mapOption);
+
+                                    // 주소 검색 및 마커 추가
+                                    var geocoder = new kakao.maps.services.Geocoder();
+                                    geocoder.addressSearch("{address}", function(result, status) {{
+                                        if (status === kakao.maps.services.Status.OK) {{
+                                            var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                                            var marker = new kakao.maps.Marker({{
+                                                map: map,
+                                                position: coords
+                                            }});
+                                            var infowindow = new kakao.maps.InfoWindow({{
+                                                content: '<div style="padding:10px;">{selected_branch}</div>'
+                                            }});
+                                            infowindow.open(map, marker);
+                                            map.setCenter(coords);
+                                        }} else {{
+                                            console.error("주소 변환 실패");
+                                        }}
+                                    }});
                                 }});
                             }};
-                            document.head.appendChild(script);
                         </script>
                         """
                         st.components.v1.html(map_html, height=420)
