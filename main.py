@@ -546,28 +546,36 @@ def get_map_html(address, branch_name):
     if y and x:
         return f"""
         <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-        <div id="map" style="width:100%;height:400px;"></div>
-        <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={st.secrets['KAKAO']['MAP_API_KEY']}&libraries=services"></script>
+        <div class="map-container" id="map" style="width:100%;height:400px;"></div>
+        <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={st.secrets['KAKAO']['MAP_API_KEY']}&libraries=services"></script>
         <script>
-            var mapContainer = document.getElementById('map');
-            var mapOption = {{
-                center: new kakao.maps.LatLng({y}, {x}),
-                level: 3
+            // 카카오 지도 API가 로드된 후에 실행될 코드
+            window.onload = function() {{
+                if (typeof kakao !== 'undefined' && kakao.maps) {{
+                    var mapContainer = document.getElementById('map');
+                    var mapOption = {{
+                        center: new kakao.maps.LatLng({y}, {x}),
+                        level: 3
+                    }};
+                    var map = new kakao.maps.Map(mapContainer, mapOption);
+
+                    var marker = new kakao.maps.Marker({{
+                        position: new kakao.maps.LatLng({y}, {x}),
+                        map: map
+                    }});
+
+                    var infowindow = new kakao.maps.InfoWindow({{
+                        content: '<div style="padding:10px;font-size:14px;">{branch_name}</div>'
+                    }});
+                    infowindow.open(map, marker);
+                }} else {{
+                    console.error('카카오 맵 API 로드 실패');
+                }}
             }};
-            var map = new kakao.maps.Map(mapContainer, mapOption);
-
-            var marker = new kakao.maps.Marker({{
-                map: map,
-                position: new kakao.maps.LatLng({y}, {x})
-            }});
-
-            var infowindow = new kakao.maps.InfoWindow({{
-                content: '<div style="padding:10px;font-size:14px;">{branch_name}</div>'
-            }});
-            infowindow.open(map, marker);
         </script>
         """
     return "⚠️ 주소 정보가 없습니다."
+
 
         
 
