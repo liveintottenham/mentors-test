@@ -498,10 +498,10 @@ def branch_info_page():
         if address != "N/A":
             y, x = get_address_coordinates(address)
             if y and x:
-                # ✅ 지도 표시
+                # ✅ 지도 표시 (Material Design 스타일 적용)
                 map_html = f"""
                 <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-                <div id="map" style="width:100%;height:400px;border-radius:12px;margin:0 auto;"></div>
+                <div id="map" style="width:100%;height:400px;border-radius:12px;margin:0 auto;box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);"></div>
                 <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={st.secrets['KAKAO']['MAP_API_KEY']}&libraries=services"></script>
                 <script>
                     var mapContainer = document.getElementById('map');
@@ -519,9 +519,28 @@ def branch_info_page():
 
                     // 인포윈도우 생성
                     var infowindow = new kakao.maps.InfoWindow({{
-                        content: '<div style="padding:10px;font-size:14px;">{selected_branch}</div>'
+                        content: '<div style="padding:10px;font-size:14px;background-color:#ffffff;border-radius:8px;box-shadow: 0 2px 6px rgba(0,0,0,0.1);">{selected_branch}</div>'
                     }});
                     infowindow.open(map, marker);
+
+                    // 지도 컨트롤 스타일 변경
+                    var zoomControl = new kakao.maps.ZoomControl();
+                    map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+
+                    // 지도 스타일 커스텀
+                    map.setOptions({{
+                        mapTypeControl: true,
+                        mapTypeId: kakao.maps.MapTypeId.ROADMAP,
+                        zoomControl: true,
+                        zoomControlOptions: {{
+                            position: kakao.maps.ControlPosition.RIGHT
+                        }},
+                        scaleControl: true,
+                        streetViewControl: false,
+                        rotateControl: false,
+                        fullscreenControl: false,
+                        keyboardShortcuts: false
+                    }});
                 </script>
                 """
                 st.components.v1.html(map_html, height=420)
