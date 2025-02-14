@@ -395,61 +395,71 @@ def branch_info_page():
             # ▼▼▼ 상단 2단 레이아웃 ▼▼▼
             col1, col2 = st.columns([1, 1])
 
-            # 왼쪽: 계정 정보 및 부가 정보
+            # 왼쪽: 계정 정보 및 특이사항
             with col1:
-                st.subheader("🖥️ 계정 정보")
-                if id_val != "" and id_val != "***" and pw_val != "" and pw_val != "***":
-                    st.markdown("**아이디**")
-                    st.markdown(
-                        f'<div style="border:1px solid #ddd; padding:10px; border-radius:5px;">'
-                        f'<code style="font-size:16px;">{id_val}</code>'
-                        f'</div>',
-                        unsafe_allow_html=True
-                    )
-                    st.markdown("👉 아이디를 선택하고 `Ctrl+C`로 복사하세요.")
-                
-                    st.markdown("**비밀번호**")
-                    st.text_input(
-                        "비밀번호", 
-                        value=pw_val, 
-                        key=f"pw_{selected_branch}", 
-                        disabled=True,
-                        type="password"
-                    )
-                    st.markdown("👉 비밀번호 옆 👁️‍🗨️ 선택하고 `Ctrl+C`로 복사하세요.")
-
-                    if st.button("🖥️ 제로아이즈 관리자 홈페이지", key="open_zeroeyes_admin"):
-                        open_link_in_new_tab("https://mentors.mooin.kr/login")
-
-                else:
-                    st.warning("컴앤패스 관리자앱을 이용해주세요")
-                    if st.button("🖥️ 관리자앱 열기", key="open_admin_app"):
-                        open_link_in_new_tab("https://mg.smonster.kr/")
-
-                # ▼▼▼ 노트북/프린트 섹션 ▼▼▼
-                st.subheader("💻 노트북/프린트")
-                st.markdown(f"""
-                <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin: 10px 0;">
-                    <div style="font-size:16px; line-height:1.6; white-space: pre-line;">
-                        {laptop_printer}
-                    </div>
-                </div>
+                # ID/PWD 및 홈페이지 버튼
+                st.markdown("""
+                <style>
+                .info-card {
+                    background: #f8f9fa;
+                    border-radius: 12px;
+                    padding: 20px;
+                    margin: 15px 0;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                }
+                .button-row {
+                    display: flex;
+                    gap: 10px;
+                    margin-top: 20px;
+                }
+                </style>
                 """, unsafe_allow_html=True)
 
-                # ▼▼▼ 특이사항 섹션 ▼▼▼
-                if special_notes and special_notes != "":
-                    st.subheader("🚨 특이사항")
-                    st.markdown(f"""
-                    <div style="background: #fff3e0; border-radius: 8px; padding: 15px; margin: 10px 0;">
-                        <div style="font-size:16px; color:#e74c3c; line-height:1.6; white-space: pre-line;">
-                            {special_notes}
+                with st.container():
+                    st.subheader("🔑 계정 정보")
+                    # ID/PWD 표시
+                    if id_val != "" and id_val != "***" and pw_val != "" and pw_val != "***":
+                        st.markdown(f"""
+                        <div class="info-card">
+                            <div style="font-size:16px; margin-bottom:10px;">아이디</div>
+                            <div style="background: white; padding: 12px; border-radius: 8px; font-family: monospace;">
+                                {id_val}
+                            </div>
+                            <div style="font-size:16px; margin:15px 0 10px;">비밀번호</div>
+                            <div style="background: white; padding: 12px; border-radius: 8px; font-family: monospace;">
+                                {pw_val}
+                            </div>
+                            <div class="button-row">
+                                <button onclick="window.open('https://mentors.mooin.kr/login', '_blank')" style="
+                                    background: #2ecc71;
+                                    color: white;
+                                    border: none;
+                                    padding: 10px 20px;
+                                    border-radius: 8px;
+                                    cursor: pointer;
+                                ">홈페이지 접속</button>
+                            </div>
                         </div>
-                    </div>
-                    """, unsafe_allow_html=True)
+                        """, unsafe_allow_html=True)
+                    else:
+                        st.warning("컴앤패스 관리자앱을 이용해주세요")
 
-            # 오른쪽: 지점 상세 정보 및 지도
+                    # 특이사항
+                    if special_notes and special_notes != "":
+                        st.markdown(f"""
+                        <div class="info-card" style="background: #fff3e0;">
+                            <div style="font-size:18px; color:#e74c3c; margin-bottom:10px;">🚨 특이사항</div>
+                            <div style="font-size:16px; line-height:1.6; white-space: pre-line;">
+                                {special_notes}
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+            # 오른쪽: 지점 상세 정보
             with col2:
-                st.subheader("📌 지점 상세 정보")
+                st.subheader("📌 지점 정보")
+                
+                # 지점 채널
                 with st.expander("💬 지점 채널", expanded=True):
                     if channel_info != "N/A":
                         st.write(f"카카오톡 채널: {channel_info}")
@@ -468,55 +478,96 @@ def branch_info_page():
                     else:
                         st.warning("지점 채널 정보가 없습니다.")
 
-                with st.expander("🚗 주차 여부", expanded=True):
-                    st.markdown(f"""
-                    <div style="font-size:16px; color:#2ecc71; font-weight:600; 
-                                margin: 15px 0; line-height:1.6;">
+                # 정보 카드
+                st.markdown("""
+                <style>
+                .detail-card {
+                    background: #f8f9fa;
+                    border-radius: 12px;
+                    padding: 20px;
+                    margin: 15px 0;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                }
+                </style>
+                """, unsafe_allow_html=True)
+
+                # 노트북/프린트
+                st.markdown(f"""
+                <div class="detail-card">
+                    <div style="font-size:16px; color:#2c3e50; margin-bottom:10px;">💻 노트북/프린트</div>
+                    <div style="font-size:16px; line-height:1.6; white-space: pre-line;">
+                        {laptop_printer}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # 스터디룸 여부
+                st.markdown(f"""
+                <div class="detail-card">
+                    <div style="font-size:16px; color:#2c3e50; margin-bottom:10px;">📚 스터디룸 여부</div>
+                    <div style="font-size:16px;">
+                        {study_room}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # 주차 여부
+                st.markdown(f"""
+                <div class="detail-card">
+                    <div style="font-size:16px; color:#2c3e50; margin-bottom:10px;">🚗 주차 여부</div>
+                    <div style="font-size:16px;">
                         {parking}
                     </div>
-                    """, unsafe_allow_html=True)
-                
-                with st.expander("📚 스터디룸 여부", expanded=True):
-                    st.write(f"{study_room}")
+                </div>
+                """, unsafe_allow_html=True)
 
-                # ▼▼▼ 지도 섹션 ▼▼▼
-                st.subheader("📍 지점 위치")
-                st.markdown(f"**멘토즈** {selected_branch}")
+            # 하단 1칸: 지도
+            st.markdown("---")
+            st.subheader("📍 지점 위치")
+            with st.container():
+                st.markdown(f"""
+                <style>
+                .map-container {{
+                    border-radius: 12px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                    margin: 20px 0;
+                    border: 1px solid #e0e0e0;
+                }}
+                </style>
+                <div class="map-container">
+                    {get_map_html(address, selected_branch)}
+                </div>
+                """, unsafe_allow_html=True)
                 st.markdown(f"**주소**: {address}")
 
-                if address != "N/A":
-                    y, x = get_address_coordinates(address)
-                    if y and x:
-                        map_html = f"""
-                        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-                        <div id="map" style="width:100%;height:400px;border-radius:12px;margin:0 auto;"></div>
-                        <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={st.secrets['KAKAO']['MAP_API_KEY']}&libraries=services"></script>
-                        <script>
-                            var mapContainer = document.getElementById('map');
-                            var mapOption = {{
-                                center: new kakao.maps.LatLng({y}, {x}), // 변환된 좌표 사용
-                                level: 3
-                            }};
-                            var map = new kakao.maps.Map(mapContainer, mapOption);
+def get_map_html(address, branch_name):
+    y, x = get_address_coordinates(address)
+    if y and x:
+        return f"""
+        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+        <div id="map" style="width:100%;height:400px;"></div>
+        <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={st.secrets['KAKAO']['MAP_API_KEY']}&libraries=services"></script>
+        <script>
+            var mapContainer = document.getElementById('map');
+            var mapOption = {{
+                center: new kakao.maps.LatLng({y}, {x}),
+                level: 3
+            }};
+            var map = new kakao.maps.Map(mapContainer, mapOption);
 
-                            // 마커 생성
-                            var marker = new kakao.maps.Marker({{
-                                map: map,
-                                position: new kakao.maps.LatLng({y}, {x})
-                            }});
+            var marker = new kakao.maps.Marker({{
+                map: map,
+                position: new kakao.maps.LatLng({y}, {x})
+            }});
 
-                            // 인포윈도우 생성
-                            var infowindow = new kakao.maps.InfoWindow({{
-                                content: '<div style="padding:10px;font-size:14px;">{selected_branch}</div>'
-                            }});
-                            infowindow.open(map, marker);
-                        </script>
-                        """
-                        st.components.v1.html(map_html, height=420)
-                    else:
-                        st.error("⚠️ 주소를 좌표로 변환할 수 없습니다.")
-                else:
-                    st.warning("⚠️ 주소 정보가 없습니다.")
+            var infowindow = new kakao.maps.InfoWindow({{
+                content: '<div style="padding:10px;font-size:14px;">{branch_name}</div>'
+            }});
+            infowindow.open(map, marker);
+        </script>
+        """
+    return "⚠️ 주소 정보가 없습니다."
         
 
 # ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
