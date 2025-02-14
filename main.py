@@ -469,7 +469,7 @@ def branch_info_page():
                         
                         # 지도 크기 조정
                         m = folium.Map(
-                            location=[LAT, LON], 
+                            location=[37.5665, 126.9780],
                             zoom_start=15, 
                             width="100%", 
                             height=300,  # 높이 고정
