@@ -946,7 +946,7 @@ def refund_calculator_page():
             refund_data['branch'], refund_data['phone'], 
             refund_data['formatted_ticket_type'], refund_data['purchase_date'], 
             refund_data['valid_period'], refund_data['ticket_price'], 
-            refund_data['usage_info'], refund_data['used_amount'], 
+            refund_data['usage_info'], refund_data['deduction_amount'], 
             refund_data['deduction_detail'], refund_data['penalty_rate'], 
             refund_data['penalty_amount'], refund_data['final_refund_amount'],
             account_info['account_holder'], account_info['bank_name'], 
@@ -962,7 +962,7 @@ def refund_calculator_page():
         
 # ✅ HTML 템플릿 (기존과 동일)
 def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, valid_period,
-                        ticket_price, usage_info, used_amount, deduction_detail, penalty_rate,
+                        ticket_price, usage_info, deduction_amount, deduction_detail, penalty_rate,
                         penalty_amount, final_refund_amount, account_holder="", bank_name="", account_number=""):
     html_content = f"""
     <!DOCTYPE html>
@@ -1051,7 +1051,7 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
                 <table class="info-table">
                     <tr><td>결제 금액</td><td>{ticket_price:,}원</td></tr>
                     <tr><td>사용량</td><td>{usage_info}</td></tr>
-                    <tr><td>공제 금액</td><td class="highlight">-{int(used_amount):,}원</td></tr>
+                    <tr><td>공제 금액</td><td class="highlight">-{int(deduction_amount):,}원</td></tr>
                     <tr><td>공제 내역</td><td>{deduction_detail}</td></tr>
                     <tr><td>위약금 ({penalty_rate})</td><td class="highlight">-{int(penalty_amount):,}원</td></tr>
                     <tr><td>환불 가능액</td><td class="highlight">{int(final_refund_amount):,}원</td></tr>
@@ -1070,7 +1070,7 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
                 <div class="section" style="margin-top:30px;">
                     <div class="section-title">💳 입금 하실 금액</div>
                     <div style="font-size:24px; color:#2ecc71; font-weight:700; text-align:center;">
-                        {int(used_amount):,}원
+                        {int(deduction_amount):,}원
                 </div>
             </div>
 
