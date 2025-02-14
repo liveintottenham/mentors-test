@@ -5,7 +5,7 @@ from google.oauth2.service_account import Credentials
 import pandas as pd
 from streamlit.components.v1 import html  # HTML/JS 사용
 import plotly.express as px
-import folium
+import folium,requests
 from streamlit_folium import folium_static 
 
 
@@ -327,6 +327,26 @@ def load_and_display_spreadsheet_data():
                 st.error(f"🚨 삭제 실패: {e}")
 
 # ✅ Google Sheets 인증 함수 (end)
+
+def get_address_coordinates(address):
+    url = "https://dapi.kakao.com/v2/local/search/address.json"
+    headers = {"Authorization": f"KakaoAK {st.secrets['KAKAO']['REST_API_KEY']}"}
+    params = {"query": address}
+    
+    response = requests.get(url, headers=headers, params=params)
+
+    if response.status_code == 200:
+        result = response.json()
+        if result["documents"]:
+            y = result["documents"][0]["y"]  # 위도
+            x = result["documents"][0]["x"]  # 경도
+            return y, x
+        else:
+            st.error("⚠️ 해당 주소를 찾을 수 없습니다.")
+            return None, None
+    else:
+        st.error(f"🚨 API 호출 실패: {response.status_code} - {response.text}")
+        return None, None
 
 # ✅ 지점 정보 확인 페이지
 
