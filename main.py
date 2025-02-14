@@ -334,18 +334,15 @@ def branch_info_page():
     st.title("🏢 지점 정보 확인")
     df = get_real_time_data()
     
-    # 필수 컬럼 존재 여부 확인
     required_columns = ["지점명", "사물함ID", "사물함PWD", "ID", "PWD", 
-                       "지점카카오톡채널", "스터디룸여부", "특이사항", "주차여부", "노트북/프린트", "주소"]
+                        "지점카카오톡채널", "스터디룸여부", "특이사항", "주차여부", "노트북/프린트", "주소"]
     for col in required_columns:
         if col not in df.columns:
             st.error(f"구글 시트에 '{col}' 컬럼이 없습니다. 시트 구조를 확인해주세요.")
             return
-    
-    # 지점명 검색 입력
+
     search_term = st.text_input("🔍 지점명 검색 (예시: '부산연산점' -> '연산')", key="branch_info_search")
     
-    # 검색 결과 필터링
     if search_term:
         filtered = df[df["지점명"].str.contains(search_term, case=False, na=False)]
         filtered = filtered.drop_duplicates(subset=["지점명"])
@@ -353,203 +350,143 @@ def branch_info_page():
         filtered = pd.DataFrame()
 
     if not filtered.empty:
-        # 지점 선택 드롭다운
         branch_names = filtered["지점명"].tolist()
         selected_branch = st.selectbox("지점 선택", branch_names, key="branch_select")
         
-        # 선택된 지점 데이터
         branch_data = filtered[filtered["지점명"] == selected_branch].iloc[0]
-        id_val = str(branch_data["ID"]).strip()  # 문자열로 강제 변환
+        id_val = str(branch_data["ID"]).strip()
         pw_val = str(branch_data["PWD"]).strip()
         channel_info = str(branch_data.get("지점카카오톡채널", "N/A")).strip()
         special_notes = str(branch_data.get("특이사항", "")).strip()
         parking = str(branch_data.get("주차여부", "N/A")).strip()
         laptop_printer = str(branch_data.get("노트북/프린트", "N/A")).strip()
         address = str(branch_data.get("주소", "N/A")).strip()
-        
-        with st.container():
-            col1, col2 = st.columns(2)
-            
-            # 왼쪽 컬럼: 계정 정보
-            with col1:
-                st.subheader("🖥️계정 정보")
-        
-                # 아이디/비밀번호 존재 여부 체크
-                has_id = id_val != "" and id_val != "***"
-                has_pw = pw_val != "" and pw_val != "***"
-        
-                if has_id and has_pw:
-                    # 아이디 표시 (문자열로 처리, 앞의 0 유지)
-                    st.markdown("**아이디**")
-                    st.markdown(
-                        f'<div style="border:1px solid #ddd; padding:10px; border-radius:5px;">'
-                        f'<code style="font-size:16px;">{id_val}</code>'
-                        f'</div>',
-                        unsafe_allow_html=True
-                    )
-                    st.markdown("👉 아이디를 선택하고 `Ctrl+C`로 복사하세요.")
-            
-                    # 비밀번호 표시
-                    st.markdown("**비밀번호**")
-                    st.text_input(
-                        "비밀번호", 
-                        value=pw_val, 
-                        key=f"pw_{selected_branch}", 
-                        disabled=True,
-                        type="password"
-                    )
-                    st.markdown("👉 비밀번호 옆 👁️‍🗨️ 선택하고 `Ctrl+C`로 복사하세요.")
+        study_room = str(branch_data.get("스터디룸여부", "N/A")).strip()
 
-                    # "제로아이즈 관리자 홈페이지" 버튼 추가
-                    if st.button("🖥️ 제로아이즈 관리자 홈페이지", key="open_zeroeyes_admin"):
-                        open_link_in_new_tab("https://mentors.mooin.kr/login")  # 실제 URL로 변경 필요
+        # 상단 2단 레이아웃
+        col1, col2 = st.columns(2)
 
+        # 왼쪽: 아이디와 비밀번호
+        with col1:
+            st.subheader("🖥️ 계정 정보")
+            if id_val != "" and pw_val != "":
+                st.markdown("**아이디**")
+                st.code(id_val, language="text")
+                st.markdown("**비밀번호**")
+                st.text_input("비밀번호", value=pw_val, type="password", disabled=True)
+                
+                # 관리자 페이지 버튼
+                st.markdown("---")
+                st.markdown("**관리자 페이지**")
+                if st.button("🖥️ 제로아이즈 관리자 페이지"):
+                    open_link_in_new_tab("https://mentors.mooin.kr/login")
+                if st.button("📱 컴앤패스 관리자 앱 열기"):
+                    open_link_in_new_tab("https://mg.smonster.kr/")
+            else:
+                st.warning("아이디와 비밀번호 정보가 없습니다.")
+
+        # 오른쪽: 부가 정보
+        with col2:
+            st.subheader("📌 부가 정보")
+            with st.expander("💬 지점 채널", expanded=True):
+                if channel_info != "N/A":
+                    st.write(f"카카오톡 채널: {channel_info}")
                 else:
-                    st.warning("컴앤패스 관리자앱을 이용해주세요")
-                    if st.button("🖥️ 관리자앱 열기", key="open_admin_app"):
-                        open_link_in_new_tab("https://mg.smonster.kr/")
+                    st.warning("지점 채널 정보가 없습니다.")
 
-            # 오른쪽 컬럼: 부가 정보
-            with col2:
-                st.subheader("📌 지점 상세 정보")
-    
-                # ✅ 지점 채널 (기존 코드 유지)
-                with st.expander("💬 지점 채널", expanded=True):
-                    if channel_info != "N/A":
-                        st.write(f"카카오톡 채널: {channel_info}")
-                        
-                        # ✅ 지점채널 안내문 생성 버튼 추가
-                        if st.button("📩 지점채널 안내문 생성", key="generate_channel_message"):
-                            message = f"""
-                            안녕하세요, 멘토즈스터디카페 운영본부입니다.
-                            유선상 전달드린 카카오톡 지점 채널 안내드립니다.
+            with st.expander("💻 노트북/프린트", expanded=True):
+                st.write(laptop_printer)
 
-                            {channel_info}
-                            ▶ 카카오톡 지점 채널 [ 멘토즈 {selected_branch} ]
+            with st.expander("🚨 특이사항", expanded=True):
+                if special_notes:
+                    st.markdown(f"<div style='color:#e74c3c;'>{special_notes}</div>", unsafe_allow_html=True)
+                else:
+                    st.write("특이사항이 없습니다.")
 
-                            ※ 상담 가능 시간 이외라도 긴급 건의 경우 점주님이 확인 후 답변 주시고 있으며, 
-                            전화 문의는 불가한 점 양해 부탁드립니다.
-                            """
-                            st.code(message)
-                    else:
-                        st.warning("지점 채널 정보가 없습니다.")
-    
-                # 노트북/프린트 섹션 수정
-                with st.expander("💻 노트북/프린트", expanded=True):
-                    st.markdown(f"""
-                    <div style="font-size:16px; font-weight:600; color:#2c3e50; 
-                                margin: 15px 0; line-height:1.6;">
-                        {laptop_printer}
-                    </div>
-                    """, unsafe_allow_html=True)
-    
-                # ✅ 특이사항 (빨간색 강조)
-                if special_notes and special_notes != "":
-                    with st.expander("🚨 특이사항", expanded=True):
-                        st.markdown(f"""
-                        <div style="font-size:16px; color:#e74c3c; font-weight:600; white-space: pre-line;">
-                            {special_notes}
-                        </div>
-                        """, unsafe_allow_html=True)
-    
-                # 주차여부 섹션 수정
-                with st.expander("🚗 주차 여부", expanded=True):
-                    st.markdown(f"""
-                    <div style="font-size:16px; color:#2ecc71; font-weight:600; 
-                                margin: 15px 0; line-height:1.6;">
-                        {parking}
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                # ✅ 스터디룸 정보
-                study_room = str(branch_data.get("스터디룸여부", "N/A")).strip()
-                with st.expander("📚 스터디룸 여부", expanded=True):
-                    st.write(f"{study_room}")
-                
-                # ✅ 주소 및 지도 표시
-                with st.expander("📍 지점 위치", expanded=True):
-                    st.markdown(f"**주소**: {address}")
-                    
-                    kakao_api_key = st.secrets["KAKAO"]["MAP_API_KEY"]
-                    
-                    map_html = f"""
-                    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-                    <div id="map" style="width:100%;height:500px;border-radius:12px;margin:0 auto;box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
-                    <script>
-                        (function loadKakaoMap() {{
-                            var script = document.createElement('script');
-                            script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services&autoload=false&secure=true";
-                            script.type = "text/javascript";
-                            script.crossOrigin = "anonymous";
+            with st.expander("🚗 주차 여부", expanded=True):
+                st.write(parking)
 
-                            script.onload = function() {{
-                                kakao.maps.load(function() {{
-                                    initializeMap();  
-                                }});
-                            }};
+            with st.expander("📚 스터디룸 여부", expanded=True):
+                st.write(study_room)
 
-                            document.head.appendChild(script);
-                        }})();
+        # 하단: 지점 위치 지도 (1단 레이아웃)
+        st.subheader("📍 지점 위치")
+        st.markdown(f"**{selected_branch}**")
+        st.markdown(f"**주소**: {address}")
+        
+        kakao_api_key = st.secrets["KAKAO"]["MAP_API_KEY"]
+        map_html = f"""
+        <div id="map" style="width:100%;height:600px;border-radius:12px;margin:20px auto;box-shadow:0 4px 8px rgba(0,0,0,0.1);"></div>
+        <script>
+            (function loadKakaoMap() {{
+                var script = document.createElement('script');
+                script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services";
+                script.type = "text/javascript";
+                script.crossOrigin = "anonymous";
 
-                        function initializeMap() {{
-                            try {{
-                                var mapContainer = document.getElementById('map');
-                                var mapOption = {{
-                                    center: new kakao.maps.LatLng(37.5665, 126.9780),
-                                    level: 3,
-                                    zoomControl: true,
-                                    zoomControlOptions: {{
-                                        position: kakao.maps.ControlPosition.RIGHT_CENTER
-                                    }}
-                                }};
+                script.onload = function() {{
+                    kakao.maps.load(function() {{
+                        initializeMap();
+                    }});
+                }};
 
-                                var map = new kakao.maps.Map(mapContainer, mapOption);
-                                var geocoder = new kakao.maps.services.Geocoder();
+                document.head.appendChild(script);
+            }})();
 
-                                geocoder.addressSearch("{address}", function (result, status) {{
-                                    if (status === kakao.maps.services.Status.OK) {{
-                                        var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-                                        
-                                        // 지도 중심 좌표 이동
-                                        map.setCenter(coords);
-                                        
-                                        // 마커 생성 및 인포윈도우 표시
-                                        var marker = new kakao.maps.Marker({{
-                                            map: map,
-                                            position: coords
-                                        }});
-                                        
-                                        // 커스텀 오버레이 생성
-                                        var overlayContent = `
-                                            <div style="padding:10px;background:#fff;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.2);">
-                                                <strong>{selected_branch}</strong><br>
-                                                {address}
-                                            </div>
-                                        `;
-                                        
-                                        var customOverlay = new kakao.maps.CustomOverlay({{
-                                            position: coords,
-                                            content: overlayContent,
-                                            map: map
-                                        }});
+            function initializeMap() {{
+                try {{
+                    var mapContainer = document.getElementById('map');
+                    var mapOption = {{
+                        center: new kakao.maps.LatLng(37.5665, 126.9780),
+                        level: 3
+                    }};
+                    var map = new kakao.maps.Map(mapContainer, mapOption);
 
-                                        // 로드 완료 시 초기 줌 레벨 설정
-                                        map.setLevel(4);
-                                        
-                                        // 주변 지형 정보 표시
-                                        map.addOverlayMapTypeId(kakao.maps.MapTypeId.ROADVIEW);
+                    // 확대/축소 컨트롤 추가
+                    var zoomControl = new kakao.maps.ZoomControl();
+                    map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
 
-                                    }} else {{
-                                        mapContainer.innerHTML = "<div style='text-align:center;padding:20px;color:#e74c3c;'>⚠️ 주소 정보를 확인할 수 없습니다</div>";
-                                    }}
-                                }});
-                            }} catch (error) {{
-                                console.error("지도 초기화 오류:", error);
-                            }}
+                    // 주소 검색
+                    var geocoder = new kakao.maps.services.Geocoder();
+                    geocoder.addressSearch("{address}", function(result, status) {{
+                        if (status === kakao.maps.services.Status.OK) {{
+                            var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                            
+                            // 지도 중심 이동
+                            map.setCenter(coords);
+                            
+                            // 마커 생성
+                            var marker = new kakao.maps.Marker({{
+                                map: map,
+                                position: coords
+                            }});
+                            
+                            // 커스텀 오버레이 생성
+                            var overlayContent = `
+                                <div style="padding:10px;background:#fff;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.2);">
+                                    <strong>{selected_branch}</strong><br>
+                                    {address}
+                                </div>
+                            `;
+                            var customOverlay = new kakao.maps.CustomOverlay({{
+                                position: coords,
+                                content: overlayContent,
+                                map: map
+                            }});
+
+                            map.setLevel(3); // 확대 레벨 설정
+                        }} else {{
+                            console.error("주소 변환 실패");
+                            mapContainer.innerHTML = "<div style='text-align:center;padding:20px;color:#e74c3c;'>⚠️ 주소 정보를 확인할 수 없습니다.</div>";
                         }}
-                    </script>
-                    """
-                    st.components.v1.html(map_html, height=540)
+                    }});
+                }} catch (error) {{
+                    console.error("지도 초기화 오류:", error);
+                }}
+            }}
+        </script>
+        """
+        st.components.v1.html(map_html, height=650)
         
 
 # ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
