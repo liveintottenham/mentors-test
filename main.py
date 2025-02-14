@@ -478,10 +478,9 @@ def branch_info_page():
                         map_html = f"""
                         <div id="map" style="width:95%;height:400px;border-radius:12px;margin:0 auto;"></div>
                         <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}"></script>
-                        <script type="text/javascript" src="https://t1.daumcdn.net/mapjsapi/js/libs/services/1.0.2/services.js"></script>
                         <script>
-                            window.onload = function() {{
-                                // 카카오 지도 API 초기화 확인
+                            // 카카오 지도 API 초기화 확인
+                            function initializeMap() {{
                                 if (typeof kakao === "undefined" || !kakao.maps) {{
                                     console.error("카카오 지도 API가 로드되지 않았습니다.");
                                     return;
@@ -490,7 +489,7 @@ def branch_info_page():
                                 // 지도 생성
                                 var mapContainer = document.getElementById('map');
                                 var mapOption = {{
-                                    center: new kakao.maps.LatLng(37.5665, 126.9780),
+                                    center: new kakao.maps.LatLng(37.5665, 126.9780), // 서울 시청 기본 좌표
                                     level: 3
                                 }};
                                 var map = new kakao.maps.Map(mapContainer, mapOption);
@@ -514,7 +513,10 @@ def branch_info_page():
                                         map.setCenter(new kakao.maps.LatLng(37.5665, 126.9780));
                                     }}
                                 }});
-                            }};
+                            }}
+
+                            // 카카오 지도 API 로드 완료 후 초기화 함수 실행
+                            kakao.maps.load(initializeMap);
                         </script>
                         """
                         st.components.v1.html(map_html, height=420)
