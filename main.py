@@ -796,6 +796,19 @@ def refund_calculator_page():
         # used_days 초기화 (모든 조건에서 사용 가능하도록)
         used_days = (refund_date - purchase_date).days + 1  # 결제일 포함
 
+        # daily_rate, hourly_rate 초기화
+        daily_rate = 11000  # 기본값
+        hourly_rate = 2000  # 기본값
+        
+        # 선택된 지점이 있고 일반 정책인 경우 시트 값 사용
+        if selected_branch and policy == "일반":
+            daily_rate = period_price if ticket_type == "기간권" else 11000
+            hourly_rate = time_price if ticket_type == "시간권" else 2000
+        elif policy == "일반":
+            # 지점 미선택 시 수동 입력
+            daily_rate = st.number_input("기간권 일일 요금 (원)", min_value=0, value=11000)
+            hourly_rate = st.number_input("시간권 시간당 요금 (원)", min_value=0, value=2000)
+
         # daily_rate, hourly_rate, noble_rate 설정
         daily_rate = period_price if ticket_type == "기간권" else 11000  # 시트의 기간권 금액 사용
         hourly_rate = time_price if ticket_type == "시간권" else 2000  # 시트의 시간권 금액 사용
@@ -818,6 +831,9 @@ def refund_calculator_page():
             formatted_ticket_type = f"노블레스석({days_given}일)"
         else:
             formatted_ticket_type = ticket_type  # 기본값
+
+        # deduction_amount 초기화
+        deduction_amount = 0
 
         # 환불 규정에 따른 계산
         if policy == "% 규정":
@@ -917,7 +933,7 @@ def refund_calculator_page():
             'valid_period': valid_period,
             'ticket_price': ticket_price,
             'usage_info': usage_info,
-            'deduction_amount': deduction_amount,  # 이 부분이 누락되었었음
+            'deduction_amount': deduction_amount,  
             'deduction_detail': deduction_detail,
             'penalty_rate': penalty_rate,
             'penalty_amount': penalty_amount,
