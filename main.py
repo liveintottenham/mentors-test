@@ -803,6 +803,7 @@ def refund_calculator_page():
 
         used_amount = 0
         refund_amount = 0  # refund_amount 초기화 추가
+        deduction_amount = 0  # deduction_amount 초기화 추가
 
         # 결제일자 30일 초과 시 팝업 알림
         if (refund_date - purchase_date).days > 30:
@@ -916,7 +917,7 @@ def refund_calculator_page():
             'valid_period': valid_period,
             'ticket_price': ticket_price,
             'usage_info': usage_info,
-            'used_amount': used_amount,
+            'deduction_amount': deduction_amount,  # 이 부분이 누락되었었음
             'deduction_detail': deduction_detail,
             'penalty_rate': penalty_rate,
             'penalty_amount': penalty_amount,
