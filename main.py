@@ -474,13 +474,14 @@ def branch_info_page():
                         # 카카오 지도 API 키 (Streamlit secrets에서 가져오기)
                         kakao_api_key = st.secrets["KAKAO"]["MAP_API_KEY"]
                         
-                        # HTML/JS 코드
+                        # 수정된 HTML/JS 코드 (HTTPS 적용 및 로드 순서 변경)
                         map_html = f"""
                         <div id="map" style="width:95%;height:400px;border-radius:12px;margin:0 auto;"></div>
-                        <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services"></script>
+                        <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}"></script>
+                        <script type="text/javascript" src="https://t1.daumcdn.net/mapjsapi/js/libs/services/1.0.2/services.js"></script>
                         <script>
                             window.onload = function() {{
-                                // 카카오 지도 API가 로드되었는지 확인
+                                // 카카오 지도 API 초기화 확인
                                 if (typeof kakao === "undefined" || !kakao.maps) {{
                                     console.error("카카오 지도 API가 로드되지 않았습니다.");
                                     return;
@@ -489,7 +490,7 @@ def branch_info_page():
                                 // 지도 생성
                                 var mapContainer = document.getElementById('map');
                                 var mapOption = {{
-                                    center: new kakao.maps.LatLng(37.5665, 126.9780), // 서울 시청 기본 좌표
+                                    center: new kakao.maps.LatLng(37.5665, 126.9780),
                                     level: 3
                                 }};
                                 var map = new kakao.maps.Map(mapContainer, mapOption);
@@ -510,7 +511,7 @@ def branch_info_page():
                                         map.setCenter(coords);
                                     }} else {{
                                         console.error("주소 변환 실패, 기본 좌표를 표시합니다.");
-                                        map.setCenter(new kakao.maps.LatLng(37.5665, 126.9780)); // 서울 시청 기본 좌표
+                                        map.setCenter(new kakao.maps.LatLng(37.5665, 126.9780));
                                     }}
                                 }});
                             }};
@@ -518,8 +519,8 @@ def branch_info_page():
                         """
                         st.components.v1.html(map_html, height=420)
 
-    elif search_term:
-        st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
+                    elif search_term:
+                        st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
     
         
 
