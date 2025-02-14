@@ -392,19 +392,13 @@ def branch_info_page():
             address = str(branch_data.get("주소", "N/A")).strip()
             study_room = str(branch_data.get("스터디룸여부", "N/A")).strip()
 
-            # 상단 2단 레이아웃
-            col1, col2 = st.columns(2)
+            # ▼▼▼ 상단 2단 레이아웃 ▼▼▼
+            col1, col2 = st.columns([1, 1])
 
-            # 왼쪽: 아이디와 비밀번호
+            # 왼쪽: 계정 정보 및 부가 정보
             with col1:
-                st.subheader("🖥️계정 정보")
-            
-                # 아이디/비밀번호 존재 여부 체크
-                has_id = id_val != "" and id_val != "***"
-                has_pw = pw_val != "" and pw_val != "***"
-            
-                if has_id and has_pw:
-                    # 아이디 표시 (문자열로 처리, 앞의 0 유지)
+                st.subheader("🖥️ 계정 정보")
+                if id_val != "" and id_val != "***" and pw_val != "" and pw_val != "***":
                     st.markdown("**아이디**")
                     st.markdown(
                         f'<div style="border:1px solid #ddd; padding:10px; border-radius:5px;">'
@@ -414,7 +408,6 @@ def branch_info_page():
                     )
                     st.markdown("👉 아이디를 선택하고 `Ctrl+C`로 복사하세요.")
                 
-                    # 비밀번호 표시
                     st.markdown("**비밀번호**")
                     st.text_input(
                         "비밀번호", 
@@ -425,25 +418,41 @@ def branch_info_page():
                     )
                     st.markdown("👉 비밀번호 옆 👁️‍🗨️ 선택하고 `Ctrl+C`로 복사하세요.")
 
-                    # "제로아이즈 관리자 홈페이지" 버튼 추가
                     if st.button("🖥️ 제로아이즈 관리자 홈페이지", key="open_zeroeyes_admin"):
-                        open_link_in_new_tab("https://mentors.mooin.kr/login")  # 실제 URL로 변경 필요
+                        open_link_in_new_tab("https://mentors.mooin.kr/login")
 
                 else:
                     st.warning("컴앤패스 관리자앱을 이용해주세요")
                     if st.button("🖥️ 관리자앱 열기", key="open_admin_app"):
                         open_link_in_new_tab("https://mg.smonster.kr/")
 
-            # 오른쪽: 부가 정보
+                # ▼▼▼ 노트북/프린트 섹션 ▼▼▼
+                st.subheader("💻 노트북/프린트")
+                st.markdown(f"""
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin: 10px 0;">
+                    <div style="font-size:16px; line-height:1.6; white-space: pre-line;">
+                        {laptop_printer}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # ▼▼▼ 특이사항 섹션 ▼▼▼
+                if special_notes and special_notes != "":
+                    st.subheader("🚨 특이사항")
+                    st.markdown(f"""
+                    <div style="background: #fff3e0; border-radius: 8px; padding: 15px; margin: 10px 0;">
+                        <div style="font-size:16px; color:#e74c3c; line-height:1.6; white-space: pre-line;">
+                            {special_notes}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+            # 오른쪽: 지점 상세 정보 및 지도
             with col2:
                 st.subheader("📌 지점 상세 정보")
-        
-                # ✅ 지점 채널 (기존 코드 유지)
                 with st.expander("💬 지점 채널", expanded=True):
                     if channel_info != "N/A":
                         st.write(f"카카오톡 채널: {channel_info}")
-                        
-                        # ✅ 지점채널 안내문 생성 버튼 추가
                         if st.button("📩 지점채널 안내문 생성", key="generate_channel_message"):
                             message = f"""
                             안녕하세요, 멘토즈스터디카페 운영본부입니다.
@@ -458,26 +467,7 @@ def branch_info_page():
                             st.code(message)
                     else:
                         st.warning("지점 채널 정보가 없습니다.")
-        
-                # 노트북/프린트 섹션 수정
-                with st.expander("💻 노트북/프린트", expanded=True):
-                    st.markdown(f"""
-                    <div style="font-size:16px; font-weight:600; color:#2c3e50; 
-                                margin: 15px 0; line-height:1.6;">
-                        {laptop_printer}
-                    </div>
-                    """, unsafe_allow_html=True)
-        
-                # ✅ 특이사항 (빨간색 강조)
-                if special_notes and special_notes != "":
-                    with st.expander("🚨 특이사항", expanded=True):
-                        st.markdown(f"""
-                        <div style="font-size:16px; color:#e74c3c; font-weight:600; white-space: pre-line;">
-                            {special_notes}
-                        </div>
-                        """, unsafe_allow_html=True)
-        
-                # 주차여부 섹션 수정
+
                 with st.expander("🚗 주차 여부", expanded=True):
                     st.markdown(f"""
                     <div style="font-size:16px; color:#2ecc71; font-weight:600; 
@@ -486,108 +476,47 @@ def branch_info_page():
                     </div>
                     """, unsafe_allow_html=True)
                 
-                # ✅ 스터디룸 정보
-                study_room = str(branch_data.get("스터디룸여부", "N/A")).strip()
                 with st.expander("📚 스터디룸 여부", expanded=True):
                     st.write(f"{study_room}")
 
-            # 하단: 지점 위치 지도 (1단 레이아웃)
-                # ▼▼▼ 지도 표시 섹션 수정 ▼▼▼
-                # 지도 카드 스타일 추가
-                st.markdown("""
-                <style>
-                .map-card {
-                    background: white;
-                    border-radius: 12px;
-                    padding: 15px;
-                    margin: 20px 0;
-                    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-                    border: 1px solid #eee;
-                }
-                .info-section {
-                    white-space: pre-line;
-                    line-height: 1.6;
-                    padding: 10px 0;
-                }
-                
-                /* 노트북/프린트, 특이사항 스타일 */
-                .device-info-card {
-                    background: #f8f9fa;
-                    border-radius: 8px;
-                    padding: 15px;
-                    margin: 10px 0;
-                }
-                .special-note-card {
-                    background: #fff3e0;
-                    border-radius: 8px;
-                    padding: 15px;
-                    margin: 10px 0;
-                }
-                </style>
-                """, unsafe_allow_html=True)
-                
-                # 2단 레이아웃 적용
-                col1, col2 = st.columns([1, 1])
-                
-                with col1:
-                    # 왼쪽: 기존 정보 표시
-                    with col1:
-                        ...  # 기존 정보 표시 코드
+                # ▼▼▼ 지도 섹션 ▼▼▼
+                st.subheader("📍 지점 위치")
+                st.markdown(f"**멘토즈** {selected_branch}")
+                st.markdown(f"**주소**: {address}")
 
-                        # ▼▼▼ 노트북/프린트 섹션 수정 ▼▼▼
-                        with st.expander("💻 노트북/프린트", expanded=True):
-                            st.markdown(f"""
-                            <div class="device-info-card">
-                                <div style="font-size:16px; line-height:1.6; white-space: pre-line;">
-                                    {laptop_printer}
-                                </div>
-                            </div>
-                            """, unsafe_allow_html=True)
+                if address != "N/A":
+                    y, x = get_address_coordinates(address)
+                    if y and x:
+                        map_html = f"""
+                        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+                        <div id="map" style="width:100%;height:400px;border-radius:12px;margin:0 auto;"></div>
+                        <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={st.secrets['KAKAO']['MAP_API_KEY']}&libraries=services"></script>
+                        <script>
+                            var mapContainer = document.getElementById('map');
+                            var mapOption = {{
+                                center: new kakao.maps.LatLng({y}, {x}), // 변환된 좌표 사용
+                                level: 3
+                            }};
+                            var map = new kakao.maps.Map(mapContainer, mapOption);
 
-                        # ▼▼▼ 특이사항 섹션 수정 ▼▼▼
-                        if special_notes and special_notes != "":
-                            with st.expander("🚨 특이사항", expanded=True):
-                                st.markdown(f"""
-                                <div class="special-note-card">
-                                    <div style="font-size:16px; color:#e74c3c; line-height:1.6; white-space: pre-line;">
-                                        {special_notes}
-                                    </div>
-                                </div>
-                                """, unsafe_allow_html=True)
+                            // 마커 생성
+                            var marker = new kakao.maps.Marker({{
+                                map: map,
+                                position: new kakao.maps.LatLng({y}, {x})
+                            }});
 
-                with col2:
-                    # 오른쪽: 지도 정보 표시
-                    st.subheader("📍 지점 위치")
-                    st.markdown(f"**멘토즈** {selected_branch}")
-                    st.markdown(f"**주소**: {address}")
-
-                    # ▼▼▼ 지도 카드 스타일 적용 ▼▼▼
-                    with st.markdown('<div class="map-card">', unsafe_allow_html=True):
-                        if address != "N/A":
-                            y, x = get_address_coordinates(address)
-                            if y and x:
-                                map_html = f"""
-                                ...  # 기존 지도 코드 유지
-                                """
-                                st.components.v1.html(map_html, height=420)
-                            else:
-                                st.error("⚠️ 주소를 좌표로 변환할 수 없습니다.")
-                        else:
-                            st.warning("⚠️ 주소 정보가 없습니다.")
-
-                # ▼▼▼ 간격 조정을 위한 추가 CSS ▼▼▼
-                st.markdown("""
-                <style>
-                /* 섹션 간 여백 조정 */
-                .stExpander {
-                    margin: 15px 0 !important;
-                }
-                /* 입력 필드 간격 */
-                .stTextInput, .stSelectbox, .stDateInput {
-                    margin: 8px 0 !important;
-                }
-                </style>
-                """, unsafe_allow_html=True)
+                            // 인포윈도우 생성
+                            var infowindow = new kakao.maps.InfoWindow({{
+                                content: '<div style="padding:10px;font-size:14px;">{selected_branch}</div>'
+                            }});
+                            infowindow.open(map, marker);
+                        </script>
+                        """
+                        st.components.v1.html(map_html, height=420)
+                    else:
+                        st.error("⚠️ 주소를 좌표로 변환할 수 없습니다.")
+                else:
+                    st.warning("⚠️ 주소 정보가 없습니다.")
         
 
 # ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
