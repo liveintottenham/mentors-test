@@ -479,7 +479,7 @@ def branch_info_page():
                         <div id="map" style="width:95%;height:400px;border-radius:12px;margin:0 auto;"></div>
                         <script>
                             (function loadKakaoMap() {{
-                                if (typeof kakao !== "undefined" && kakao.maps) {{
+                                if (typeof kakao !== "undefined" && kakao.maps && kakao.maps.services) {{
                                     console.log("카카오 API 이미 로드됨");
                                     kakao.maps.load(function() {{
                                         initializeMap();
@@ -492,6 +492,7 @@ def branch_info_page():
                                 script.type = "text/javascript";
 
                                 script.onload = function() {{
+                                    console.log("카카오 API 스크립트 로드 완료");
                                     if (typeof kakao !== "undefined" && kakao.maps && kakao.maps.services) {{
                                         console.log("카카오 API 로드 완료");
                                         kakao.maps.load(function() {{
@@ -511,21 +512,18 @@ def branch_info_page():
 
                             function initializeMap() {{
                                 try {{
-                                    // API 로드 여부 확인
                                     if (!kakao || !kakao.maps || !kakao.maps.services) {{
-                                        console.error("kakao.maps 또는 services가 로드되지 않음");
+                                        console.error("kakao.maps 또는 kakao.maps.services가 로드되지 않음");
                                         return;
                                     }}
 
-                                    // 지도 생성
                                     var mapContainer = document.getElementById('map');
                                     var mapOption = {{
-                                        center: new kakao.maps.LatLng(37.5665, 126.9780),  // 기본 좌표 (서울 시청)
-                                        level: 3  // 확대 레벨
+                                        center: new kakao.maps.LatLng(37.5665, 126.9780),
+                                        level: 3
                                     }};
                                     var map = new kakao.maps.Map(mapContainer, mapOption);
 
-                                    // 주소 검색 및 마커 표시
                                     var geocoder = new kakao.maps.services.Geocoder();
                                     geocoder.addressSearch("{address}", function(result, status) {{
                                         if (status === kakao.maps.services.Status.OK) {{
@@ -540,8 +538,8 @@ def branch_info_page():
                                             infowindow.open(map, marker);
                                             map.setCenter(coords);
                                         }} else {{
-                                            console.error("주소 변환 실패: 기본 좌표를 표시합니다.");
-                                            map.setCenter(new kakao.maps.LatLng(37.5665, 126.9780));  // 기본 좌표로 설정
+                                            console.error("주소 변환 실패");
+                                            map.setCenter(new kakao.maps.LatLng(37.5665, 126.9780));
                                         }}
                                     }});
                                 }} catch (error) {{
@@ -551,6 +549,7 @@ def branch_info_page():
                         </script>
                         """
                         st.components.v1.html(map_html, height=420)
+
 
 
 
