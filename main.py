@@ -930,7 +930,7 @@ def refund_calculator_page():
         ▣ 공제 금액 : -{int(deduction_amount):,}원 ({deduction_detail})
         ▣ 위약금 : {int(penalty_amount):,}원 ({penalty_rate} 위약금)
         ▣ 환불 가능액 : {int(final_refund_amount):,}원
-        ▶ 입금 하실 금액 : {int(deduction_amount):,}원 (*금일까지 입금 필수*)
+        ▶ 입금 하실 금액 : {int(deduction_amount):,}원 
         =============================================
         ※ 유의사항
         - 본 내역서는 발급일 기준으로 유효합니다.
