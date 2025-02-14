@@ -433,7 +433,7 @@ def branch_info_page():
 
         # 하단: 지점 위치 지도 (1단 레이아웃)
         st.subheader("📍 지점 위치")
-        st.markdown(f"**{selected_branch}**")
+        st.markdown(f"**멘토즈**{selected_branch}")
         st.markdown(f"**주소**: {address}")
 
         # ✅ REST API를 사용하여 주소를 좌표로 변환
