@@ -478,7 +478,7 @@ def branch_info_page():
                         # HTML/JS 코드
                         map_html = f"""
                         <div id="map" style="width:95%;height:400px;border-radius:12px;margin:0 auto;"></div>
-                        <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services"></script>
+                        <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services"></script>
                         <script>
                             var mapContainer = document.getElementById('map');
                             var mapOption = {{
