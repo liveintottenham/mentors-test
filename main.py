@@ -476,44 +476,38 @@ def branch_info_page():
                         st.write(f"사용 중인 API 키: {kakao_api_key}")
                         
                         # HTML/JS 코드
-                        map_html = f'''
+                        map_html = f"""
                         <div id="map" style="width:95%;height:400px;border-radius:12px;margin:0 auto;"></div>
                         <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services"></script>
                         <script>
                             var mapContainer = document.getElementById('map');
                             var mapOption = {{
-                                center: new kakao.maps.LatLng(33.450701, 126.570667), // 기본 좌표
+                                center: new kakao.maps.LatLng(37.5665, 126.9780), // 서울 시청 기본 좌표
                                 level: 3
                             }};
                             var map = new kakao.maps.Map(mapContainer, mapOption);
-                            
-                            // 주소 → 좌표 변환
+
+                            // 주소 변환 및 마커 추가
                             var geocoder = new kakao.maps.services.Geocoder();
                             geocoder.addressSearch("{address}", function(result, status) {{
                                 if (status === kakao.maps.services.Status.OK) {{
                                     var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-                                    
-                                    // 마커 생성
                                     var marker = new kakao.maps.Marker({{
                                         map: map,
                                         position: coords
                                     }});
-                                    
-                                    // 인포윈도우
                                     var infowindow = new kakao.maps.InfoWindow({{
-                                        content: '<div style="padding:10px;font-size:14px;">{selected_branch}</div>'
+                                        content: '<div style="padding:10px;">{selected_branch}</div>'
                                     }});
                                     infowindow.open(map, marker);
-                                    
                                     map.setCenter(coords);
                                 }} else {{
-                                    // 실패 시 기본 위치 표시
-                                    map.setCenter(new kakao.maps.LatLng(37.5665, 126.9780)); // 서울시청
+                                    console.error("주소 변환 실패, 기본 좌표를 표시합니다.");
+                                    map.setCenter(new kakao.maps.LatLng(37.5665, 126.9780)); // 서울 시청 기본 좌표
                                 }}
                             }});
                         </script>
-                        '''
-                         # 지도 HTML 렌더링
+                        """
                         st.components.v1.html(map_html, height=420)
 
     elif search_term:
