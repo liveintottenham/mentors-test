@@ -804,16 +804,13 @@ def refund_calculator_page():
         
             if percent_used < 25:
                 refund_amount = ticket_price * 0.5
-                deduction_amount = ticket_price * 0.5
-                deduction_detail = f"0~24% 환불 구간 : 결제금액의 50% 환불 ({int(deduction_amount):,}원)"
             elif percent_used < 50:
                 refund_amount = ticket_price * 0.25
-                deduction_amount = ticket_price * 0.75
-                deduction_detail = f"25~50% 환불 구간 : 결제금액의 25% 환불 ({int(deduction_amount):,}원)"
             else:
                 refund_amount = 0
-                deduction_amount = ticket_price
-                deduction_detail = f"50% 이상 사용 구간 : 환불 불가 ({int(deduction_amount):,}원)"
+        
+            # deduction_amount는 ticket_price - refund_amount로 계산
+            deduction_amount = ticket_price - refund_amount
         
             # 사용량 정보 포맷 변경
             usage_info = (
@@ -821,6 +818,14 @@ def refund_calculator_page():
                 if ticket_type in ["기간권", "노블레스석"] 
                 else f"{percent_used:.1f}% 사용 ({hours_used}시간 사용)"
             )
+        
+            # deduction_detail 설정
+            if percent_used < 25:
+                deduction_detail = f"0~24% 환불 구간 : 결제금액의 50% 환불 ({int(refund_amount):,}원)"
+            elif percent_used < 50:
+                deduction_detail = f"25~50% 환불 구간 : 결제금액의 25% 환불 ({int(refund_amount):,}원)"
+            else:
+                deduction_detail = f"50% 이상 사용 구간 : 환불 불가 ({int(deduction_amount):,}원)"
         else:
             # 일반 환불 규정
             if ticket_type == "기간권":
@@ -841,6 +846,7 @@ def refund_calculator_page():
                 deduction_detail = "정보 없음"
 
             refund_amount = max(ticket_price - used_amount, 0)
+            deduction_amount = used_amount  # 일반 환불 규정에서는 used_amount가 deduction_amount
 
         # 위약금 계산 (결제금액 기준)
         penalty_rate_value = int(penalty_rate.strip("%")) / 100  # 위약금 비율 (10% → 0.1)
@@ -867,7 +873,7 @@ def refund_calculator_page():
         ---------------------------------------------
         [환 불 내역]
         ▣ 사용량 : {usage_info}
-        ▣ 공제 금액 : {int(used_amount):,}원 ({deduction_detail})
+        ▣ 공제 금액 : {int(deduction_amount):,}원 ({deduction_detail})
         ▣ 위약금 : {int(penalty_amount):,}원 ({penalty_rate} 위약금)
         ▣ 환불 가능액 : {int(final_refund_amount):,}원
         ▶ 회원 정보 : {phone} (고객 전화번호 기준)
@@ -877,7 +883,7 @@ def refund_calculator_page():
         - 결제일자로 부터 30일이 지난 결제건은 위약금이 추가로 발생할 수 있습니다.
         - 환불 처리에는 최대 3~5영업일이 소요될 수 있습니다.
         """
-    
+        
         # 환불 내역서 출력
         st.text_area("📄 환불 내역서 (Ctrl+C로 복사 가능)", refund_detail.strip(), height=400)
 
