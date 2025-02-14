@@ -480,9 +480,8 @@ def branch_info_page():
                         <script>
                             (function loadKakaoMap() {{
                                 var script = document.createElement('script');
-                                script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services&autoload=false";
+                                script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services&autoload=false&secure=true";
                                 script.type = "text/javascript";
-                                script.async = false;  // 동기적 로드
 
                                 script.onload = function() {{
                                     console.log("카카오 API 스크립트 로드 완료");
@@ -544,6 +543,7 @@ def branch_info_page():
                         </script>
                         """
                         st.components.v1.html(map_html, height=420)
+
 
 
                 elif search_term:
