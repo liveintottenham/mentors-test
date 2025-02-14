@@ -417,7 +417,6 @@ def branch_info_page():
 
         kakao_api_key = st.secrets["KAKAO"]["MAP_API_KEY"]
         map_html = f"""
-        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
         <div id="map" style="width:100%;height:600px;border-radius:12px;margin:20px auto;box-shadow:0 4px 8px rgba(0,0,0,0.1);"></div>
         <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services"></script>
         <script>
@@ -462,7 +461,6 @@ def branch_info_page():
         </script>
         """
         st.components.v1.html(map_html, height=650)
-
         
 
 # ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
