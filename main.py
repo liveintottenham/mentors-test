@@ -341,6 +341,7 @@ def branch_info_page():
             st.error(f"구글 시트에 '{col}' 컬럼이 없습니다. 시트 구조를 확인해주세요.")
             return
 
+    # 지점명 검색 입력
     search_term = st.text_input("🔍 지점명 검색 (예시: '부산연산점' -> '연산')", key="branch_info_search")
     
     if search_term:
@@ -413,81 +414,54 @@ def branch_info_page():
         st.subheader("📍 지점 위치")
         st.markdown(f"**{selected_branch}**")
         st.markdown(f"**주소**: {address}")
-        
+
         kakao_api_key = st.secrets["KAKAO"]["MAP_API_KEY"]
         map_html = f"""
-        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
         <div id="map" style="width:100%;height:600px;border-radius:12px;margin:20px auto;box-shadow:0 4px 8px rgba(0,0,0,0.1);"></div>
+        <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services"></script>
         <script>
-            (function loadKakaoMap() {{
-                var script = document.createElement('script');
-                script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services";
-                script.type = "text/javascript";
-                script.crossOrigin = "anonymous";
+            var mapContainer = document.getElementById('map');
+            var mapOption = {{
+                center: new kakao.maps.LatLng(37.5665, 126.9780), // 기본 좌표
+                level: 3 // 확대 레벨
+            }};
+            var map = new kakao.maps.Map(mapContainer, mapOption);
 
-                script.onload = function() {{
-                    kakao.maps.load(function() {{
-                        initializeMap();
+            // 주소 검색
+            var geocoder = new kakao.maps.services.Geocoder();
+            geocoder.addressSearch("{address}", function(result, status) {{
+                if (status === kakao.maps.services.Status.OK) {{
+                    var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                    
+                    // 지도 중심 이동
+                    map.setCenter(coords);
+                    
+                    // 마커 생성
+                    var marker = new kakao.maps.Marker({{
+                        map: map,
+                        position: coords
                     }});
-                }};
-
-                document.head.appendChild(script);
-            }})();
-
-            function initializeMap() {{
-                try {{
-                    var mapContainer = document.getElementById('map');
-                    var mapOption = {{
-                        center: new kakao.maps.LatLng(37.5665, 126.9780),
-                        level: 3
-                    }};
-                    var map = new kakao.maps.Map(mapContainer, mapOption);
-
-                    // 확대/축소 컨트롤 추가
-                    var zoomControl = new kakao.maps.ZoomControl();
-                    map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
-
-                    // 주소 검색
-                    var geocoder = new kakao.maps.services.Geocoder();
-                    geocoder.addressSearch("{address}", function(result, status) {{
-                        if (status === kakao.maps.services.Status.OK) {{
-                            var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-                            
-                            // 지도 중심 이동
-                            map.setCenter(coords);
-                            
-                            // 마커 생성
-                            var marker = new kakao.maps.Marker({{
-                                map: map,
-                                position: coords
-                            }});
-                            
-                            // 커스텀 오버레이 생성
-                            var overlayContent = `
-                                <div style="padding:10px;background:#fff;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.2);">
-                                    <strong>{selected_branch}</strong><br>
-                                    {address}
-                                </div>
-                            `;
-                            var customOverlay = new kakao.maps.CustomOverlay({{
-                                position: coords,
-                                content: overlayContent,
-                                map: map
-                            }});
-
-                            map.setLevel(3); // 확대 레벨 설정
-                        }} else {{
-                            console.error("주소 변환 실패");
-                            mapContainer.innerHTML = "<div style='text-align:center;padding:20px;color:#e74c3c;'>⚠️ 주소 정보를 확인할 수 없습니다.</div>";
-                        }}
+                    
+                    // 커스텀 오버레이 생성
+                    var overlayContent = `
+                        <div style="padding:10px;background:#fff;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.2);">
+                            <strong>{selected_branch}</strong><br>
+                            {address}
+                        </div>
+                    `;
+                    var customOverlay = new kakao.maps.CustomOverlay({{
+                        position: coords,
+                        content: overlayContent,
+                        map: map
                     }});
-                }} catch (error) {{
-                    console.error("지도 초기화 오류:", error);
+                }} else {{
+                    document.getElementById('map').innerHTML = "<div style='text-align:center;padding:20px;color:#e74c3c;'>⚠️ 주소 정보를 확인할 수 없습니다.</div>";
                 }}
-            }}
+            }});
         </script>
         """
         st.components.v1.html(map_html, height=650)
+
         
 
 # ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
