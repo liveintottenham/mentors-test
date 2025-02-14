@@ -895,7 +895,7 @@ def refund_calculator_page():
         """
         
         # 환불 내역서 출력
-        st.text_area("📄 환불 내역서 (Ctrl+C로 복사 가능)", refund_detail.strip(), height=400
+        st.text_area("📄 환불 내역서 (Ctrl+C로 복사 가능)"), refund_detail.strip(), height=400
 
         # 계산 결과를 세션 상태에 저장
         st.session_state['refund_data'] = {
