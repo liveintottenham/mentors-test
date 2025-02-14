@@ -332,6 +332,36 @@ def load_and_display_spreadsheet_data():
 
 def branch_info_page():
     st.title("🏢 지점 정보 확인")
+
+        # ✅ CSS 추가 (레이아웃 개선)
+    st.markdown(
+        """
+        <style>
+        /* 확장기 패널 내부 여백 증가 */
+        .stExpander > div > div {
+            padding: 15px !important;
+        }
+        
+        /* 노트북/프린트, 주차여부 텍스트 영역 확장 */
+        div[data-testid="stExpander"] div {
+            white-space: pre-wrap;
+            line-height: 1.5;
+            min-height: 100px;
+        }
+        
+        /* 지도 크기 고정 */
+        .folium-map {
+            width: 100% !important;
+            height: 400px !important;
+            margin: 20px 0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
     df = get_real_time_data()
     
     # 필수 컬럼 존재 여부 확인
@@ -468,16 +498,22 @@ def branch_info_page():
                 if address != "N/A":
                     with st.expander("📍 지점 위치", expanded=True):
                         st.markdown(f"**주소**: {address}")
-                        
-                        # 임시 좌표 (실제 구현시 Geocoding API 사용)
-                        LAT, LON = 37.5665, 126.9780  # 서울시청 좌표
-                        m = folium.Map(location=[LAT, LON], zoom_start=15, width="100%", height=300)  # 지도 크기 조정
-                        folium.Marker(
-                            [LAT, LON],
-                            tooltip=selected_branch,
-                            popup=address
-                        ).add_to(m)
-                        folium_static(m)  # 지도 렌더링
+            
+                # 지도 생성 코드
+                LAT, LON = 37.5665, 126.9780
+                m = folium.Map(
+                    location=[LAT, LON], 
+                    zoom_start=15,
+                    width="100%",  # 폭 100% 설정
+                    height=400     # 높이 고정
+                )
+                folium.Marker(
+                    [LAT, LON],
+                    tooltip=selected_branch,
+                    popup=address,
+                    icon=folium.Icon(color="red", icon="info-sign")
+                ).add_to(m)
+                folium_static(m)
     
     elif search_term:
         st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
@@ -778,7 +814,7 @@ def refund_calculator_page():
     if ticket_type == "시간권":
         valid_period = f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(weeks=weeks_given)).strftime('%Y-%m-%d')}"
     else:
-        valid_period = f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(days=days_given)).strftime('%Y-%m-%d')}" if days_given else "정보 없음"
+        valid_period = f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(days=days_given - 1)).strftime('%Y-%m-%d')}" if days_given else "정보 없음"
     # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
     # ▼▼▼ 환불 계산 로직 수정 ▼▼▼
