@@ -415,87 +415,78 @@ def branch_info_page():
         st.markdown(f"**{selected_branch}**")
         st.markdown(f"**주소**: {address}")
 
+        # ✅ API 키 유효성 검사 추가
+        if "KAKAO" not in st.secrets or "MAP_API_KEY" not in st.secrets["KAKAO"]:
+            st.error("🚨 카카오맵 API 키가 설정되지 않았습니다.")
+            return
+
         kakao_api_key = st.secrets["KAKAO"]["MAP_API_KEY"]
 
         map_html = f"""
         <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
         <div id="map" style="width:100%;height:400px;border-radius:12px;margin:0 auto;"></div>
+        <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services"></script>
         <script>
-            (function loadKakaoMap() {{
-                var script = document.createElement('script');
-                script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services&autoload=false&secure=true";
-                script.type = "text/javascript";
-                script.crossorigin = "anonymous";
-
-                script.onload = function() {{
-                    console.log("카카오 API 스크립트 로드 완료");
-                    kakao.maps.load(function() {{
-                        console.log("kakao.maps.load 실행");
-                        initializeMap();  
-                    }});
+            // ✅ 지도 초기화 함수 분리
+            function initMap() {{
+                var mapContainer = document.getElementById('map');
+                var mapOption = {{
+                    center: new kakao.maps.LatLng(37.5665, 126.9780),
+                    level: 3,
+                    scrollwheel: true, // ✅ 마우스 휠 확대/축소 활성화
+                    disableDoubleClickZoom: false // ✅ 더블클릭 확대 비활성화
                 }};
 
-                script.onerror = function() {{
-                    console.error("카카오 지도 스크립트 로드 실패");
-                }};
+                var map = new kakao.maps.Map(mapContainer, mapOption);
 
-                document.head.appendChild(script);
-            }})();
+                // ✅ 확대/축소 컨트롤 추가
+                var zoomControl = new kakao.maps.ZoomControl();
+                map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
 
-            function initializeMap() {{
-                try {{
-                    if (!kakao || !kakao.maps || !kakao.maps.services) {{
-                        console.error("kakao.maps 또는 kakao.maps.services가 로드되지 않음");
-                        return;
+                var geocoder = new kakao.maps.services.Geocoder();
+                geocoder.addressSearch("{address}", function(result, status) {{
+                    if (status === kakao.maps.services.Status.OK) {{
+                        var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                        
+                        // 마커 생성
+                        var marker = new kakao.maps.Marker({{
+                            map: map,
+                            position: coords
+                        }});
+
+                        // 인포윈도우 생성
+                        var infowindow = new kakao.maps.InfoWindow({{
+                            content: '<div style="padding:10px;font-size:14px;">{selected_branch}</div>'
+                        }});
+                        infowindow.open(map, marker);
+
+                        // 지도 중심 이동
+                        map.setCenter(coords);
+                    }} else {{
+                        mapContainer.innerHTML = `
+                            <div style="
+                                text-align:center;
+                                padding:20px;
+                                color:#e74c3c;
+                                background:#ffe6e6;
+                                border-radius:8px;
+                            ">
+                                ⚠️ 주소 정보를 확인할 수 없습니다.<br>
+                                (에러 코드: ${{status}})
+                            </div>
+                        `;
                     }}
-
-                    var mapContainer = document.getElementById('map');
-                    if (!mapContainer) {{
-                        console.error("지도 컨테이너를 찾을 수 없음");
-                        return;
-                    }}
-
-                    var mapOption = {{
-                        center: new kakao.maps.LatLng(37.5665, 126.9780),
-                        level: 3
-                    }};
-                    console.log("초기 지도 옵션:", mapOption);
-
-                    var map = new kakao.maps.Map(mapContainer, mapOption);
-                    console.log("지도 객체 생성 완료:", map);
-
-                    var geocoder = new kakao.maps.services.Geocoder();
-                    console.log("지오코더 객체 생성 완료:", geocoder);
-
-                    geocoder.addressSearch("{address}", function (result, status) {{
-                        console.log("주소 검색 결과:", result, "상태:", status);
-
-                        if (status === kakao.maps.services.Status.OK) {{
-                            var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-                            console.log("좌표 변환 성공:", coords);
-
-                            var marker = new kakao.maps.Marker({{
-                                map: map,
-                                position: coords
-                            }});
-                            console.log("마커 생성 완료:", marker);
-
-                            var infowindow = new kakao.maps.InfoWindow({{
-                                content: '<div style="padding:10px;">{{selected_branch}}</div>'
-                            }});
-                            infowindow.open(map, marker);
-
-                            map.setCenter(coords);
-                            console.log("지도 중심 좌표 설정 완료:", coords);
-                        }} else {{
-                            console.error("주소 변환 실패:", status);
-                            map.setCenter(new kakao.maps.LatLng(37.5665, 126.9780));
-                        }}
-                    }});
-                }} catch (error) {{
-                    console.error("지도 초기화 중 오류 발생:", error);
-                }}
+                }});
             }}
+
+            // ✅ 스크립트 로드 완료 후 초기화
+            window.onload = function() {{
+                if(typeof kakao !== 'undefined' && kakao.maps) {{
+                    initMap();
+                }} else {{
+                    console.error("카카오맵 API 로드 실패");
+                }}
+            }};
         </script>
         """
         st.components.v1.html(map_html, height=420)
