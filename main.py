@@ -473,6 +473,7 @@ def branch_info_page():
                         
                         # 카카오 지도 API 키 (Streamlit secrets에서 가져오기)
                         kakao_api_key = st.secrets["KAKAO"]["MAP_API_KEY"]
+                        st.write(f"사용 중인 API 키: {kakao_api_key}")
                         
                         # HTML/JS 코드
                         map_html = f'''
@@ -514,7 +515,7 @@ def branch_info_page():
                         '''
                          # 지도 HTML 렌더링
                         st.components.v1.html(map_html, height=420)
-                        
+
     elif search_term:
         st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
     
