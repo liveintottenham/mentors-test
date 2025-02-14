@@ -471,37 +471,46 @@ def branch_info_page():
                     with st.expander("📍 지점 위치", expanded=True):
                         st.markdown(f"**주소**: {address}")
                         
-                        # 카카오 지도 API 키 (Streamlit secrets에서 가져오기)
+                        # 카카오 지도 API 키
                         kakao_api_key = st.secrets["KAKAO"]["MAP_API_KEY"]
                         
                         # 수정된 HTML/JS 코드
                         map_html = f"""
                         <div id="map" style="width:95%;height:400px;border-radius:12px;margin:0 auto;"></div>
-                        <!-- HTTPS로 모든 리소스 로드 -->
                         <script>
-                            // Kakao Maps SDK를 동적으로 로드 (HTTPS 강제)
-                            (function() {{
-                                const script = document.createElement('script');
-                                script.src = 'https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services&v=4.4.19';
-                                script.onload = () => {{
+                            // 1. Kakao Maps SDK 동적 로드
+                            function loadKakaoMap() {{
+                                return new Promise((resolve, reject) => {{
+                                    const script = document.createElement('script');
+                                    script.src = 'https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services&autoload=false';
+                                    script.onload = () => resolve();
+                                    script.onerror = () => reject(new Error('Failed to load Kakao Maps SDK'));
+                                    document.head.appendChild(script);
+                                }});
+                            }}
+
+                            // 2. 지도 초기화
+                            async function initializeMap() {{
+                                try {{
+                                    await loadKakaoMap(); // SDK 로드 대기
                                     kakao.maps.load(() => {{
-                                        var mapContainer = document.getElementById('map');
-                                        var mapOption = {{
+                                        const mapContainer = document.getElementById('map');
+                                        const mapOption = {{
                                             center: new kakao.maps.LatLng(37.5665, 126.9780),
                                             level: 3
                                         }};
-                                        var map = new kakao.maps.Map(mapContainer, mapOption);
+                                        const map = new kakao.maps.Map(mapContainer, mapOption);
 
-                                        // 주소 변환 및 마커 추가
-                                        var geocoder = new kakao.maps.services.Geocoder();
-                                        geocoder.addressSearch("{address}", function(result, status) {{
+                                        // 주소 변환
+                                        const geocoder = new kakao.maps.services.Geocoder();
+                                        geocoder.addressSearch("{address}", (result, status) => {{
                                             if (status === kakao.maps.services.Status.OK) {{
-                                                var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-                                                var marker = new kakao.maps.Marker({{
+                                                const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                                                const marker = new kakao.maps.Marker({{
                                                     map: map,
                                                     position: coords
                                                 }});
-                                                var infowindow = new kakao.maps.InfoWindow({{
+                                                const infowindow = new kakao.maps.InfoWindow({{
                                                     content: '<div style="padding:10px;">{selected_branch}</div>'
                                                 }});
                                                 infowindow.open(map, marker);
@@ -512,19 +521,16 @@ def branch_info_page():
                                             }}
                                         }});
                                     }});
-                                }};
-                                document.head.appendChild(script);
-                            }})();
+                                }} catch (error) {{
+                                    console.error("Kakao Maps SDK 로드 실패:", error);
+                                }}
+                            }}
+
+                            // 3. 지도 초기화 실행
+                            initializeMap();
                         </script>
                         """
                         st.components.v1.html(map_html, height=420)
-
-
-
-
-
-
-
 
 
                 elif search_term:
