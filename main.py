@@ -470,11 +470,11 @@ def branch_info_page():
                 if address != "N/A":
                     with st.expander("📍 지점 위치", expanded=True):
                         st.markdown(f"**주소**: {address}")
-                        
+
                         # 카카오 지도 API 키 (Streamlit secrets에서 가져오기)
                         kakao_api_key = st.secrets["KAKAO"]["MAP_API_KEY"]
-                        
-                        # 수정된 HTML/JS 코드 (HTTPS 적용 및 로드 순서 변경)
+
+                        # 지도 HTML 및 초기화 코드
                         map_html = f"""
                         <div id="map" style="width:95%;height:400px;border-radius:12px;margin:0 auto;"></div>
                         <script>
@@ -482,7 +482,7 @@ def branch_info_page():
                                 var script = document.createElement('script');
                                 script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services&autoload=false&secure=true";
                                 script.type = "text/javascript";
-                                script.crossorigin = "anonymous";  // HTTPS 환경 보장
+                                script.crossorigin = "anonymous";
 
                                 script.onload = function() {{
                                     console.log("카카오 API 스크립트 로드 완료");
@@ -491,7 +491,7 @@ def branch_info_page():
                                         console.log("kakao.maps.services 상태:", kakao.maps?.services);
 
                                         if (kakao.maps && kakao.maps.services) {{
-                                            initializeMap();
+                                            initializeMap();  // 지도 초기화 함수 호출
                                         }} else {{
                                             console.error("카카오 API 로드 실패: kakao.maps.services가 정의되지 않음");
                                         }}
@@ -514,7 +514,7 @@ def branch_info_page():
 
                                     var mapContainer = document.getElementById('map');
                                     var mapOption = {{
-                                        center: new kakao.maps.LatLng(37.5665, 126.9780),
+                                        center: new kakao.maps.LatLng(37.5665, 126.9780),  // 서울 시청 기본 좌표
                                         level: 3
                                     }};
                                     var map = new kakao.maps.Map(mapContainer, mapOption);
