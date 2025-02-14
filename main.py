@@ -568,6 +568,7 @@ def get_map_html(address, branch_name):
         </script>
         """
     return "⚠️ 주소 정보가 없습니다."
+
         
 
 # ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
