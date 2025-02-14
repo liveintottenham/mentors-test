@@ -897,6 +897,9 @@ def refund_calculator_page():
         penalty_amount = ticket_price * penalty_rate_value  # 위약금 금액 (결제금액 기준)
         final_refund_amount = max(refund_amount - penalty_amount, 0)  # 최종 환불 금액 (음수 방지)
     
+        # ✅ 입금하실 금액 계산 (공제금액 + 위약금)
+        deposit_amount = deduction_amount + penalty_amount
+    
         # 한국 시간대 (KST)로 현재 시간 설정
         kst = pytz.timezone('Asia/Seoul')
         current_time_kst = datetime.now(kst).strftime('%Y-%m-%d %H:%M')
@@ -928,9 +931,9 @@ def refund_calculator_page():
         [환 불 내역]
         ▣ 사용량 : {usage_info}
         ▣ 공제 금액 : -{int(deduction_amount):,}원 ({deduction_detail})
-        ▣ 위약금 : {int(penalty_amount):,}원 ({penalty_rate} 위약금)
+        ▣ 위약금 : -{int(penalty_amount):,}원 ({penalty_rate} 위약금)
         ▣ 환불 가능액 : {int(final_refund_amount):,}원
-        ▶ 입금 하실 금액 : {int(deduction_amount):,}원 
+        ▶ 입금 하실 금액 : {int(deposit_amount):,}원
         =============================================
         ※ 유의사항
         - 본 내역서는 발급일 기준으로 유효합니다.
@@ -954,7 +957,8 @@ def refund_calculator_page():
             'deduction_detail': deduction_detail,
             'penalty_rate': penalty_rate,
             'penalty_amount': penalty_amount,
-            'final_refund_amount': final_refund_amount
+            'final_refund_amount': final_refund_amount,
+            'deposit_amount': deposit_amount  # 입금하실 금액 추가
         }
 
     # 계산 완료 후 계좌 정보 입력 폼 표시
@@ -993,6 +997,7 @@ def refund_calculator_page():
             refund_data['usage_info'], int(refund_data['used_amount']),  # 수정: used_amount → int 변환
             refund_data['deduction_detail'], refund_data['penalty_rate'], 
             refund_data['penalty_amount'], int(refund_data['final_refund_amount']),
+            int(refund_data['deposit_amount']),  # 입금하실 금액 추가
             account_info['account_holder'], account_info['bank_name'], 
             account_info['account_number']
         )
