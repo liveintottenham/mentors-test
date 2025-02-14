@@ -475,31 +475,32 @@ def branch_info_page():
                         kakao_api_key = st.secrets["KAKAO"]["MAP_API_KEY"]
                         
                         # 수정된 HTML/JS 코드 (HTTPS 강제 적용)
+                        
                         map_html = f"""
                         <div id="map" style="width:95%;height:400px;border-radius:12px;margin:0 auto;"></div>
                         <script>
                             (function loadKakaoMap() {{
-                                if (typeof kakao !== "undefined" && kakao.maps && kakao.maps.services) {{
-                                    console.log("카카오 API 이미 로드됨");
-                                    kakao.maps.load(function() {{
-                                        initializeMap();
-                                    }});
-                                    return;
-                                }}
-
                                 var script = document.createElement('script');
                                 script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services";
                                 script.type = "text/javascript";
 
                                 script.onload = function() {{
                                     console.log("카카오 API 스크립트 로드 완료");
-                                    if (typeof kakao !== "undefined" && kakao.maps && kakao.maps.services) {{
-                                        console.log("카카오 API 로드 완료");
-                                        kakao.maps.load(function() {{
-                                            initializeMap();
-                                        }});
+                                    console.log("kakao 객체 상태 확인:", kakao);
+                                    if (typeof kakao !== "undefined") {{
+                                        console.log("kakao.maps 상태:", kakao.maps);
+                                        console.log("kakao.maps.services 상태:", kakao.maps?.services);
+
+                                        if (kakao.maps && kakao.maps.services) {{
+                                            console.log("카카오 API 로드 완료");
+                                            kakao.maps.load(function() {{
+                                                initializeMap();
+                                            }});
+                                        }} else {{
+                                            console.error("카카오 API 로드 실패: kakao.maps 또는 kakao.maps.services가 정의되지 않음");
+                                        }}
                                     }} else {{
-                                        console.error("카카오 API 로드 실패: kakao.maps 또는 kakao.maps.services가 정의되지 않음");
+                                        console.error("카카오 API 로드 실패: kakao가 정의되지 않음");
                                     }}
                                 }};
 
@@ -549,7 +550,6 @@ def branch_info_page():
                         </script>
                         """
                         st.components.v1.html(map_html, height=420)
-
 
 
 
