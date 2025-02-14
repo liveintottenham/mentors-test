@@ -390,15 +390,15 @@ def branch_info_page():
 
         # 왼쪽: 아이디와 비밀번호
         with col1:
-                st.subheader("🖥️계정 정보")
+            st.subheader("🖥️계정 정보")
         
-                # ▼▼▼ ID/PWD 검증 로직 수정 ▼▼▼
-                if id_val == "***" and pw_val == "***":
-                    st.error("🚨 로그인 정보가 없는 제로아이즈 매장입니다. 지점채널로 안내해주세요")
-                else:
-                    # 기존 계정 정보 표시 로직 유지
-                    has_id = id_val != "" and id_val != "***"
-                    has_pw = pw_val != "" and pw_val != "***"
+            # ▼▼▼ ID/PWD 검증 로직 수정 ▼▼▼
+            if id_val == "***" and pw_val == "***":
+                st.error("🚨 로그인 정보가 없는 제로아이즈 매장입니다. 지점채널로 안내해주세요")
+            else:
+                # has_id와 has_pw 변수 초기화
+                has_id = id_val != "" and id_val != "***"
+                has_pw = pw_val != "" and pw_val != "***"
 
                 if has_id and has_pw:
                     # 아이디 표시 (문자열로 처리, 앞의 0 유지)
@@ -433,61 +433,61 @@ def branch_info_page():
 
         # 오른쪽: 부가 정보
         with col2:
-                st.subheader("📌 지점 상세 정보")
+            st.subheader("📌 지점 상세 정보")
     
-                # ✅ 지점 채널 (기존 코드 유지)
-                with st.expander("💬 지점 채널", expanded=True):
-                    if channel_info != "N/A":
-                        st.write(f"카카오톡 채널: {channel_info}")
-                        
-                        # ✅ 지점채널 안내문 생성 버튼 추가
-                        if st.button("📩 지점채널 안내문 생성", key="generate_channel_message"):
-                            message = f"""
-                            안녕하세요, 멘토즈스터디카페 운영본부입니다.
-                            유선상 전달드린 카카오톡 지점 채널 안내드립니다.
+            # ✅ 지점 채널 (기존 코드 유지)
+            with st.expander("💬 지점 채널", expanded=True):
+                if channel_info != "N/A":
+                    st.write(f"카카오톡 채널: {channel_info}")
+                    
+                    # ✅ 지점채널 안내문 생성 버튼 추가
+                    if st.button("📩 지점채널 안내문 생성", key="generate_channel_message"):
+                        message = f"""
+                        안녕하세요, 멘토즈스터디카페 운영본부입니다.
+                        유선상 전달드린 카카오톡 지점 채널 안내드립니다.
 
-                            {channel_info}
-                            ▶ 카카오톡 지점 채널 [ 멘토즈 {selected_branch} ]
+                        {channel_info}
+                        ▶ 카카오톡 지점 채널 [ 멘토즈 {selected_branch} ]
 
-                            ※ 상담 가능 시간 이외라도 긴급 건의 경우 점주님이 확인 후 답변 주시고 있으며, 
-                            전화 문의는 불가한 점 양해 부탁드립니다.
-                            """
-                            st.code(message)
-                    else:
-                        st.warning("지점 채널 정보가 없습니다.")
+                        ※ 상담 가능 시간 이외라도 긴급 건의 경우 점주님이 확인 후 답변 주시고 있으며, 
+                        전화 문의는 불가한 점 양해 부탁드립니다.
+                        """
+                        st.code(message)
+                else:
+                    st.warning("지점 채널 정보가 없습니다.")
     
-                # 노트북/프린트 섹션 수정
-                with st.expander("💻 노트북/프린트", expanded=True):
+            # 노트북/프린트 섹션 수정
+            with st.expander("💻 노트북/프린트", expanded=True):
+                st.markdown(f"""
+                <div style="font-size:16px; font-weight:600; color:#2c3e50; 
+                            margin: 15px 0; line-height:1.6;">
+                    {laptop_printer}
+                </div>
+                """, unsafe_allow_html=True)
+    
+            # ✅ 특이사항 (빨간색 강조)
+            if special_notes and special_notes != "":
+                with st.expander("🚨 특이사항", expanded=True):
                     st.markdown(f"""
                     <div style="font-size:16px; font-weight:600; color:#2c3e50; 
-                                margin: 15px 0; line-height:1.6;">
-                        {laptop_printer}
+                            margin: 15px 0; line-height:1.6;">
+                        {special_notes}
                     </div>
                     """, unsafe_allow_html=True)
     
-                # ✅ 특이사항 (빨간색 강조)
-                if special_notes and special_notes != "":
-                    with st.expander("🚨 특이사항", expanded=True):
-                        st.markdown(f"""
-                        <div style="font-size:16px; font-weight:600; color:#2c3e50; 
-                                margin: 15px 0; line-height:1.6;">
-                            {special_notes}
-                        </div>
-                        """, unsafe_allow_html=True)
-    
-                # 주차여부 섹션 수정
-                with st.expander("🚗 주차 여부", expanded=True):
-                    st.markdown(f"""
-                    <div style="font-size:16px; color:#2ecc71; font-weight:600; 
-                                margin: 15px 0; line-height:1.6;">
-                        {parking}
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                # ✅ 스터디룸 정보
-                study_room = str(branch_data.get("스터디룸여부", "N/A")).strip()
-                with st.expander("📚 스터디룸 여부", expanded=True):
-                    st.write(f"{study_room}")
+            # 주차여부 섹션 수정
+            with st.expander("🚗 주차 여부", expanded=True):
+                st.markdown(f"""
+                <div style="font-size:16px; color:#2ecc71; font-weight:600; 
+                            margin: 15px 0; line-height:1.6;">
+                    {parking}
+                </div>
+                """, unsafe_allow_html=True)
+            
+            # ✅ 스터디룸 정보
+            study_room = str(branch_data.get("스터디룸여부", "N/A")).strip()
+            with st.expander("📚 스터디룸 여부", expanded=True):
+                st.write(f"{study_room}")
 
         # 하단: 지점 위치 지도 (1단 레이아웃)
         st.subheader("📍 지점 위치")
