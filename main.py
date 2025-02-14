@@ -782,7 +782,9 @@ def refund_calculator_page():
     # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
     # ▼▼▼ 환불 계산 로직 수정 ▼▼▼
+    # ▼▼▼ 환불 계산 로직 수정 ▼▼▼
     if st.button("환불 금액 계산"):
+        # used_days 초기화 (모든 조건에서 사용 가능하도록)
         used_days = (refund_date - purchase_date).days + 1  # 결제일 포함
         daily_rate = period_price if ticket_type == "기간권" else 11000  # 시트의 기간권 금액 사용
         hourly_rate = time_price if ticket_type == "시간권" else 2000  # 시트의 시간권 금액 사용
@@ -816,21 +818,22 @@ def refund_calculator_page():
                 if ticket_type in ["기간권", "노블레스석"] 
                 else f"{percent_used:.1f}% 사용 ({hours_used}시간 사용)"
             )
-    else:
-        # 일반 환불 규정
-        if ticket_type == "기간권":
-            used_amount = used_days * daily_rate
-        elif ticket_type == "노블레스석":
-            used_amount = used_days * noble_rate
-        elif ticket_type == "시간권":
-            used_amount = hours_used * hourly_rate
-        refund_amount = max(ticket_price - used_amount, 0)
-        usage_info = (
-            f"{used_days}일 사용" 
-            if ticket_type in ["기간권", "노블레스석"] 
-            else f"{hours_used}시간 사용"
-        )
-        deduction_detail = f"{used_days}일 × {int(daily_rate):,}원" if ticket_type == "기간권" else f"{used_days}일 × {int(noble_rate):,}원 (노블레스석 1일 요금)" if ticket_type == "노블레스석" else f"{hours_used}시간 × {int(hourly_rate):,}원"
+        else:
+            # 일반 환불 규정
+            if ticket_type == "기간권":
+                used_amount = used_days * daily_rate
+            elif ticket_type == "노블레스석":
+                used_amount = used_days * noble_rate
+            elif ticket_type == "시간권":
+                # 시간권일 경우 used_days는 사용하지 않음 (hours_used 사용)
+                used_amount = hours_used * hourly_rate
+                usage_info = f"{hours_used}시간 사용"
+            else:
+                used_amount = 0  # 기본값
+                usage_info = "정보 없음"
+
+            refund_amount = max(ticket_price - used_amount, 0)
+            deduction_detail = f"{used_days}일 × {int(daily_rate):,}원" if ticket_type == "기간권" else f"{used_days}일 × {int(noble_rate):,}원 (노블레스석 1일 요금)" if ticket_type == "노블레스석" else f"{hours_used}시간 × {int(hourly_rate):,}원"
         # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         # 위약금 계산 (결제금액 기준)
