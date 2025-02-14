@@ -482,6 +482,7 @@ def branch_info_page():
                                 var script = document.createElement('script');
                                 script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services&autoload=false&secure=true";
                                 script.type = "text/javascript";
+                                script.crossorigin = "anonymous";  // HTTPS 환경 보장
 
                                 script.onload = function() {{
                                     console.log("카카오 API 스크립트 로드 완료");
@@ -543,6 +544,7 @@ def branch_info_page():
                         </script>
                         """
                         st.components.v1.html(map_html, height=420)
+
 
 
 
