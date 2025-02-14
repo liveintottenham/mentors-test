@@ -471,30 +471,25 @@ def branch_info_page():
                     with st.expander("📍 지점 위치", expanded=True):
                         st.markdown(f"**주소**: {address}")
                         
-                        # 카카오 지도 API 키 (Streamlit secrets에서 가져오기)
+                        # 카카오 지도 API 키
                         kakao_api_key = st.secrets["KAKAO"]["MAP_API_KEY"]
                         
-                        # 수정된 HTML/JS 코드 (HTTPS 적용 및 로드 순서 변경)
+                        # 수정된 HTML/JS 코드 (HTTPS 강제 적용)
                         map_html = f"""
                         <div id="map" style="width:95%;height:400px;border-radius:12px;margin:0 auto;"></div>
-                        <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}"></script>
+                        <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services&autoload=false"></script>
                         <script>
-                            // 카카오 지도 API 초기화 확인
-                            function initializeMap() {{
-                                if (typeof kakao === "undefined" || !kakao.maps) {{
-                                    console.error("카카오 지도 API가 로드되지 않았습니다.");
-                                    return;
-                                }}
-
-                                // 지도 생성
+                            // 1. Kakao Maps API 명시적 로드
+                            kakao.maps.load(function() {{
+                                // 2. 지도 생성
                                 var mapContainer = document.getElementById('map');
                                 var mapOption = {{
-                                    center: new kakao.maps.LatLng(37.5665, 126.9780), // 서울 시청 기본 좌표
+                                    center: new kakao.maps.LatLng(37.5665, 126.9780),
                                     level: 3
                                 }};
                                 var map = new kakao.maps.Map(mapContainer, mapOption);
 
-                                // 주소 변환 및 마커 추가
+                                // 3. 주소 변환
                                 var geocoder = new kakao.maps.services.Geocoder();
                                 geocoder.addressSearch("{address}", function(result, status) {{
                                     if (status === kakao.maps.services.Status.OK) {{
@@ -509,14 +504,11 @@ def branch_info_page():
                                         infowindow.open(map, marker);
                                         map.setCenter(coords);
                                     }} else {{
-                                        console.error("주소 변환 실패, 기본 좌표를 표시합니다.");
+                                        console.error("주소 변환 실패");
                                         map.setCenter(new kakao.maps.LatLng(37.5665, 126.9780));
                                     }}
                                 }});
-                            }}
-
-                            // 카카오 지도 API 로드 완료 후 초기화 함수 실행
-                            kakao.maps.load(initializeMap);
+                            }});
                         </script>
                         """
                         st.components.v1.html(map_html, height=420)
