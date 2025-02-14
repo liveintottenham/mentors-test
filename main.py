@@ -434,50 +434,60 @@ def branch_info_page():
                     else:
                         st.warning("지점 채널 정보가 없습니다.")
     
-                # ✅ 노트북/프린트 (디자인 강조)
+                # ✅ 노트북/프린트 (가운데 정렬 및 여백 조절)
                 with st.expander("💻 노트북/프린트", expanded=True):
                     st.markdown(f"""
-                    <div style="font-size:16px; font-weight:600; color:#2c3e50; white-space: pre-line;">
+                    <div style="text-align: center; 
+                                margin: 20px 0; 
+                                padding: 15px;
+                                font-size:16px; 
+                                font-weight:600; 
+                                color:#2c3e50; 
+                                white-space: pre-line;">
                         {laptop_printer}
                     </div>
                     """, unsafe_allow_html=True)
-    
-                # ✅ 특이사항 (빨간색 강조)
-                if special_notes and special_notes != "":
-                    with st.expander("🚨 특이사항", expanded=True):
-                        st.markdown(f"""
-                        <div style="font-size:16px; color:#e74c3c; font-weight:600; white-space: pre-line;">
-                            {special_notes}
-                        </div>
-                        """, unsafe_allow_html=True)
-    
-                # ✅ 주차 여부 (초록색 강조)
+
+                # ✅ 주차 여부 (가운데 정렬 및 여백 조절)
                 with st.expander("🚗 주차 여부", expanded=True):
                     st.markdown(f"""
-                    <div style="font-size:16px; color:#2ecc71; font-weight:600; white-space: pre-line;">
+                    <div style="text-align: center; 
+                                margin: 20px 0; 
+                                padding: 15px;
+                                font-size:16px; 
+                                color:#2ecc71; 
+                                font-weight:600; 
+                                white-space: pre-line;">
                         {parking}
                     </div>
                     """, unsafe_allow_html=True)
                 
-                # ✅ 스터디룸 정보
-                study_room = str(branch_data.get("스터디룸여부", "N/A")).strip()
-                with st.expander("📚 스터디룸 여부", expanded=True):
-                    st.write(f"{study_room}")
-                
-                # ✅ 주소 및 지도 표시
+                # ✅ 주소 및 지도 표시 (지도 크기 조정)
                 if address != "N/A":
                     with st.expander("📍 지점 위치", expanded=True):
                         st.markdown(f"**주소**: {address}")
                         
-                        # 임시 좌표 (실제 구현시 Geocoding API 사용)
-                        LAT, LON = 37.5665, 126.9780  # 서울시청 좌표
-                        m = folium.Map(location=[LAT, LON], zoom_start=15, width="100%", height=300)  # 지도 크기 조정
-                        folium.Marker(
-                            [LAT, LON],
-                            tooltip=selected_branch,
-                            popup=address
-                        ).add_to(m)
-                        folium_static(m)  # 지도 렌더링
+                        # 지도 크기 조정
+                        m = folium.Map(
+                            location=[LAT, LON], 
+                            zoom_start=15, 
+                            width="100%", 
+                            height=300,  # 높이 고정
+                            tiles='cartodbpositron'  # 밝은 테마 적용
+                        )
+                        folium.Marker(...).add_to(m)  # 기존 코드 유지
+                        
+                        # 지도 주변 여백 제거
+                        st.markdown("""
+                            <style>
+                                .folium-map {
+                                    margin: 0 !important;
+                                    padding: 0 !important;
+                                }
+                            </style>
+                        """, unsafe_allow_html=True)
+                        
+                        folium_static(m, width=725)  # 너비 조정
     
     elif search_term:
         st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
