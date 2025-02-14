@@ -519,8 +519,8 @@ def branch_info_page():
                         """
                         st.components.v1.html(map_html, height=420)
 
-                    elif search_term:
-                        st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
+                elif search_term:
+                    st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
     
         
 
