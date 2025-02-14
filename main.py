@@ -474,6 +474,7 @@ def branch_info_page():
                         kakao_api_key = st.secrets["KAKAO"]["MAP_API_KEY"]
 
                         map_html = f"""
+                        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
                         <div id="map" style="width:100%;height:400px;border-radius:12px;margin:0 auto;"></div>
                         <script>
                             (function loadKakaoMap() {{
