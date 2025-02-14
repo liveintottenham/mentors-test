@@ -782,12 +782,15 @@ def refund_calculator_page():
     # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
     # ▼▼▼ 환불 계산 로직 수정 ▼▼▼
-    # ▼▼▼ 환불 계산 로직 수정 ▼▼▼
     if st.button("환불 금액 계산"):
         # used_days 초기화 (모든 조건에서 사용 가능하도록)
         used_days = (refund_date - purchase_date).days + 1  # 결제일 포함
+
+        # daily_rate, hourly_rate, noble_rate 설정
         daily_rate = period_price if ticket_type == "기간권" else 11000  # 시트의 기간권 금액 사용
         hourly_rate = time_price if ticket_type == "시간권" else 2000  # 시트의 시간권 금액 사용
+        noble_rate = noble_rate if ticket_type == "노블레스석" else 0  # 노블레스석 1일 요금
+
         used_amount = 0
         refund_amount = 0  # refund_amount 초기화 추가
 
@@ -822,29 +825,32 @@ def refund_calculator_page():
             # 일반 환불 규정
             if ticket_type == "기간권":
                 used_amount = used_days * daily_rate
+                usage_info = f"{used_days}일 사용"
+                deduction_detail = f"{used_days}일 × {int(daily_rate):,}원"
             elif ticket_type == "노블레스석":
                 used_amount = used_days * noble_rate
+                usage_info = f"{used_days}일 사용"
+                deduction_detail = f"{used_days}일 × {int(noble_rate):,}원 (노블레스석 1일 요금)"
             elif ticket_type == "시간권":
-                # 시간권일 경우 used_days는 사용하지 않음 (hours_used 사용)
                 used_amount = hours_used * hourly_rate
                 usage_info = f"{hours_used}시간 사용"
+                deduction_detail = f"{hours_used}시간 × {int(hourly_rate):,}원"
             else:
                 used_amount = 0  # 기본값
                 usage_info = "정보 없음"
+                deduction_detail = "정보 없음"
 
             refund_amount = max(ticket_price - used_amount, 0)
-            deduction_detail = f"{used_days}일 × {int(daily_rate):,}원" if ticket_type == "기간권" else f"{used_days}일 × {int(noble_rate):,}원 (노블레스석 1일 요금)" if ticket_type == "노블레스석" else f"{hours_used}시간 × {int(hourly_rate):,}원"
-        # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         # 위약금 계산 (결제금액 기준)
         penalty_rate_value = int(penalty_rate.strip("%")) / 100  # 위약금 비율 (10% → 0.1)
         penalty_amount = ticket_price * penalty_rate_value  # 위약금 금액 (결제금액 기준)
         final_refund_amount = max(refund_amount - penalty_amount, 0)  # 최종 환불 금액 (음수 방지)
-        
+    
         # 한국 시간대 (KST)로 현재 시간 설정
         kst = pytz.timezone('Asia/Seoul')
         current_time_kst = datetime.now(kst).strftime('%Y-%m-%d %H:%M')
-        
+    
         # 환불 내역서 구성
         refund_detail = f"""
         [멘토즈 스터디카페 환불 내역서]
@@ -871,7 +877,7 @@ def refund_calculator_page():
         - 결제일자로 부터 30일이 지난 결제건은 위약금이 추가로 발생할 수 있습니다.
         - 환불 처리에는 최대 3~5영업일이 소요될 수 있습니다.
         """
-        
+    
         # 환불 내역서 출력
         st.text_area("📄 환불 내역서 (Ctrl+C로 복사 가능)", refund_detail.strip(), height=400)
 
