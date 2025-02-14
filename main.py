@@ -333,10 +333,11 @@ def get_address_coordinates(address):
     headers = {"Authorization": f"KakaoAK {st.secrets['KAKAO']['REST_API_KEY']}"}
     params = {"query": address}
     
-    response = requests.get(url, headers=headers, params=params)
-
-    if response.status_code == 200:
+    try:
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()  # HTTP 오류 발생 시 예외 처리
         result = response.json()
+        
         if result["documents"]:
             y = result["documents"][0]["y"]  # 위도
             x = result["documents"][0]["x"]  # 경도
@@ -344,8 +345,8 @@ def get_address_coordinates(address):
         else:
             st.error("⚠️ 해당 주소를 찾을 수 없습니다.")
             return None, None
-    else:
-        st.error(f"🚨 API 호출 실패: {response.status_code} - {response.text}")
+    except requests.exceptions.RequestException as e:
+        st.error(f"🚨 API 호출 실패: {str(e)}")
         return None, None
 
 # ✅ 지점 정보 확인 페이지
@@ -435,76 +436,41 @@ def branch_info_page():
         st.markdown(f"**{selected_branch}**")
         st.markdown(f"**주소**: {address}")
 
-        # ✅ API 키 유효성 검사 추가
-        if "KAKAO" not in st.secrets or "MAP_API_KEY" not in st.secrets["KAKAO"]:
-            st.error("🚨 카카오맵 API 키가 설정되지 않았습니다.")
-            return
+        # ✅ REST API를 사용하여 주소를 좌표로 변환
+        if address != "N/A":
+            y, x = get_address_coordinates(address)
+            if y and x:
+                # ✅ 지도 표시
+                map_html = f"""
+                <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+                <div id="map" style="width:100%;height:400px;border-radius:12px;margin:0 auto;"></div>
+                <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={st.secrets['KAKAO']['MAP_API_KEY']}&libraries=services"></script>
+                <script>
+                    var mapContainer = document.getElementById('map');
+                    var mapOption = {{
+                        center: new kakao.maps.LatLng({y}, {x}), // 변환된 좌표 사용
+                        level: 3
+                    }};
+                    var map = new kakao.maps.Map(mapContainer, mapOption);
 
-        kakao_api_key = st.secrets["KAKAO"]["MAP_API_KEY"]
+                    // 마커 생성
+                    var marker = new kakao.maps.Marker({{
+                        map: map,
+                        position: new kakao.maps.LatLng({y}, {x})
+                    }});
 
-        map_html = f"""
-        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-        <div id="map" style="width:100%;height:400px;border-radius:12px;margin:0 auto;"></div>
-        <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services"></script>
-        <script>
-            function initMap() {{
-                var mapContainer = document.getElementById('map');
-                var mapOption = {{
-                    center: new kakao.maps.LatLng(37.5665, 126.9780), // 기본 좌표
-                    level: 3
-                }};
-                var map = new kakao.maps.Map(mapContainer, mapOption);
-
-                // 주소 검색
-                var geocoder = new kakao.maps.services.Geocoder();
-                geocoder.addressSearch("경남 김해시 삼계중앙로 35", function(result, status) {{
-                    console.log("DEBUG: Geocoder Result:", result, "Status:", status);
-
-                    if (status === kakao.maps.services.Status.OK) {{
-                        var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-
-                        // 지도 중심 이동
-                        map.setCenter(coords);
-
-                        // 마커 생성
-                        var marker = new kakao.maps.Marker({{
-                            map: map,
-                            position: coords
-                        }});
-
-                        // 인포윈도우 생성
-                        var infowindow = new kakao.maps.InfoWindow({{
-                            content: '<div style="padding:10px;font-size:14px;">경남 김해시 삼계중앙로 35</div>'
-                        }});
-                        infowindow.open(map, marker);
-                    }} else {{
-                        console.error("주소 검색 실패. 상태 코드:", status);
-                        mapContainer.innerHTML = `
-                            <div style="
-                                text-align:center;
-                                padding:20px;
-                                color:#e74c3c;
-                                background:#ffe6e6;
-                                border-radius:8px;
-                            ">
-                                ⚠️ 주소 정보를 확인할 수 없습니다.<br>
-                                (에러 코드: ${{status || "알 수 없음"}})
-                            </div>
-                        `;
-                    }}
-                }});
-            }}
-
-            window.onload = function() {{
-                if (typeof kakao !== 'undefined' && kakao.maps) {{
-                    initMap();
-                }} else {{
-                    console.error("카카오맵 API 로드 실패");
-                }}
-            }};
-        </script>
-        """
-        st.components.v1.html(map_html, height=420)
+                    // 인포윈도우 생성
+                    var infowindow = new kakao.maps.InfoWindow({{
+                        content: '<div style="padding:10px;font-size:14px;">{selected_branch}</div>'
+                    }});
+                    infowindow.open(map, marker);
+                </script>
+                """
+                st.components.v1.html(map_html, height=420)
+            else:
+                st.error("⚠️ 주소를 좌표로 변환할 수 없습니다.")
+        else:
+            st.warning("⚠️ 주소 정보가 없습니다.")
         
 
 # ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
