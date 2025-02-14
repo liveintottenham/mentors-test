@@ -853,13 +853,16 @@ def refund_calculator_page():
         
             if percent_used < 25:
                 refund_amount = ticket_price * 0.5
+                used_amount = ticket_price * 0.5  # 실제 사용량은 50%로 계산
             elif percent_used < 50:
                 refund_amount = ticket_price * 0.25
+                used_amount = ticket_price * 0.75  # 실제 사용량은 75%로 계산
             else:
                 refund_amount = 0
+                used_amount = ticket_price  # 실제 사용량은 100%로 계산
         
-            # deduction_amount는 ticket_price - refund_amount로 계산
-            deduction_amount = ticket_price - refund_amount
+            # deduction_amount는 실제 사용량으로 계산
+            deduction_amount = used_amount
         
             # 사용량 정보 포맷 변경
             usage_info = (
