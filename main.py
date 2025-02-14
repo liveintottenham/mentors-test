@@ -545,11 +545,9 @@ def get_map_html(address, branch_name):
     y, x = get_address_coordinates(address)
     if y and x:
         return f"""
-        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
         <div class="map-container" id="map" style="width:100%;height:400px;"></div>
         <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={st.secrets['KAKAO']['MAP_API_KEY']}&libraries=services"></script>
         <script>
-            // 카카오 지도 API가 로드된 후에 실행될 코드
             window.onload = function() {{
                 if (typeof kakao !== 'undefined' && kakao.maps) {{
                     var mapContainer = document.getElementById('map');
@@ -575,6 +573,7 @@ def get_map_html(address, branch_name):
         </script>
         """
     return "⚠️ 주소 정보가 없습니다."
+
 
 
         
