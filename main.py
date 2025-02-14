@@ -357,6 +357,7 @@ def branch_info_page():
     
     required_columns = ["지점명", "사물함ID", "사물함PWD", "ID", "PWD", 
                         "지점카카오톡채널", "스터디룸여부", "특이사항", "주차여부", "노트북/프린트", "주소"]
+    
     for col in required_columns:
         if col not in df.columns:
             st.error(f"구글 시트에 '{col}' 컬럼이 없습니다. 시트 구조를 확인해주세요.")
@@ -364,6 +365,11 @@ def branch_info_page():
 
     # 지점명 검색 입력
     search_term = st.text_input("🔍 지점명 검색 (예시: '부산연산점' -> '연산')", key="branch_info_search")
+
+    # ID/PWD 검증 로직 추가
+    if id_val == "***" and pw_val == "***":
+        st.error("🚨 해당 지점은 검색할 수 없습니다!")
+        return
     
     if search_term:
         filtered = df[df["지점명"].str.contains(search_term, case=False, na=False)]
@@ -455,7 +461,7 @@ def branch_info_page():
                 # 노트북/프린트 섹션 수정
                 with st.expander("💻 노트북/프린트", expanded=True):
                     st.markdown(f"""
-                    <div style="font-size:16px; font-weight:600; color:#2c3e50; 
+                    <div style="<div class="info-section; font-size:16px; font-weight:600; color:#2c3e50; 
                                 margin: 15px 0; line-height:1.6;">
                         {laptop_printer}
                     </div>
@@ -465,7 +471,7 @@ def branch_info_page():
                 if special_notes and special_notes != "":
                     with st.expander("🚨 특이사항", expanded=True):
                         st.markdown(f"""
-                        <div style="font-size:16px; color:#e74c3c; font-weight:600; white-space: pre-line;">
+                        <div class="info-section; div style="font-size:16px; color:#e74c3c; font-weight:600; white-space: pre-line;">
                             {special_notes}
                         </div>
                         """, unsafe_allow_html=True)
@@ -485,45 +491,66 @@ def branch_info_page():
                     st.write(f"{study_room}")
 
         # 하단: 지점 위치 지도 (1단 레이아웃)
+        # 지도 카드 스타일 추가
+        st.markdown("""
+        <style>
+        .map-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1px 15px 15px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 1px solid #eee;
+        }
+        .info-section {
+            white-space: pre-line;
+            line-height: 1.6;
+            padding: 10px 0;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
         st.subheader("📍 지점 위치")
         st.markdown(f"**멘토즈** {selected_branch}")
         st.markdown(f"**주소**: {address}")
 
         # ✅ REST API를 사용하여 주소를 좌표로 변환
-        if address != "N/A":
-            y, x = get_address_coordinates(address)
-            if y and x:
-                # ✅ 지도 표시
-                map_html = f"""
-                <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-                <div id="map" style="width:100%;height:400px;border-radius:12px;margin:0 auto;"></div>
-                <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={st.secrets['KAKAO']['MAP_API_KEY']}&libraries=services"></script>
-                <script>
-                    var mapContainer = document.getElementById('map');
-                    var mapOption = {{
-                        center: new kakao.maps.LatLng({y}, {x}), // 변환된 좌표 사용
-                        level: 3
-                    }};
-                    var map = new kakao.maps.Map(mapContainer, mapOption);
+        with st.markdown('<div class="map-card">', unsafe_allow_html=True):
+            st.markdown("### 📍 지점 위치")
+            if address != "N/A":
+                y, x = get_address_coordinates(address)
+                if y and x:
+                    # ✅ 지도 표시
+                    map_html = f"""
+                    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+                    <div id="map" style="width:100%;height:400px;border-radius:12px;margin:0 auto;"></div>
+                    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={st.secrets['KAKAO']['MAP_API_KEY']}&libraries=services"></script>
+                    <script>
+                        var mapContainer = document.getElementById('map');
+                        var mapOption = {{
+                            center: new kakao.maps.LatLng({y}, {x}), // 변환된 좌표 사용
+                            level: 3
+                        }};
+                        var map = new kakao.maps.Map(mapContainer, mapOption);
 
-                    // 마커 생성
-                    var marker = new kakao.maps.Marker({{
-                        map: map,
-                        position: new kakao.maps.LatLng({y}, {x})
-                    }});
+                        // 마커 생성
+                        var marker = new kakao.maps.Marker({{
+                            map: map,
+                            position: new kakao.maps.LatLng({y}, {x})
+                        }});
 
-                    // 인포윈도우 생성
-                    var infowindow = new kakao.maps.InfoWindow({{
-                        content: '<div style="padding:10px;font-size:14px;">{selected_branch}</div>'
-                    }});
-                    infowindow.open(map, marker);
-                </script>
-                """
-                st.components.v1.html(map_html, height=420)
+                        // 인포윈도우 생성
+                        var infowindow = new kakao.maps.InfoWindow({{
+                            content: '<div style="padding:10px;font-size:14px;">{selected_branch}</div>'
+                        }});
+                        infowindow.open(map, marker);
+                    </script>
+                    """
+                    st.components.v1.html(map_html, height=420)
+                else:
+                    st.error("⚠️ 주소를 좌표로 변환할 수 없습니다.")
             else:
-                st.error("⚠️ 주소를 좌표로 변환할 수 없습니다.")
-        else:
-            st.warning("⚠️ 주소 정보가 없습니다.")
+                st.warning("⚠️ 주소 정보가 없습니다.")
         
 
 # ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
@@ -933,7 +960,7 @@ def refund_calculator_page():
         st.session_state['refund_data'] = {
             'branch': branch,
             'phone': phone,
-            'formatted_ticket_type': formatted_ticket_type,
+            'formatted_ticket_type': f"{ticket_type} ({days_given}일)" if ticket_type in ["기간권", "노블레스석"] else f"{ticket_type} ({total_hours}시간)",
             'purchase_date': purchase_date,
             'valid_period': valid_period,
             'ticket_price': ticket_price,
@@ -1180,6 +1207,17 @@ def main():
     st.markdown(
         """
         <style>
+        /* 특이사항 팝업 줄간격 조정 */
+        .stExpander > div > div {
+            white-space: pre-line !important;
+            line-height: 1.6 !important;
+            padding: 10px 0 !important;
+        }
+
+        /* 노트북/프린트 섹션 패딩 조정 */
+        div[data-testid="stExpander"] > div {
+            padding: 15px !important;
+        }
         /* 지도 스타일 개선 */
         .folium-map {
             width: 100% !important;
