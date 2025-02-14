@@ -480,13 +480,13 @@ def branch_info_page():
                         <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services"></script>
                         <script>
                             window.onload = function() {{
-                                // 카카오 지도 객체가 준비된 이후에 실행
-                                if (!kakao.maps) {{
+                                // 카카오 지도 API가 로드되었는지 확인
+                                if (typeof kakao === "undefined" || !kakao.maps) {{
                                     console.error("카카오 지도 API가 로드되지 않았습니다.");
                                     return;
                                 }}
 
-                                // 지도 옵션 설정
+                                // 지도 생성
                                 var mapContainer = document.getElementById('map');
                                 var mapOption = {{
                                     center: new kakao.maps.LatLng(37.5665, 126.9780), // 서울 시청 기본 좌표
@@ -494,7 +494,7 @@ def branch_info_page():
                                 }};
                                 var map = new kakao.maps.Map(mapContainer, mapOption);
 
-                                // 주소 검색 및 마커 추가
+                                // 주소 변환 및 마커 추가
                                 var geocoder = new kakao.maps.services.Geocoder();
                                 geocoder.addressSearch("{address}", function(result, status) {{
                                     if (status === kakao.maps.services.Status.OK) {{
@@ -517,6 +517,7 @@ def branch_info_page():
                         </script>
                         """
                         st.components.v1.html(map_html, height=420)
+
     elif search_term:
         st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
     
