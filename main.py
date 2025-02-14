@@ -380,178 +380,178 @@ def branch_info_page():
         id_val = str(branch_data["ID"]).strip()
         pw_val = str(branch_data["PWD"]).strip()
 
-        # ID/PWD 검증 로직 추가
+        # ▼▼▼ ID/PWD 검증 로직 수정 ▼▼▼
         if id_val == "***" and pw_val == "***":
-            st.error("🚨 해당 지점은 검색할 수 없습니다!")
-            return
+            st.error("🚨 해당 지점은 계정 정보 조회가 제한됩니다!")
+        else:
+            # 나머지 정보 표시 로직 유지
+            channel_info = str(branch_data.get("지점카카오톡채널", "N/A")).strip()
+            special_notes = str(branch_data.get("특이사항", "")).strip()
+            parking = str(branch_data.get("주차여부", "N/A")).strip()
+            laptop_printer = str(branch_data.get("노트북/프린트", "N/A")).strip()
+            address = str(branch_data.get("주소", "N/A")).strip()
+            study_room = str(branch_data.get("스터디룸여부", "N/A")).strip()
 
-        channel_info = str(branch_data.get("지점카카오톡채널", "N/A")).strip()
-        special_notes = str(branch_data.get("특이사항", "")).strip()
-        parking = str(branch_data.get("주차여부", "N/A")).strip()
-        laptop_printer = str(branch_data.get("노트북/프린트", "N/A")).strip()
-        address = str(branch_data.get("주소", "N/A")).strip()
-        study_room = str(branch_data.get("스터디룸여부", "N/A")).strip()
+            # 상단 2단 레이아웃
+            col1, col2 = st.columns(2)
 
-        # 상단 2단 레이아웃
-        col1, col2 = st.columns(2)
-
-        # 왼쪽: 아이디와 비밀번호
-        with col1:
-            st.subheader("🖥️계정 정보")
-        
-            # 아이디/비밀번호 존재 여부 체크
-            has_id = id_val != "" and id_val != "***"
-            has_pw = pw_val != "" and pw_val != "***"
-        
-            if has_id and has_pw:
-                # 아이디 표시 (문자열로 처리, 앞의 0 유지)
-                st.markdown("**아이디**")
-                st.markdown(
-                    f'<div style="border:1px solid #ddd; padding:10px; border-radius:5px;">'
-                    f'<code style="font-size:16px;">{id_val}</code>'
-                    f'</div>',
-                    unsafe_allow_html=True
-                )
-                st.markdown("👉 아이디를 선택하고 `Ctrl+C`로 복사하세요.")
+            # 왼쪽: 아이디와 비밀번호
+            with col1:
+                st.subheader("🖥️계정 정보")
             
-                # 비밀번호 표시
-                st.markdown("**비밀번호**")
-                st.text_input(
-                    "비밀번호", 
-                    value=pw_val, 
-                    key=f"pw_{selected_branch}", 
-                    disabled=True,
-                    type="password"
-                )
-                st.markdown("👉 비밀번호 옆 👁️‍🗨️ 선택하고 `Ctrl+C`로 복사하세요.")
+                # 아이디/비밀번호 존재 여부 체크
+                has_id = id_val != "" and id_val != "***"
+                has_pw = pw_val != "" and pw_val != "***"
+            
+                if has_id and has_pw:
+                    # 아이디 표시 (문자열로 처리, 앞의 0 유지)
+                    st.markdown("**아이디**")
+                    st.markdown(
+                        f'<div style="border:1px solid #ddd; padding:10px; border-radius:5px;">'
+                        f'<code style="font-size:16px;">{id_val}</code>'
+                        f'</div>',
+                        unsafe_allow_html=True
+                    )
+                    st.markdown("👉 아이디를 선택하고 `Ctrl+C`로 복사하세요.")
+                
+                    # 비밀번호 표시
+                    st.markdown("**비밀번호**")
+                    st.text_input(
+                        "비밀번호", 
+                        value=pw_val, 
+                        key=f"pw_{selected_branch}", 
+                        disabled=True,
+                        type="password"
+                    )
+                    st.markdown("👉 비밀번호 옆 👁️‍🗨️ 선택하고 `Ctrl+C`로 복사하세요.")
 
-                # "제로아이즈 관리자 홈페이지" 버튼 추가
-                if st.button("🖥️ 제로아이즈 관리자 홈페이지", key="open_zeroeyes_admin"):
-                    open_link_in_new_tab("https://mentors.mooin.kr/login")  # 실제 URL로 변경 필요
+                    # "제로아이즈 관리자 홈페이지" 버튼 추가
+                    if st.button("🖥️ 제로아이즈 관리자 홈페이지", key="open_zeroeyes_admin"):
+                        open_link_in_new_tab("https://mentors.mooin.kr/login")  # 실제 URL로 변경 필요
 
-            else:
-                st.warning("컴앤패스 관리자앱을 이용해주세요")
-                if st.button("🖥️ 관리자앱 열기", key="open_admin_app"):
-                    open_link_in_new_tab("https://mg.smonster.kr/")
-
-        # 오른쪽: 부가 정보
-        with col2:
-            st.subheader("📌 지점 상세 정보")
-    
-            # ✅ 지점 채널 (기존 코드 유지)
-            with st.expander("💬 지점 채널", expanded=True):
-                if channel_info != "N/A":
-                    st.write(f"카카오톡 채널: {channel_info}")
-                    
-                    # ✅ 지점채널 안내문 생성 버튼 추가
-                    if st.button("📩 지점채널 안내문 생성", key="generate_channel_message"):
-                        message = f"""
-                        안녕하세요, 멘토즈스터디카페 운영본부입니다.
-                        유선상 전달드린 카카오톡 지점 채널 안내드립니다.
-
-                        {channel_info}
-                        ▶ 카카오톡 지점 채널 [ 멘토즈 {selected_branch} ]
-
-                        ※ 상담 가능 시간 이외라도 긴급 건의 경우 점주님이 확인 후 답변 주시고 있으며, 
-                        전화 문의는 불가한 점 양해 부탁드립니다.
-                        """
-                        st.code(message)
                 else:
-                    st.warning("지점 채널 정보가 없습니다.")
-    
-            # 노트북/프린트 섹션 수정
-            with st.expander("💻 노트북/프린트", expanded=True):
-                st.markdown(f"""
-                <div style="font-size:16px; font-weight:600; color:#2c3e50; 
-                            margin: 15px 0; line-height:1.6;">
-                    {laptop_printer}
-                </div>
-                """, unsafe_allow_html=True)
-    
-            # ✅ 특이사항 (빨간색 강조)
-            if special_notes and special_notes != "":
-                with st.expander("🚨 특이사항", expanded=True):
+                    st.warning("컴앤패스 관리자앱을 이용해주세요")
+                    if st.button("🖥️ 관리자앱 열기", key="open_admin_app"):
+                        open_link_in_new_tab("https://mg.smonster.kr/")
+
+            # 오른쪽: 부가 정보
+            with col2:
+                st.subheader("📌 지점 상세 정보")
+        
+                # ✅ 지점 채널 (기존 코드 유지)
+                with st.expander("💬 지점 채널", expanded=True):
+                    if channel_info != "N/A":
+                        st.write(f"카카오톡 채널: {channel_info}")
+                        
+                        # ✅ 지점채널 안내문 생성 버튼 추가
+                        if st.button("📩 지점채널 안내문 생성", key="generate_channel_message"):
+                            message = f"""
+                            안녕하세요, 멘토즈스터디카페 운영본부입니다.
+                            유선상 전달드린 카카오톡 지점 채널 안내드립니다.
+
+                            {channel_info}
+                            ▶ 카카오톡 지점 채널 [ 멘토즈 {selected_branch} ]
+
+                            ※ 상담 가능 시간 이외라도 긴급 건의 경우 점주님이 확인 후 답변 주시고 있으며, 
+                            전화 문의는 불가한 점 양해 부탁드립니다.
+                            """
+                            st.code(message)
+                    else:
+                        st.warning("지점 채널 정보가 없습니다.")
+        
+                # 노트북/프린트 섹션 수정
+                with st.expander("💻 노트북/프린트", expanded=True):
                     st.markdown(f"""
-                    <div style="font-size:16px; color:#e74c3c; font-weight:600; white-space: pre-line;">
-                        {special_notes}
+                    <div style="font-size:16px; font-weight:600; color:#2c3e50; 
+                                margin: 15px 0; line-height:1.6;">
+                        {laptop_printer}
                     </div>
                     """, unsafe_allow_html=True)
-    
-            # 주차여부 섹션 수정
-            with st.expander("🚗 주차 여부", expanded=True):
-                st.markdown(f"""
-                <div style="font-size:16px; color:#2ecc71; font-weight:600; 
-                            margin: 15px 0; line-height:1.6;">
-                    {parking}
-                </div>
-                """, unsafe_allow_html=True)
-            
-            # ✅ 스터디룸 정보
-            study_room = str(branch_data.get("스터디룸여부", "N/A")).strip()
-            with st.expander("📚 스터디룸 여부", expanded=True):
-                st.write(f"{study_room}")
-
-        # 하단: 지점 위치 지도 (1단 레이아웃)
-        # 지도 카드 스타일 추가
-        st.markdown("""
-        <style>
-        .map-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1px 15px 15px;
-            margin: 20px 0;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            border: 1px solid #eee;
-        }
-        .info-section {
-            white-space: pre-line;
-            line-height: 1.6;
-            padding: 10px 0;
-        }
-        </style>
-        """, unsafe_allow_html=True)
         
-        st.subheader("📍 지점 위치")
-        st.markdown(f"**멘토즈** {selected_branch}")
-        st.markdown(f"**주소**: {address}")
+                # ✅ 특이사항 (빨간색 강조)
+                if special_notes and special_notes != "":
+                    with st.expander("🚨 특이사항", expanded=True):
+                        st.markdown(f"""
+                        <div style="font-size:16px; color:#e74c3c; font-weight:600; white-space: pre-line;">
+                            {special_notes}
+                        </div>
+                        """, unsafe_allow_html=True)
+        
+                # 주차여부 섹션 수정
+                with st.expander("🚗 주차 여부", expanded=True):
+                    st.markdown(f"""
+                    <div style="font-size:16px; color:#2ecc71; font-weight:600; 
+                                margin: 15px 0; line-height:1.6;">
+                        {parking}
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                # ✅ 스터디룸 정보
+                study_room = str(branch_data.get("스터디룸여부", "N/A")).strip()
+                with st.expander("📚 스터디룸 여부", expanded=True):
+                    st.write(f"{study_room}")
 
-        # ✅ REST API를 사용하여 주소를 좌표로 변환
-        with st.markdown('<div class="map-card">', unsafe_allow_html=True):
-            st.markdown("### 📍 지점 위치")
-            if address != "N/A":
-                y, x = get_address_coordinates(address)
-                if y and x:
-                    # ✅ 지도 표시
-                    map_html = f"""
-                    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-                    <div id="map" style="width:100%;height:400px;border-radius:12px;margin:0 auto;"></div>
-                    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={st.secrets['KAKAO']['MAP_API_KEY']}&libraries=services"></script>
-                    <script>
-                        var mapContainer = document.getElementById('map');
-                        var mapOption = {{
-                            center: new kakao.maps.LatLng({y}, {x}), // 변환된 좌표 사용
-                            level: 3
-                        }};
-                        var map = new kakao.maps.Map(mapContainer, mapOption);
+            # 하단: 지점 위치 지도 (1단 레이아웃)
+            # 지도 카드 스타일 추가
+            st.markdown("""
+            <style>
+            .map-card {
+                background: white;
+                border-radius: 12px;
+                padding: 1px 15px 15px;
+                margin: 20px 0;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                border: 1px solid #eee;
+            }
+            .info-section {
+                white-space: pre-line;
+                line-height: 1.6;
+                padding: 10px 0;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+            
+            st.subheader("📍 지점 위치")
+            st.markdown(f"**멘토즈** {selected_branch}")
+            st.markdown(f"**주소**: {address}")
 
-                        // 마커 생성
-                        var marker = new kakao.maps.Marker({{
-                            map: map,
-                            position: new kakao.maps.LatLng({y}, {x})
-                        }});
+            # ✅ REST API를 사용하여 주소를 좌표로 변환
+            with st.markdown('<div class="map-card">', unsafe_allow_html=True):
+                st.markdown("### 📍 지점 위치")
+                if address != "N/A":
+                    y, x = get_address_coordinates(address)
+                    if y and x:
+                        # ✅ 지도 표시
+                        map_html = f"""
+                        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+                        <div id="map" style="width:100%;height:400px;border-radius:12px;margin:0 auto;"></div>
+                        <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={st.secrets['KAKAO']['MAP_API_KEY']}&libraries=services"></script>
+                        <script>
+                            var mapContainer = document.getElementById('map');
+                            var mapOption = {{
+                                center: new kakao.maps.LatLng({y}, {x}), // 변환된 좌표 사용
+                                level: 3
+                            }};
+                            var map = new kakao.maps.Map(mapContainer, mapOption);
 
-                        // 인포윈도우 생성
-                        var infowindow = new kakao.maps.InfoWindow({{
-                            content: '<div style="padding:10px;font-size:14px;">{selected_branch}</div>'
-                        }});
-                        infowindow.open(map, marker);
-                    </script>
-                    """
-                    st.components.v1.html(map_html, height=420)
+                            // 마커 생성
+                            var marker = new kakao.maps.Marker({{
+                                map: map,
+                                position: new kakao.maps.LatLng({y}, {x})
+                            }});
+
+                            // 인포윈도우 생성
+                            var infowindow = new kakao.maps.InfoWindow({{
+                                content: '<div style="padding:10px;font-size:14px;">{selected_branch}</div>'
+                            }});
+                            infowindow.open(map, marker);
+                        </script>
+                        """
+                        st.components.v1.html(map_html, height=420)
+                    else:
+                        st.error("⚠️ 주소를 좌표로 변환할 수 없습니다.")
                 else:
-                    st.error("⚠️ 주소를 좌표로 변환할 수 없습니다.")
-            else:
-                st.warning("⚠️ 주소 정보가 없습니다.")
+                    st.warning("⚠️ 주소 정보가 없습니다.")
         
 
 # ✅ 새 탭에서 링크 열기 함수 (JavaScript 사용)
@@ -927,6 +927,16 @@ def refund_calculator_page():
         kst = pytz.timezone('Asia/Seoul')
         current_time_kst = datetime.now(kst).strftime('%Y-%m-%d %H:%M')
     
+        # ✅ formatted_ticket_type에 기간/시간 정보 추가
+        if ticket_type == "기간권":
+            formatted_ticket_type = f"기간권 ({days_given}일)"
+        elif ticket_type == "시간권":
+            formatted_ticket_type = f"시간권 ({total_hours}시간)"
+        elif ticket_type == "노블레스석":
+            formatted_ticket_type = f"노블레스석 ({days_given}일)"
+        else:
+            formatted_ticket_type = ticket_type
+
         # 환불 내역서 구성
         refund_detail = f"""
         [멘토즈 스터디카페 환불 내역서]
@@ -961,7 +971,7 @@ def refund_calculator_page():
         st.session_state['refund_data'] = {
             'branch': branch,
             'phone': phone,
-            'formatted_ticket_type': f"{ticket_type} ({days_given}일)" if ticket_type in ["기간권", "노블레스석"] else f"{ticket_type} ({total_hours}시간)",
+            'formatted_ticket_type': formatted_ticket_type,
             'purchase_date': purchase_date,
             'valid_period': valid_period,
             'ticket_price': ticket_price,
@@ -1006,9 +1016,9 @@ def refund_calculator_page():
             refund_data['branch'], refund_data['phone'], 
             refund_data['formatted_ticket_type'], refund_data['purchase_date'], 
             refund_data['valid_period'], refund_data['ticket_price'], 
-            refund_data['usage_info'], refund_data['used_amount'], 
+            refund_data['usage_info'], int(refund_data['used_amount']),  # 수정: used_amount → int 변환
             refund_data['deduction_detail'], refund_data['penalty_rate'], 
-            refund_data['penalty_amount'], refund_data['final_refund_amount'],
+            refund_data['penalty_amount'], int(refund_data['final_refund_amount']),
             account_info['account_holder'], account_info['bank_name'], 
             account_info['account_number']
         )
@@ -1130,7 +1140,7 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
                 <div class="section" style="margin-top:30px;">
                     <div class="section-title">💳 입금 하실 금액</div>
                     <div style="font-size:24px; color:#2ecc71; font-weight:700; text-align:center;">
-                        {int(used_amount):,}원
+                        {int(final_refund_amount):,}원
                 </div>
             </div>
 
