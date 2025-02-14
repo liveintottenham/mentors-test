@@ -798,37 +798,27 @@ def refund_calculator_page():
         if (refund_date - purchase_date).days > 30:
             st.warning("결제한지 30일이 지났으므로 위약금이 발생하거나, 환불이 불가할 수 있습니다.")
 
-        # 이용권 종류 표기 형식 변경
-        if ticket_type == "기간권":
-            formatted_ticket_type = f"기간권({days_given}일)"
-        elif ticket_type == "시간권":
-            formatted_ticket_type = f"시간권({total_hours}시간)"
-        elif ticket_type == "노블레스석":
-            formatted_ticket_type = f"노블레스석({days_given}일)"
-        else:
-            formatted_ticket_type = ticket_type  # 기본값
-
         # 환불 규정에 따른 계산
         if policy == "% 규정":
             percent_used = (used_days / days_given) * 100 if ticket_type in ["기간권", "노블레스석"] else (hours_used / total_hours) * 100
-            
+        
             if percent_used < 25:
                 refund_amount = ticket_price * 0.5
             elif percent_used < 50:
                 refund_amount = ticket_price * 0.25
             else:
                 refund_amount = 0
-            
+        
             # deduction_amount는 ticket_price - refund_amount로 계산
             deduction_amount = ticket_price - refund_amount
-            
+        
             # 사용량 정보 포맷 변경
             usage_info = (
                 f"{percent_used:.1f}% 사용 ({used_days}일 사용)" 
                 if ticket_type in ["기간권", "노블레스석"] 
                 else f"{percent_used:.1f}% 사용 ({hours_used}시간 사용)"
             )
-            
+        
             # deduction_detail 설정
             if percent_used < 25:
                 deduction_detail = f"0~24% 환불 구간 : 결제금액의 50% 환불 ({int(refund_amount):,}원)"
@@ -862,11 +852,11 @@ def refund_calculator_page():
         penalty_rate_value = int(penalty_rate.strip("%")) / 100  # 위약금 비율 (10% → 0.1)
         penalty_amount = ticket_price * penalty_rate_value  # 위약금 금액 (결제금액 기준)
         final_refund_amount = max(refund_amount - penalty_amount, 0)  # 최종 환불 금액 (음수 방지)
-        
+    
         # 한국 시간대 (KST)로 현재 시간 설정
         kst = pytz.timezone('Asia/Seoul')
         current_time_kst = datetime.now(kst).strftime('%Y-%m-%d %H:%M')
-        
+    
         # 환불 내역서 구성
         refund_detail = f"""
         [멘토즈 스터디카페 환불 내역서]
@@ -895,7 +885,7 @@ def refund_calculator_page():
         """
         
         # 환불 내역서 출력
-        st.text_area("📄 환불 내역서 (Ctrl+C로 복사 가능)"), refund_detail.strip(), height=400
+        st.text_area("📄 환불 내역서 (Ctrl+C로 복사 가능)", refund_detail.strip(), height=400)
 
         # 계산 결과를 세션 상태에 저장
         st.session_state['refund_data'] = {
