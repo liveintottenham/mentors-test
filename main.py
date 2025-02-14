@@ -1012,7 +1012,7 @@ def refund_calculator_page():
 # ✅ HTML 템플릿 (기존과 동일)
 def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, valid_period,
                         ticket_price, usage_info, used_amount, deduction_detail, penalty_rate,
-                        penalty_amount, final_refund_amount, account_holder="", bank_name="", account_number=""):
+                        penalty_amount, final_refund_amount, deposit_amount, account_holder="", bank_name="", account_number=""):
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -1022,7 +1022,7 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
             @import url('https://cdn.jsdelivr.net/gh/orioncactus/Pretendard/dist/web/static/pretendard.css');
             body {{
                 font-family: 'Pretendard', sans-serif;
-                max-width: 400px; /* 좁은 너비 */
+                max-width: 400px;
                 margin: 20px auto;
                 padding: 20px;
                 background-color: #f8f9fa;
@@ -1100,10 +1100,10 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
                 <table class="info-table">
                     <tr><td>결제 금액</td><td>{ticket_price:,}원</td></tr>
                     <tr><td>사용량</td><td>{usage_info}</td></tr>
-                    <tr><td>공제 금액</td><td class="highlight">-{int(used_amount):,}원</td></tr>
+                    <tr><td>공제 금액</td><td class="highlight">-{used_amount:,}원</td></tr>
                     <tr><td>공제 내역</td><td>{deduction_detail}</td></tr>
-                    <tr><td>위약금 ({penalty_rate})</td><td class="highlight">-{int(penalty_amount):,}원</td></tr>
-                    <tr><td>환불 가능액</td><td class="highlight">{int(final_refund_amount):,}원</td></tr>
+                    <tr><td>위약금 ({penalty_rate})</td><td class="highlight">-{penalty_amount:,}원</td></tr>
+                    <tr><td>환불 가능액</td><td class="highlight">{final_refund_amount:,}원</td></tr>
                 </table>
             </div>
 
@@ -1119,7 +1119,8 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
                 <div class="section" style="margin-top:30px;">
                     <div class="section-title">💳 입금 하실 금액</div>
                     <div style="font-size:24px; color:#2ecc71; font-weight:700; text-align:center;">
-                        {int(final_refund_amount):,}원
+                        {deposit_amount:,}원
+                    </div>
                 </div>
             </div>
 
