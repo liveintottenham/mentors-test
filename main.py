@@ -430,17 +430,21 @@ def branch_info_page():
             function initMap() {{
                 var mapContainer = document.getElementById('map');
                 var mapOption = {{
-                    center: new kakao.maps.LatLng(37.5665, 126.9780),
-                    level: 3,
+                    center: new kakao.maps.LatLng(37.5665, 126.9780), // 기본 좌표
+                    level: 3
                 }};
                 var map = new kakao.maps.Map(mapContainer, mapOption);
 
                 // 주소 검색
                 var geocoder = new kakao.maps.services.Geocoder();
-                geocoder.addressSearch("{address}", function(result, status) {{
+                geocoder.addressSearch("경남 김해시 삼계중앙로 35", function(result, status) {{
                     console.log("DEBUG: Geocoder Result:", result, "Status:", status);
+
                     if (status === kakao.maps.services.Status.OK) {{
                         var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+
+                        // 지도 중심 이동
+                        map.setCenter(coords);
 
                         // 마커 생성
                         var marker = new kakao.maps.Marker({{
@@ -450,14 +454,11 @@ def branch_info_page():
 
                         // 인포윈도우 생성
                         var infowindow = new kakao.maps.InfoWindow({{
-                            content: '<div style="padding:10px;font-size:14px;">{selected_branch}</div>'
+                            content: '<div style="padding:10px;font-size:14px;">경남 김해시 삼계중앙로 35</div>'
                         }});
                         infowindow.open(map, marker);
-
-                        // 지도 중심 이동
-                        map.setCenter(coords);
                     }} else {{
-                        console.error("주소 검색 실패: ", status);
+                        console.error("주소 검색 실패. 상태 코드:", status);
                         mapContainer.innerHTML = `
                             <div style="
                                 text-align:center;
@@ -467,7 +468,7 @@ def branch_info_page():
                                 border-radius:8px;
                             ">
                                 ⚠️ 주소 정보를 확인할 수 없습니다.<br>
-                                (에러 코드: ${{status || "알 수 없음"}})
+                                (에러 코드: ${status || "알 수 없음"})
                             </div>
                         `;
                     }}
@@ -478,17 +479,6 @@ def branch_info_page():
                 if (typeof kakao !== 'undefined' && kakao.maps) {{
                     initMap();
                 }} else {{
-                    document.getElementById('map').innerHTML = `
-                        <div style="
-                            text-align:center;
-                            padding:20px;
-                            color:#e74c3c;
-                            background:#ffe6e6;
-                            border-radius:8px;
-                        ">
-                            ⚠️ 카카오맵 API를 로드할 수 없습니다. API 키 또는 도메인 설정을 확인하세요.
-                        </div>
-                    `;
                     console.error("카카오맵 API 로드 실패");
                 }}
             }};
