@@ -471,10 +471,8 @@ def branch_info_page():
                     with st.expander("📍 지점 위치", expanded=True):
                         st.markdown(f"**주소**: {address}")
 
-                        # 카카오 지도 API 키 (Streamlit secrets에서 가져오기)
                         kakao_api_key = st.secrets["KAKAO"]["MAP_API_KEY"]
 
-                        # 지도 HTML 및 초기화 코드
                         map_html = f"""
                         <div id="map" style="width:100%;height:400px;border-radius:12px;margin:0 auto;"></div>
                         <script>
@@ -488,7 +486,7 @@ def branch_info_page():
                                     console.log("카카오 API 스크립트 로드 완료");
                                     kakao.maps.load(function() {{
                                         console.log("kakao.maps.load 실행");
-                                        initializeMap();  // 지도 초기화 함수 호출
+                                        initializeMap();  
                                     }});
                                 }};
 
@@ -501,31 +499,26 @@ def branch_info_page():
 
                             function initializeMap() {{
                                 try {{
-                                    // API 로드 여부 확인
                                     if (!kakao || !kakao.maps || !kakao.maps.services) {{
                                         console.error("kakao.maps 또는 kakao.maps.services가 로드되지 않음");
                                         return;
                                     }}
 
-                                    // 지도 컨테이너 확인
                                     var mapContainer = document.getElementById('map');
                                     if (!mapContainer) {{
                                         console.error("지도 컨테이너를 찾을 수 없음");
                                         return;
                                     }}
 
-                                    // 지도 옵션 설정
                                     var mapOption = {{
-                                        center: new kakao.maps.LatLng(37.5665, 126.9780),  // 기본 좌표 (서울 시청)
-                                        level: 3  // 확대 레벨
+                                        center: new kakao.maps.LatLng(37.5665, 126.9780),
+                                        level: 3
                                     }};
                                     console.log("초기 지도 옵션:", mapOption);
 
-                                    // 지도 객체 생성
                                     var map = new kakao.maps.Map(mapContainer, mapOption);
                                     console.log("지도 객체 생성 완료:", map);
 
-                                    // 주소 검색
                                     var geocoder = new kakao.maps.services.Geocoder();
                                     console.log("지오코더 객체 생성 완료:", geocoder);
 
@@ -536,27 +529,24 @@ def branch_info_page():
                                             var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
                                             console.log("좌표 변환 성공:", coords);
 
-                                            // 마커 생성
                                             var marker = new kakao.maps.Marker({{
                                                 map: map,
                                                 position: coords
                                             }});
                                             console.log("마커 생성 완료:", marker);
 
-                                            // 인포윈도우 설정
                                             var infowindow = new kakao.maps.InfoWindow({{
-                                                content: '<div style="padding:10px;">{selected_branch}</div>'
+                                                content: '<div style="padding:10px;">{{selected_branch}}</div>'
                                             }});
                                             infowindow.open(map, marker);
 
-                                            // 지도 중심 설정
                                             map.setCenter(coords);
                                             console.log("지도 중심 좌표 설정 완료:", coords);
                                         }} else {{
                                             console.error("주소 변환 실패:", status);
-                                            map.setCenter(new kakao.maps.LatLng(37.5665, 126.9780));  // 기본 좌표로 설정
+                                            map.setCenter(new kakao.maps.LatLng(37.5665, 126.9780));
                                         }}
-                                    });
+                                    }});
                                 }} catch (error) {{
                                     console.error("지도 초기화 중 오류 발생:", error);
                                 }}
@@ -565,6 +555,7 @@ def branch_info_page():
                         """
                         st.components.v1.html(map_html, height=420)
 
+                    
 
 
                 elif search_term:
