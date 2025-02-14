@@ -479,9 +479,9 @@ def branch_info_page():
                         <div id="map" style="width:95%;height:400px;border-radius:12px;margin:0 auto;"></div>
                         <script>
                             (function loadKakaoMap() {{
-                                if (typeof kakao !== "undefined") {{
+                                if (typeof kakao !== "undefined" && kakao.maps) {{
                                     console.log("카카오 API 이미 로드됨");
-                                    initializeMap();  // 이미 로드된 경우 바로 초기화
+                                    kakao.maps.load(initializeMap);  // API가 이미 로드된 경우
                                     return;
                                 }}
 
@@ -492,9 +492,7 @@ def branch_info_page():
                                 script.onload = function() {{
                                     if (typeof kakao !== "undefined" && kakao.maps) {{
                                         console.log("카카오 API 로드 완료");
-                                        kakao.maps.load(function() {{
-                                            initializeMap();
-                                        }});
+                                        kakao.maps.load(initializeMap);  // API 로드 완료 후 초기화
                                     }} else {{
                                         console.error("카카오 API 로드 실패: kakao.maps가 정의되지 않음");
                                     }}
@@ -533,7 +531,7 @@ def branch_info_page():
                                             map.setCenter(coords);
                                         }} else {{
                                             console.error("주소 변환 실패: 기본 좌표를 표시합니다.");
-                                            map.setCenter(new kakao.maps.LatLng(37.5665, 126.9780));  // 기본 좌표
+                                            map.setCenter(new kakao.maps.LatLng(37.5665, 126.9780));  // 기본 좌표로 설정
                                         }}
                                     }});
                                 }} catch (error) {{
@@ -543,6 +541,7 @@ def branch_info_page():
                         </script>
                         """
                         st.components.v1.html(map_html, height=420)
+
 
 
 
