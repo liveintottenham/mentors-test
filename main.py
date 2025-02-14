@@ -392,10 +392,14 @@ def branch_info_page():
         with col1:
                 st.subheader("🖥️계정 정보")
         
-                # 아이디/비밀번호 존재 여부 체크
-                has_id = id_val != "" and id_val != "***"
-                has_pw = pw_val != "" and pw_val != "***"
-        
+                # ▼▼▼ ID/PWD 검증 로직 수정 ▼▼▼
+                if id_val == "***" and pw_val == "***":
+                    st.error("🚨 로그인 정보가 없는 제로아이즈 매장입니다. 지점채널로 안내해주세요")
+                else:
+                    # 기존 계정 정보 표시 로직 유지
+                    has_id = id_val != "" and id_val != "***"
+                    has_pw = pw_val != "" and pw_val != "***"
+
                 if has_id and has_pw:
                     # 아이디 표시 (문자열로 처리, 앞의 0 유지)
                     st.markdown("**아이디**")
@@ -465,7 +469,8 @@ def branch_info_page():
                 if special_notes and special_notes != "":
                     with st.expander("🚨 특이사항", expanded=True):
                         st.markdown(f"""
-                        <div style="font-size:16px; color:#e74c3c; font-weight:600; white-space: pre-line;">
+                        <div style="font-size:16px; font-weight:600; color:#2c3e50; 
+                                margin: 15px 0; line-height:1.6;">
                             {special_notes}
                         </div>
                         """, unsafe_allow_html=True)
