@@ -491,72 +491,48 @@ def branch_info_page():
 
         # 하단: 지점 위치 지도 (1단 레이아웃)
         st.subheader("📍 지점 위치")
-        
-        # 지점 정보 카드 스타일링
         st.markdown(f"""
-        <div style="
-            background: linear-gradient(145deg, #ffffff, #f8f9fa);
-            border-radius: 16px;
-            padding: 25px;
-            margin: 20px 0;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-            border: none;
-            position: relative;
-            overflow: hidden;
-        ">
-            <!-- 왼쪽 액센트 바 -->
+        <div style="padding-left: 20px;">
             <div style="
-                position: absolute;
-                left: 0;
-                top: 0;
-                bottom: 0;
-                width: 6px;
-                background: linear-gradient(180deg, #2ecc71, #3498db);
-                border-radius: 16px 0 0 16px;
-            "></div>
-            
-            <div style="padding-left: 20px;">
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 15px;
+            ">
                 <div style="
+                    background: #2ecc71;
+                    width: 48px;
+                    height: 48px;
+                    border-radius: 12px;
                     display: flex;
                     align-items: center;
-                    gap: 12px;
-                    margin-bottom: 15px;
+                    justify-content: center;
+                    color: white;
+                    font-size: 24px;
                 ">
+                    🏢
+                </div>
+                <div>
                     <div style="
-                        background: #2ecc71;
-                        width: 48px;
-                        height: 48px;
-                        border-radius: 12px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        color: white;
-                        font-size: 24px;
+                        font-size: 22px;
+                        font-weight: 700;
+                        color: #2c3e50;
+                        line-height: 1.3;
                     ">
-                        🏢
+                        멘토즈 {selected_branch}
                     </div>
-                    <div>
-                        <div style="
-                            font-size: 22px;
-                            font-weight: 700;
-                            color: #2c3e50;
-                            line-height: 1.3;
-                        ">
-                            멘토즈 {selected_branch}
-                        </div>
-                        <div style="
-                            font-size: 16px;
-                            color: #7f8c8d;
-                            margin-top: 4px;
-                        ">
-                            📍 {address}
-                        </div>
+                    <div style="
+                        font-size: 16px;
+                        color: #7f8c8d;
+                        margin-top: 4px;
+                    ">
+                        📍 {address}
                     </div>
                 </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
-
+        
         # ✅ REST API를 사용하여 주소를 좌표로 변환
         if address != "N/A":
             y, x = get_address_coordinates(address)
