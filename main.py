@@ -390,22 +390,42 @@ def branch_info_page():
 
         # 왼쪽: 아이디와 비밀번호
         with col1:
-            st.subheader("🖥️ 계정 정보")
-            if id_val != "" and pw_val != "":
-                st.markdown("**아이디**")
-                st.code(id_val, language="text")
-                st.markdown("**비밀번호**")
-                st.text_input("비밀번호", value=pw_val, type="password", disabled=True)
-                
-                # 관리자 페이지 버튼
-                st.markdown("---")
-                st.markdown("**관리자 페이지**")
-                if st.button("🖥️ 제로아이즈 관리자 페이지"):
-                    open_link_in_new_tab("https://mentors.mooin.kr/login")
-                if st.button("📱 컴앤패스 관리자 앱 열기"):
-                    open_link_in_new_tab("https://mg.smonster.kr/")
-            else:
-                st.warning("아이디와 비밀번호 정보가 없습니다.")
+                st.subheader("🖥️계정 정보")
+        
+                # 아이디/비밀번호 존재 여부 체크
+                has_id = id_val != "" and id_val != "***"
+                has_pw = pw_val != "" and pw_val != "***"
+        
+                if has_id and has_pw:
+                    # 아이디 표시 (문자열로 처리, 앞의 0 유지)
+                    st.markdown("**아이디**")
+                    st.markdown(
+                        f'<div style="border:1px solid #ddd; padding:10px; border-radius:5px;">'
+                        f'<code style="font-size:16px;">{id_val}</code>'
+                        f'</div>',
+                        unsafe_allow_html=True
+                    )
+                    st.markdown("👉 아이디를 선택하고 `Ctrl+C`로 복사하세요.")
+            
+                    # 비밀번호 표시
+                    st.markdown("**비밀번호**")
+                    st.text_input(
+                        "비밀번호", 
+                        value=pw_val, 
+                        key=f"pw_{selected_branch}", 
+                        disabled=True,
+                        type="password"
+                    )
+                    st.markdown("👉 비밀번호 옆 👁️‍🗨️ 선택하고 `Ctrl+C`로 복사하세요.")
+
+                    # "제로아이즈 관리자 홈페이지" 버튼 추가
+                    if st.button("🖥️ 제로아이즈 관리자 홈페이지", key="open_zeroeyes_admin"):
+                        open_link_in_new_tab("https://mentors.mooin.kr/login")  # 실제 URL로 변경 필요
+
+                else:
+                    st.warning("컴앤패스 관리자앱을 이용해주세요")
+                    if st.button("🖥️ 관리자앱 열기", key="open_admin_app"):
+                        open_link_in_new_tab("https://mg.smonster.kr/")
 
         # 오른쪽: 부가 정보
         with col2:
