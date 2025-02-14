@@ -477,11 +477,12 @@ def branch_info_page():
                         # 수정된 HTML/JS 코드 (HTTPS 강제 적용)
                         map_html = f"""
                         <div id="map" style="width:95%;height:400px;border-radius:12px;margin:0 auto;"></div>
-                        <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services></script>
                         <script>
-                            // 1. Kakao Maps API 명시적 로드
-                            kakao.maps.load(function() {{
-                                // 2. 지도 생성
+                            // HTTPS 강제 로드
+                            var script = document.createElement('script');
+                            script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services";
+                            script.type = "text/javascript";
+                            script.onload = function() {{
                                 var mapContainer = document.getElementById('map');
                                 var mapOption = {{
                                     center: new kakao.maps.LatLng(37.5665, 126.9780),
@@ -489,7 +490,7 @@ def branch_info_page():
                                 }};
                                 var map = new kakao.maps.Map(mapContainer, mapOption);
 
-                                // 3. 주소 변환
+                                // 주소 검색
                                 var geocoder = new kakao.maps.services.Geocoder();
                                 geocoder.addressSearch("{address}", function(result, status) {{
                                     if (status === kakao.maps.services.Status.OK) {{
@@ -505,10 +506,10 @@ def branch_info_page():
                                         map.setCenter(coords);
                                     }} else {{
                                         console.error("주소 변환 실패");
-                                        map.setCenter(new kakao.maps.LatLng(37.5665, 126.9780));
                                     }}
                                 }});
-                            }});
+                            }};
+                            document.head.appendChild(script);
                         </script>
                         """
                         st.components.v1.html(map_html, height=420)
