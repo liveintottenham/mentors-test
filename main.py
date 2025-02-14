@@ -471,12 +471,13 @@ def branch_info_page():
                     with st.expander("📍 지점 위치", expanded=True):
                         st.markdown(f"**주소**: {address}")
                         
-                        # 카카오 지도 API 키
+                        # 카카오 지도 API 키 (Streamlit secrets에서 가져오기)
                         kakao_api_key = st.secrets["KAKAO"]["MAP_API_KEY"]
                         
-                        # 수정된 HTML/JS 코드
+                        # 수정된 HTML/JS 코드 (HTTPS 적용 및 로드 순서 변경)
                         map_html = f"""
                         <div id="map" style="width:95%;height:400px;border-radius:12px;margin:0 auto;"></div>
+                        <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services&autoload=false"></script>
                         <script>
                             // 1. Kakao Maps SDK 동적 로드
                             function loadKakaoMap() {{
@@ -531,7 +532,6 @@ def branch_info_page():
                         </script>
                         """
                         st.components.v1.html(map_html, height=420)
-
 
                 elif search_term:
                     st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
