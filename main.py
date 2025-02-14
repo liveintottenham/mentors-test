@@ -468,7 +468,7 @@ def branch_info_page():
                                 border-radius:8px;
                             ">
                                 ⚠️ 주소 정보를 확인할 수 없습니다.<br>
-                                (에러 코드: ${status || "알 수 없음"})
+                                (에러 코드: ${{status || "알 수 없음"}})
                             </div>
                         `;
                     }}
