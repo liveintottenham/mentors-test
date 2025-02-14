@@ -480,30 +480,22 @@ def branch_info_page():
                         <script>
                             (function loadKakaoMap() {{
                                 var script = document.createElement('script');
-                                script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services";
+                                script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey={kakao_api_key}&libraries=services&autoload=false";
                                 script.type = "text/javascript";
+                                script.async = false;  // 동기적 로드
 
                                 script.onload = function() {{
                                     console.log("카카오 API 스크립트 로드 완료");
-                                    console.log("kakao 객체 상태 확인:", kakao);
-                                    console.log("kakao.maps 상태:", kakao.maps);
-                                    console.log("kakao.maps.services 상태:", kakao.maps?.services);
+                                    kakao.maps.load(function() {{
+                                        console.log("kakao.maps 상태:", kakao.maps);
+                                        console.log("kakao.maps.services 상태:", kakao.maps?.services);
 
-                                    // 강제적으로 services 라이브러리 로드 시도
-                                    if (!kakao.maps.services) {{
-                                        console.warn("services 라이브러리가 로드되지 않았습니다. 강제로 로드 시도");
-                                        kakao.maps.load(function() {{
-                                            console.log("강제로 kakao.maps.services 상태:", kakao.maps?.services);
-                                            if (kakao.maps.services) {{
-                                                initializeMap();
-                                            }} else {{
-                                                console.error("강제 로드 실패: kakao.maps.services가 여전히 정의되지 않음");
-                                            }}
-                                        }});
-                                    }} else {{
-                                        console.log("services 라이브러리가 로드되었습니다.");
-                                        initializeMap();
-                                    }}
+                                        if (kakao.maps && kakao.maps.services) {{
+                                            initializeMap();
+                                        }} else {{
+                                            console.error("카카오 API 로드 실패: kakao.maps.services가 정의되지 않음");
+                                        }}
+                                    }});
                                 }};
 
                                 script.onerror = function() {{
@@ -552,6 +544,7 @@ def branch_info_page():
                         </script>
                         """
                         st.components.v1.html(map_html, height=420)
+
 
                 elif search_term:
                     st.info("🔍 검색 결과가 없습니다. 정확한 지점명을 확인해주세요.")
