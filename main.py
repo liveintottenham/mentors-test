@@ -1086,9 +1086,12 @@ def refund_calculator_page():
         )
         
 # ✅ HTML 템플릿 (기존과 동일)
-def generate_refund_html(branch, phone, formatted_ticket_type, valid_period,
-                        ticket_price, usage_info, deduction_amount, deduction_detail, penalty_rate,
-                        penalty_amount, final_refund_amount, refund_date, deposit_amount, account_holder="", bank_name="", account_number=""):
+def generate_refund_html(
+    branch, phone, formatted_ticket_type, purchase_date, valid_period,
+    ticket_price, usage_info, deduction_amount, deduction_detail, penalty_rate,
+    penalty_amount, final_refund_amount, deposit_amount, refund_date,
+    account_holder="", bank_name="", account_number=""
+):
     html_content = f"""
     <!DOCTYPE html>
     <html>
