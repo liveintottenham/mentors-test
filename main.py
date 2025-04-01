@@ -641,15 +641,15 @@ def home_page():
 
     # ✅ 공지사항 데이터
     notices = [
-        {"날짜": "2025-02-14", "제목": "환불 영수증 발급 시스템 점검중", "링크": "https://example.com"},
+        {"날짜": "2025-02-14", "제목": "야간모드 사용 안되는 현상", "링크": "https://example.com"},
         {"날짜": "2025-02-08", "제목": "멘토즈 가맹관리부 시스템 오픈 ", "링크": "https://example.com"},
     ]
 
     # ✅ 최근 오픈 지점 데이터
     recent_openings = [
-        {"날짜": "2025-02-27", "지점명": "멘토즈 장전래미안점"},
-        {"날짜": "2025-02-24", "지점명": "멘토즈 경성대점"},
-        {"날짜": "2025-02-01", "지점명": "멘토즈 당산푸르지오점"},
+        {"날짜": "2025-04-21", "지점명": "멘토즈 통영죽림점"},
+        {"날짜": "2025-02-16", "지점명": "멘토즈 송파잠실여고점"},
+        {"날짜": "2025-02-16", "지점명": "멘토즈 부산양정점"},
     ]
 
     # ✅ 공지사항 & 최근 오픈 지점을 반반으로 나누어 배치
@@ -881,9 +881,9 @@ def refund_calculator_page():
     else:
         noble_rate = None
     
-    # ▼▼▼ 유효기간 계산 수정 (결제일 포함) ▼▼▼
+   # ▼▼▼ 유효기간 계산 수정 (결제일 포함) ▼▼▼
     if ticket_type == "시간권":
-        valid_period = f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(weeks=weeks_given)).strftime('%Y-%m-%d')}"
+        valid_period = f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(days=weeks_given*7 - 1)).strftime('%Y-%m-%d')}"
     else:
         valid_period = f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(days=days_given - 1)).strftime('%Y-%m-%d')}" if days_given else "정보 없음"
     # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
