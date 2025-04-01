@@ -1107,29 +1107,33 @@ def generate_refund_html(
             }}
             body {{
                 font-family: 'Pretendard', sans-serif;
-                background-color: #f8f9fa;
+                background-color: #f5f7fa;
                 color: #333;
                 line-height: 1.6;
             }}
             .container {{
-                max-width: 420px;
+                max-width: 800px;
                 margin: 20px auto;
-                padding: 0 10px;
+                padding: 0 15px;
             }}
             .receipt {{
                 background-color: white;
                 padding: 25px;
-                border-radius: 12px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+                border-radius: 15px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 25px;
             }}
             .header {{
+                grid-column: 1 / -1;
                 text-align: center;
                 padding-bottom: 15px;
-                margin-bottom: 20px;
-                border-bottom: 2px dashed #e0e0e0;
+                margin-bottom: 15px;
+                border-bottom: 2px solid #e0e0e0;
             }}
             .title {{
-                font-size: 22px;
+                font-size: 24px;
                 font-weight: 800;
                 color: #2c3e50;
                 margin-bottom: 5px;
@@ -1141,35 +1145,34 @@ def generate_refund_html(
                 font-weight: 500;
             }}
             .section {{
-                margin: 20px 0;
+                margin-bottom: 25px;
             }}
             .section-title {{
                 font-size: 16px;
                 font-weight: 700;
                 color: #2c3e50;
-                margin-bottom: 12px;
-                padding-bottom: 6px;
-                border-bottom: 1px solid #eee;
-                display: flex;
-                align-items: center;
+                margin-bottom: 15px;
+                padding-bottom: 8px;
+                border-bottom: 2px solid #f0f0f0;
+                position: relative;
             }}
-            .section-title:before {{
+            .section-title:after {{
                 content: "";
-                display: inline-block;
-                width: 4px;
-                height: 16px;
+                position: absolute;
+                bottom: -2px;
+                left: 0;
+                width: 60px;
+                height: 2px;
                 background-color: #4e73df;
-                margin-right: 8px;
-                border-radius: 2px;
             }}
             .info-table {{
                 width: 100%;
                 border-collapse: collapse;
-                margin: 8px 0;
+                margin: 10px 0;
                 font-size: 14px;
             }}
             .info-table td {{
-                padding: 10px 8px;
+                padding: 12px 8px;
                 border-bottom: 1px solid #f0f0f0;
                 vertical-align: top;
             }}
@@ -1184,57 +1187,54 @@ def generate_refund_html(
                 color: #2ecc71;
                 font-weight: 700;
             }}
-            .account-section {{
+            .account-info {{
                 background-color: #f8fafc;
-                padding: 18px;
+                padding: 20px;
                 border-radius: 10px;
-                margin-top: 25px;
                 border: 1px solid #e9ecef;
-            }}
-            .account-row {{
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
-                margin-top: 15px;
+                margin-top: 10px;
             }}
             .account-item {{
-                flex: 1;
-                min-width: 120px;
-                background: white;
-                padding: 12px;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+                margin-bottom: 12px;
             }}
             .account-label {{
-                font-size: 12px;
+                font-size: 13px;
                 color: #7f8c8d;
-                margin-bottom: 4px;
+                margin-bottom: 3px;
                 font-weight: 500;
             }}
             .account-value {{
                 font-weight: 600;
-                font-size: 14px;
+                font-size: 15px;
             }}
             .deposit-box {{
                 background: linear-gradient(135deg, #f6f9ff, #e9f0ff);
-                padding: 15px;
-                border-radius: 8px;
-                margin-top: 20px;
+                padding: 20px;
+                border-radius: 10px;
                 text-align: center;
                 border: 1px solid #e0e8ff;
+                margin-top: 20px;
             }}
             .deposit-amount {{
-                font-size: 26px;
+                font-size: 28px;
                 font-weight: 800;
                 color: #4e73df;
                 margin: 10px 0;
                 letter-spacing: -0.5px;
             }}
             .footer {{
+                grid-column: 1 / -1;
                 text-align: center;
-                margin-top: 20px;
-                font-size: 11px;
+                margin-top: 15px;
+                font-size: 12px;
                 color: #95a5a6;
+                padding-top: 15px;
+                border-top: 1px solid #eee;
+            }}
+            @media (max-width: 768px) {{
+                .receipt {{
+                    grid-template-columns: 1fr;
+                }}
             }}
         </style>
     </head>
@@ -1246,54 +1246,68 @@ def generate_refund_html(
                     <div class="subtitle">환불 요금 안내문</div>
                 </div>
 
-                <!-- 기본 정보 -->
-                <div class="section">
-                    <div class="section-title">기본 정보</div>
-                    <table class="info-table">
-                        <tr><td width="30%">지점명</td><td>{branch}</td></tr>
-                        <tr><td>연락처</td><td>{phone}</td></tr>
-                        <tr><td>이용권</td><td>{formatted_ticket_type}</td></tr>
-                        <tr><td>결제일</td><td>{purchase_date.strftime('%Y-%m-%d')}</td></tr>
-                        <tr><td>환불요청일</td><td>{refund_date.strftime('%Y-%m-%d')}</td></tr>
-                        <tr><td>유효기간</td><td>{valid_period}</td></tr>
-                    </table>
+                <!-- 왼쪽 컬럼 -->
+                <div class="left-column">
+                    <!-- 기본 정보 -->
+                    <div class="section">
+                        <div class="section-title">기본 정보</div>
+                        <table class="info-table">
+                            <tr><td width="35%">지점명</td><td>{branch}</td></tr>
+                            <tr><td>연락처</td><td>{phone}</td></tr>
+                            <tr><td>이용권</td><td>{formatted_ticket_type}</td></tr>
+                            <tr><td>결제일</td><td>{purchase_date.strftime('%Y-%m-%d')}</td></tr>
+                            <tr><td>환불요청일</td><td>{refund_date.strftime('%Y-%m-%d')}</td></tr>
+                            <tr><td>유효기간</td><td>{valid_period}</td></tr>
+                        </table>
+                    </div>
+
+                    <!-- 결제 정보 -->
+                    <div class="section">
+                        <div class="section-title">결제 정보</div>
+                        <table class="info-table">
+                            <tr><td width="40%">결제 금액</td><td>{ticket_price:,}원</td></tr>
+                            <tr><td>사용량</td><td>{usage_info}</td></tr>
+                            <tr><td>공제 금액</td><td class="highlight">-{deduction_amount:,}원</td></tr>
+                            <tr><td>공제 내역</td><td>{deduction_detail}</td></tr>
+                        </table>
+                    </div>
                 </div>
 
-                <!-- 결제 정보 -->
-                <div class="section">
-                    <div class="section-title">결제 및 환불 정보</div>
-                    <table class="info-table">
-                        <tr><td width="40%">결제 금액</td><td>{ticket_price:,}원</td></tr>
-                        <tr><td>사용량</td><td>{usage_info}</td></tr>
-                        <tr><td>공제 금액</td><td class="highlight">-{deduction_amount:,}원</td></tr>
-                        <tr><td>공제 내역</td><td>{deduction_detail}</td></tr>
-                        <tr><td>위약금 ({penalty_rate})</td><td class="highlight">-{penalty_amount:,}원</td></tr>
-                        <tr><td>환불 가능액</td><td class="positive">{final_refund_amount:,}원</td></tr>
-                    </table>
-                </div>
+                <!-- 오른쪽 컬럼 -->
+                <div class="right-column">
+                    <!-- 환불 정보 -->
+                    <div class="section">
+                        <div class="section-title">환불 정보</div>
+                        <table class="info-table">
+                            <tr><td width="40%">위약금 ({penalty_rate})</td><td class="highlight">-{penalty_amount:,}원</td></tr>
+                            <tr><td>환불 가능액</td><td class="positive">{final_refund_amount:,}원</td></tr>
+                        </table>
+                    </div>
 
-                <!-- 환불 계좌 정보 -->
-                <div class="account-section">
-                    <div class="section-title">환불 계좌 정보</div>
-                    <div class="account-row">
-                        <div class="account-item">
-                            <div class="account-label">예금주</div>
-                            <div class="account-value">{account_holder}</div>
-                        </div>
-                        <div class="account-item">
-                            <div class="account-label">은행명</div>
-                            <div class="account-value">{bank_name}</div>
-                        </div>
-                        <div class="account-item">
-                            <div class="account-label">계좌번호</div>
-                            <div class="account-value">{account_number}</div>
+                    <!-- 환불 계좌 정보 -->
+                    <div class="section">
+                        <div class="section-title">환불 계좌 정보</div>
+                        <div class="account-info">
+                            <div class="account-item">
+                                <div class="account-label">예금주</div>
+                                <div class="account-value">{account_holder}</div>
+                            </div>
+                            <div class="account-item">
+                                <div class="account-label">은행명</div>
+                                <div class="account-value">{bank_name}</div>
+                            </div>
+                            <div class="account-item">
+                                <div class="account-label">계좌번호</div>
+                                <div class="account-value">{account_number}</div>
+                            </div>
                         </div>
                     </div>
 
+                    <!-- 입금 금액 -->
                     <div class="deposit-box">
                         <div style="font-weight:600; color:#5a6c90;">입금 하실 금액</div>
                         <div class="deposit-amount">{deposit_amount:,}원</div>
-                        <div style="font-size:12px; color:#7f8c8d;">위 금액을 입금해 주셔야 환불이 완료됩니다</div>
+                        <div style="font-size:13px; color:#7f8c8d;">위 금액을 입금해 주셔야 환불이 완료됩니다</div>
                     </div>
                 </div>
 
