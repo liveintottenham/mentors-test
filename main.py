@@ -1112,57 +1112,67 @@ def generate_refund_html(
                 line-height: 1.5;
             }}
             .container {{
-                max-width: 750px;
-                margin: 15px auto;
-                padding: 0 10px;
+                max-width: 780px;
+                margin: 20px auto;
+                padding: 0 15px;
             }}
             .receipt {{
                 background-color: white;
-                padding: 20px;
+                padding: 25px;
                 border-radius: 12px;
-                box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
                 display: grid;
                 grid-template-columns: 1fr 1fr;
-                gap: 20px;
-                height: fit-content;
+                gap: 25px;
+                min-height: 580px;
             }}
             .header {{
                 grid-column: 1 / -1;
                 text-align: center;
-                padding-bottom: 10px;
-                margin-bottom: 10px;
+                padding-bottom: 15px;
+                margin-bottom: 15px;
                 border-bottom: 1px solid #e0e0e0;
             }}
             .title {{
-                font-size: 20px;
+                font-size: 22px;
                 font-weight: 800;
                 color: #2c3e50;
-                margin-bottom: 3px;
+                margin-bottom: 5px;
             }}
             .subtitle {{
-                font-size: 13px;
+                font-size: 14px;
                 color: #7f8c8d;
                 font-weight: 500;
             }}
             .section {{
-                margin-bottom: 15px;
+                margin-bottom: 20px;
             }}
             .section-title {{
-                font-size: 15px;
+                font-size: 16px;
                 font-weight: 700;
                 color: #2c3e50;
-                margin-bottom: 10px;
-                padding-bottom: 5px;
+                margin-bottom: 12px;
+                padding-bottom: 6px;
                 border-bottom: 1px solid #f0f0f0;
+                position: relative;
+            }}
+            .section-title:after {{
+                content: "";
+                position: absolute;
+                bottom: -1px;
+                left: 0;
+                width: 50px;
+                height: 2px;
+                background-color: #4e73df;
             }}
             .info-table {{
                 width: 100%;
                 border-collapse: collapse;
-                margin: 5px 0;
-                font-size: 13px;
+                margin: 8px 0;
+                font-size: 14px;
             }}
             .info-table td {{
-                padding: 8px 5px;
+                padding: 10px 8px;
                 border-bottom: 1px solid #f5f5f5;
                 vertical-align: top;
             }}
@@ -1179,50 +1189,51 @@ def generate_refund_html(
             }}
             .account-info {{
                 background-color: #f8fafc;
-                padding: 15px;
+                padding: 18px;
                 border-radius: 8px;
                 border: 1px solid #e9ecef;
-                margin-top: 8px;
+                margin-top: 10px;
             }}
             .account-item {{
-                margin-bottom: 8px;
+                margin-bottom: 10px;
             }}
             .account-label {{
-                font-size: 12px;
+                font-size: 13px;
                 color: #7f8c8d;
-                margin-bottom: 2px;
+                margin-bottom: 3px;
             }}
             .account-value {{
                 font-weight: 600;
-                font-size: 14px;
+                font-size: 15px;
             }}
             .deposit-box {{
                 background: linear-gradient(135deg, #f6f9ff, #e9f0ff);
-                padding: 15px;
+                padding: 20px;
                 border-radius: 8px;
                 text-align: center;
                 border: 1px solid #e0e8ff;
                 margin-top: 15px;
             }}
             .deposit-amount {{
-                font-size: 22px;
+                font-size: 26px;
                 font-weight: 800;
                 color: #4e73df;
-                margin: 8px 0;
+                margin: 10px 0;
             }}
             .footer {{
                 grid-column: 1 / -1;
                 text-align: center;
-                margin-top: 10px;
-                font-size: 11px;
+                margin-top: 15px;
+                font-size: 12px;
                 color: #95a5a6;
-                padding-top: 10px;
+                padding-top: 15px;
                 border-top: 1px solid #eee;
             }}
             @media (max-width: 768px) {{
                 .receipt {{
                     grid-template-columns: 1fr;
-                    padding: 15px;
+                    min-height: auto;
+                    padding: 20px;
                 }}
             }}
         </style>
@@ -1241,7 +1252,7 @@ def generate_refund_html(
                     <div class="section">
                         <div class="section-title">기본 정보</div>
                         <table class="info-table">
-                            <tr><td width="38%">지점명</td><td>{branch}</td></tr>
+                            <tr><td width="35%">지점명</td><td>{branch}</td></tr>
                             <tr><td>연락처</td><td>{phone}</td></tr>
                             <tr><td>이용권</td><td>{formatted_ticket_type}</td></tr>
                             <tr><td>결제일</td><td>{purchase_date.strftime('%Y-%m-%d')}</td></tr>
@@ -1252,12 +1263,13 @@ def generate_refund_html(
 
                     <!-- 결제 정보 -->
                     <div class="section">
-                        <div class="section-title">결제 정보</div>
+                        <div class="section-title">결제 및 공제 정보</div>
                         <table class="info-table">
-                            <tr><td width="45%">결제 금액</td><td>{ticket_price:,}원</td></tr>
+                            <tr><td width="40%">결제 금액</td><td>{ticket_price:,}원</td></tr>
                             <tr><td>사용량</td><td>{usage_info}</td></tr>
                             <tr><td>공제 금액</td><td class="highlight">-{deduction_amount:,}원</td></tr>
                             <tr><td>공제 내역</td><td>{deduction_detail}</td></tr>
+                            <tr><td>위약금 ({penalty_rate})</td><td class="highlight">-{penalty_amount:,}원</td></tr>
                         </table>
                     </div>
                 </div>
@@ -1268,8 +1280,7 @@ def generate_refund_html(
                     <div class="section">
                         <div class="section-title">환불 정보</div>
                         <table class="info-table">
-                            <tr><td width="45%">위약금 ({penalty_rate})</td><td class="highlight">-{penalty_amount:,}원</td></tr>
-                            <tr><td>환불 가능액</td><td class="positive">{final_refund_amount:,}원</td></tr>
+                            <tr><td width="45%">환불 가능액</td><td class="positive">{final_refund_amount:,}원</td></tr>
                         </table>
                     </div>
 
@@ -1294,9 +1305,9 @@ def generate_refund_html(
 
                     <!-- 입금 금액 -->
                     <div class="deposit-box">
-                        <div style="font-weight:600; color:#5a6c90; font-size:13px;">입금 하실 금액</div>
+                        <div style="font-weight:600; color:#5a6c90;">입금 하실 금액</div>
                         <div class="deposit-amount">{deposit_amount:,}원</div>
-                        <div style="font-size:12px; color:#7f8c8d;">위 금액을 입금해 주셔야 환불이 완료됩니다</div>
+                        <div style="font-size:13px; color:#7f8c8d;">위 금액을 입금해 주셔야 환불이 완료됩니다</div>
                     </div>
                 </div>
 
