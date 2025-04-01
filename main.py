@@ -1280,7 +1280,7 @@ def generate_refund_html(
                     <div class="section">
                         <div class="section-title">환불 정보</div>
                         <table class="info-table">
-                            <tr><td width="45%">환불 가능액</td><td class="positive">{final_refund_amount:,}원</td></tr>
+                            <tr><td width="45%">환불 금액</td><td class="positive">{final_refund_amount:,}원</td></tr>
                         </table>
                     </div>
 
@@ -1307,7 +1307,7 @@ def generate_refund_html(
                     <div class="deposit-box">
                         <div style="font-weight:600; color:#5a6c90;">입금 하실 금액</div>
                         <div class="deposit-amount">{deposit_amount:,}원</div>
-                        <div style="font-size:13px; color:#7f8c8d;">위 금액을 입금해 주셔야 환불이 완료됩니다</div>
+                        <div style="font-size:13px; color:#7f8c8d;">입금 확인 후 결제 내역이 전체 취소 됩니다.</div>
                     </div>
                 </div>
 
