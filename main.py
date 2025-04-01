@@ -982,7 +982,7 @@ def refund_calculator_page():
 
         # 환불 내역서 구성
         refund_detail = f"""
-        [멘토즈 스터디카페 환불 내역서]
+        🗨 멘토즈스터디카페 환불 내역서
         =============================================
         ■ 지  점 : {branch}
         ■ 연락처 : {phone}
@@ -998,14 +998,14 @@ def refund_calculator_page():
         ▣ 사용량 : {usage_info}
         ▣ 공제 금액 : -{int(deduction_amount):,}원 ({deduction_detail})
         ▣ 위약금 : -{int(penalty_amount):,}원 ({penalty_rate} 위약금)
-        ▣ 환불 가능액 : {int(final_refund_amount):,}원
+        ▣ 환불 금액 : {int(final_refund_amount):,}원
         ---------------------------------------------
-        ▶ 입금 금액 : {int(deposit_amount):,}원
+        ▶ 입금 하실 금액 : {int(deposit_amount):,}원 ◀
         =============================================
         ※ 유의사항
         - 본 내역서는 발급일 기준으로 유효합니다.
         - 결제일자로 부터 30일이 지난 결제건은 위약금이 추가로 발생할 수 있습니다.
-        - 환불 처리에는 최대 3~5영업일이 소요될 수 있습니다.
+        - 사용 금액을 입금하시면, 결제했던 내역이 전체 취소되며 평균 1~5 영업일 소요됩니다.
         """
         
         # 환불 내역서 출력
