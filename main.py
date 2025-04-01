@@ -856,7 +856,7 @@ def refund_calculator_page():
     # 결제 및 환불 정보 입력
     ticket_price = st.number_input("결제 금액 (원)", min_value=0)
     purchase_date = st.date_input("결제일", value=datetime.now(pytz.timezone('Asia/Seoul')).date())
-    refund_date = st.date_input("환불 요청일", value=datetime.now(pytz.timezone('Asia/Seoul')).date())
+    refund_date = st.date_input("환불 요청일", value=datetime.now(pytz.timezone('Asia/Seoul')).date())  # 환불 요청일 입력 필드
     
     # 위약금 선택 (0%, 10%, 20%)
     penalty_rate = st.selectbox("위약금 선택", ["0%", "10%", "20%"], index=0)
@@ -881,7 +881,7 @@ def refund_calculator_page():
     else:
         noble_rate = None
     
-   # ▼▼▼ 유효기간 계산 수정 (결제일 포함) ▼▼▼
+    # ▼▼▼ 유효기간 계산 수정 (결제일 포함) ▼▼▼
     if ticket_type == "시간권":
         valid_period = f"{purchase_date.strftime('%Y-%m-%d')} ~ {(purchase_date + timedelta(days=weeks_given*7 - 1)).strftime('%Y-%m-%d')}"
     else:
@@ -984,22 +984,23 @@ def refund_calculator_page():
         refund_detail = f"""
         [멘토즈 스터디카페 환불 내역서]
         =============================================
-        ■ 지   점 : {branch}
+        ■ 지  점 : {branch}
         ■ 연락처 : {phone}
         ■ 발급일 : {current_time_kst}
         ---------------------------------------------
         [구 매 정 보]
         - 이용권 종류 : {formatted_ticket_type}
-        - 결 제 일 자 : {purchase_date.strftime('%Y-%m-%d')}
+        - 결제 일자 : {purchase_date.strftime('%Y-%m-%d')}
         - 결제 금액 : {ticket_price:,}원
         - 유효 기간 : {valid_period}
         ---------------------------------------------
-        [환 불 내역]
+        [환 불 내 역]
         ▣ 사용량 : {usage_info}
         ▣ 공제 금액 : -{int(deduction_amount):,}원 ({deduction_detail})
         ▣ 위약금 : -{int(penalty_amount):,}원 ({penalty_rate} 위약금)
         ▣ 환불 가능액 : {int(final_refund_amount):,}원
-        ▶ 입금 하실 금액 : {int(deposit_amount):,}원
+        ---------------------------------------------
+        ▶ 입금 금액 : {int(deposit_amount):,}원
         =============================================
         ※ 유의사항
         - 본 내역서는 발급일 기준으로 유효합니다.
@@ -1024,7 +1025,8 @@ def refund_calculator_page():
             'penalty_rate': penalty_rate,
             'penalty_amount': penalty_amount,
             'final_refund_amount': final_refund_amount,
-            'deposit_amount': deposit_amount  # 입금하실 금액 추가
+            'deposit_amount': deposit_amount,
+            'refund_date': refund_date
         }
 
     # 계산 완료 후 계좌 정보 입력 폼 표시
@@ -1078,7 +1080,7 @@ def refund_calculator_page():
 # ✅ HTML 템플릿 (기존과 동일)
 def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, valid_period,
                         ticket_price, usage_info, deduction_amount, deduction_detail, penalty_rate,
-                        penalty_amount, final_refund_amount, deposit_amount, account_holder="", bank_name="", account_number=""):
+                        penalty_amount, final_refund_amount, refund_date, deposit_amount, account_holder="", bank_name="", account_number=""):
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -1156,7 +1158,7 @@ def generate_refund_html(branch, phone, formatted_ticket_type, purchase_date, va
                     <tr><td>연락처</td><td>{phone}</td></tr>
                     <tr><td>이용권</td><td>{formatted_ticket_type}</td></tr>
                     <tr><td>유효기간</td><td>{valid_period}</td></tr>
-                    <tr><td>환불요청일</td><td>{purchase_date.strftime('%Y-%m-%d')}</td></tr>
+                    <tr><td>환불요청일</td><td>{refund_date.strftime('%Y-%m-%d')}</td></tr>
                 </table>
             </div>
 
