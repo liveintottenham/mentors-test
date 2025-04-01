@@ -1191,13 +1191,15 @@ def generate_refund_html(
                 margin-top: 25px;
                 border: 1px solid #e9ecef;
             }}
-            .account-grid {{
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 12px;
+            .account-row {{
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
                 margin-top: 15px;
             }}
             .account-item {{
+                flex: 1;
+                min-width: 120px;
                 background: white;
                 padding: 12px;
                 border-radius: 8px;
@@ -1273,7 +1275,7 @@ def generate_refund_html(
                 <!-- 환불 계좌 정보 -->
                 <div class="account-section">
                     <div class="section-title">환불 계좌 정보</div>
-                    <div class="account-grid">
+                    <div class="account-row">
                         <div class="account-item">
                             <div class="account-label">예금주</div>
                             <div class="account-value">{account_holder}</div>
