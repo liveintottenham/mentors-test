@@ -1067,7 +1067,9 @@ def refund_calculator_page():
             refund_data['penalty_amount'], int(refund_data['final_refund_amount']),
             int(refund_data['deposit_amount']),  # 입금하실 금액 추가
             account_info['account_holder'], account_info['bank_name'], 
-            account_info['account_number']
+            account_info['account_number'],
+            refund_data['refund_date']
+
         )
         
         st.download_button(
