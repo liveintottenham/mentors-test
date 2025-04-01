@@ -1059,17 +1059,23 @@ def refund_calculator_page():
         account_info = st.session_state['account_info']
         
         html_content = generate_refund_html(
-            refund_data['branch'], refund_data['phone'], 
-            refund_data['formatted_ticket_type'], refund_data['purchase_date'], 
-            refund_data['valid_period'], refund_data['ticket_price'], 
-            refund_data['usage_info'], int(refund_data['used_amount']),  # 수정: used_amount → int 변환
-            refund_data['deduction_detail'], refund_data['penalty_rate'], 
-            refund_data['penalty_amount'], int(refund_data['final_refund_amount']),
-            int(refund_data['deposit_amount']),  # 입금하실 금액 추가
-            account_info['account_holder'], account_info['bank_name'], 
-            account_info['account_number'],
-            refund_data['refund_date']
-
+            branch=refund_data['branch'],
+            phone=refund_data['phone'],
+            formatted_ticket_type=refund_data['formatted_ticket_type'],
+            purchase_date=refund_data['purchase_date'],
+            valid_period=refund_data['valid_period'],
+            ticket_price=refund_data['ticket_price'],
+            usage_info=refund_data['usage_info'],
+            deduction_amount=int(refund_data['used_amount']),
+            deduction_detail=refund_data['deduction_detail'],
+            penalty_rate=refund_data['penalty_rate'],
+            penalty_amount=refund_data['penalty_amount'],
+            final_refund_amount=int(refund_data['final_refund_amount']),
+            deposit_amount=int(refund_data['deposit_amount']),
+            refund_date=refund_data['refund_date'],  # 명시적으로 지정
+            account_holder=account_info['account_holder'],
+            bank_name=account_info['bank_name'],
+            account_number=account_info['account_number']
         )
         
         st.download_button(
