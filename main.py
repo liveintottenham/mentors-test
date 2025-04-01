@@ -1097,114 +1097,207 @@ def generate_refund_html(
     <html>
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
             @import url('https://cdn.jsdelivr.net/gh/orioncactus/Pretendard/dist/web/static/pretendard.css');
+            * {{
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }}
             body {{
                 font-family: 'Pretendard', sans-serif;
-                max-width: 400px;
-                margin: 20px auto;
-                padding: 20px;
                 background-color: #f8f9fa;
+                color: #333;
+                line-height: 1.6;
+            }}
+            .container {{
+                max-width: 420px;
+                margin: 20px auto;
+                padding: 0 10px;
             }}
             .receipt {{
                 background-color: white;
                 padding: 25px;
-                border-radius: 10px;
-                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             }}
             .header {{
                 text-align: center;
-                border-bottom: 2px dashed #ddd;
                 padding-bottom: 15px;
                 margin-bottom: 20px;
+                border-bottom: 2px dashed #e0e0e0;
             }}
             .title {{
                 font-size: 22px;
-                font-weight: 700;
+                font-weight: 800;
                 color: #2c3e50;
                 margin-bottom: 5px;
+                letter-spacing: -0.5px;
+            }}
+            .subtitle {{
+                font-size: 14px;
+                color: #7f8c8d;
+                font-weight: 500;
             }}
             .section {{
-                margin: 15px 0;
+                margin: 20px 0;
             }}
             .section-title {{
                 font-size: 16px;
-                font-weight: 600;
-                color: #34495e;
-                margin-bottom: 10px;
+                font-weight: 700;
+                color: #2c3e50;
+                margin-bottom: 12px;
+                padding-bottom: 6px;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                align-items: center;
+            }}
+            .section-title:before {{
+                content: "";
+                display: inline-block;
+                width: 4px;
+                height: 16px;
+                background-color: #4e73df;
+                margin-right: 8px;
+                border-radius: 2px;
             }}
             .info-table {{
                 width: 100%;
                 border-collapse: collapse;
-                margin: 10px 0;
+                margin: 8px 0;
+                font-size: 14px;
             }}
             .info-table td {{
-                padding: 8px;
-                border-bottom: 1px solid #eee;
+                padding: 10px 8px;
+                border-bottom: 1px solid #f0f0f0;
+                vertical-align: top;
+            }}
+            .info-table tr:last-child td {{
+                border-bottom: none;
             }}
             .highlight {{
                 color: #e74c3c;
                 font-weight: 700;
             }}
-            .account-info {{
-                background-color: #f8f9fa;
+            .positive {{
+                color: #2ecc71;
+                font-weight: 700;
+            }}
+            .account-section {{
+                background-color: #f8fafc;
+                padding: 18px;
+                border-radius: 10px;
+                margin-top: 25px;
+                border: 1px solid #e9ecef;
+            }}
+            .account-grid {{
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+                margin-top: 15px;
+            }}
+            .account-item {{
+                background: white;
+                padding: 12px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            }}
+            .account-label {{
+                font-size: 12px;
+                color: #7f8c8d;
+                margin-bottom: 4px;
+                font-weight: 500;
+            }}
+            .account-value {{
+                font-weight: 600;
+                font-size: 14px;
+            }}
+            .deposit-box {{
+                background: linear-gradient(135deg, #f6f9ff, #e9f0ff);
                 padding: 15px;
                 border-radius: 8px;
                 margin-top: 20px;
+                text-align: center;
+                border: 1px solid #e0e8ff;
+            }}
+            .deposit-amount {{
+                font-size: 26px;
+                font-weight: 800;
+                color: #4e73df;
+                margin: 10px 0;
+                letter-spacing: -0.5px;
+            }}
+            .footer {{
+                text-align: center;
+                margin-top: 20px;
+                font-size: 11px;
+                color: #95a5a6;
             }}
         </style>
     </head>
     <body>
-        <div class="receipt">
-            <div class="header">
-                <div class="title">멘토즈 스터디카페</div>
-                <div style="font-size: 14px; color: #7f8c8d;">환불 요금 안내문</div>
-            </div>
+        <div class="container">
+            <div class="receipt">
+                <div class="header">
+                    <div class="title">멘토즈 스터디카페</div>
+                    <div class="subtitle">환불 요금 안내문</div>
+                </div>
 
-            <!-- 기본 정보 -->
-            <div class="section">
-                <div class="section-title">기본 정보</div>
-                <table class="info-table">
-                    <tr><td>지점명</td><td>{branch}</td></tr>
-                    <tr><td>연락처</td><td>{phone}</td></tr>
-                    <tr><td>이용권</td><td>{formatted_ticket_type}</td></tr>
-                    <tr><td>유효기간</td><td>{valid_period}</td></tr>
-                    <tr><td>환불요청일</td><td>{refund_date.strftime('%Y-%m-%d')}</td></tr>
-                </table>
-            </div>
+                <!-- 기본 정보 -->
+                <div class="section">
+                    <div class="section-title">기본 정보</div>
+                    <table class="info-table">
+                        <tr><td width="30%">지점명</td><td>{branch}</td></tr>
+                        <tr><td>연락처</td><td>{phone}</td></tr>
+                        <tr><td>이용권</td><td>{formatted_ticket_type}</td></tr>
+                        <tr><td>결제일</td><td>{purchase_date.strftime('%Y-%m-%d')}</td></tr>
+                        <tr><td>환불요청일</td><td>{refund_date.strftime('%Y-%m-%d')}</td></tr>
+                        <tr><td>유효기간</td><td>{valid_period}</td></tr>
+                    </table>
+                </div>
 
-            <!-- 결제 정보 -->
-            <div class="section">
-                <div class="section-title">결제 정보</div>
-                <table class="info-table">
-                    <tr><td>결제 금액</td><td>{ticket_price:,}원</td></tr>
-                    <tr><td>사용량</td><td>{usage_info}</td></tr>
-                    <tr><td>공제 금액</td><td class="highlight">-{deduction_amount:,}원</td></tr>
-                    <tr><td>공제 내역</td><td>{deduction_detail}</td></tr>
-                    <tr><td>위약금 ({penalty_rate})</td><td class="highlight">-{penalty_amount:,}원</td></tr>
-                    <tr><td>환불 가능액</td><td class="highlight">{final_refund_amount:,}원</td></tr>
-                </table>
-            </div>
+                <!-- 결제 정보 -->
+                <div class="section">
+                    <div class="section-title">결제 및 환불 정보</div>
+                    <table class="info-table">
+                        <tr><td width="40%">결제 금액</td><td>{ticket_price:,}원</td></tr>
+                        <tr><td>사용량</td><td>{usage_info}</td></tr>
+                        <tr><td>공제 금액</td><td class="highlight">-{deduction_amount:,}원</td></tr>
+                        <tr><td>공제 내역</td><td>{deduction_detail}</td></tr>
+                        <tr><td>위약금 ({penalty_rate})</td><td class="highlight">-{penalty_amount:,}원</td></tr>
+                        <tr><td>환불 가능액</td><td class="positive">{final_refund_amount:,}원</td></tr>
+                    </table>
+                </div>
 
-            <!-- 환불 계좌 정보 -->
-            <div class="account-info">
-                <div class="section-title">환불 계좌 정보</div>
-                <table class="info-table">
-                    <tr><td>예금주</td><td>{account_holder}</td></tr>
-                    <tr><td>은행명</td><td>{bank_name}</td></tr>
-                    <tr><td>계좌번호</td><td>{account_number}</td></tr>
-                </table>
+                <!-- 환불 계좌 정보 -->
+                <div class="account-section">
+                    <div class="section-title">환불 계좌 정보</div>
+                    <div class="account-grid">
+                        <div class="account-item">
+                            <div class="account-label">예금주</div>
+                            <div class="account-value">{account_holder}</div>
+                        </div>
+                        <div class="account-item">
+                            <div class="account-label">은행명</div>
+                            <div class="account-value">{bank_name}</div>
+                        </div>
+                        <div class="account-item">
+                            <div class="account-label">계좌번호</div>
+                            <div class="account-value">{account_number}</div>
+                        </div>
+                    </div>
 
-                <div class="section" style="margin-top:30px;">
-                    <div class="section-title">💳 입금 하실 금액</div>
-                    <div style="font-size:24px; color:#2ecc71; font-weight:700; text-align:center;">
-                        {deposit_amount:,}원
+                    <div class="deposit-box">
+                        <div style="font-weight:600; color:#5a6c90;">입금 하실 금액</div>
+                        <div class="deposit-amount">{deposit_amount:,}원</div>
+                        <div style="font-size:12px; color:#7f8c8d;">위 금액을 입금해 주셔야 환불이 완료됩니다</div>
                     </div>
                 </div>
-            </div>
 
-            <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #7f8c8d;">
-                발급일: {datetime.now(pytz.timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M')}
+                <div class="footer">
+                    발급일: {datetime.now(pytz.timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M')}
+                </div>
             </div>
         </div>
     </body>
